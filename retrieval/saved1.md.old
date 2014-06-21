@@ -3,19 +3,17 @@ Abstract
 
 "Engineering is the art of compromise: you work with what is available to you to make the best solution to the problem."
 
-"jdb" on Raspberry Pi blog[^engquote]
-
 <!--You have 150 words - use them! (wisely)-->
 
 Technical expertise should not be a requirement for preserving family history.
-Distribackup shall be a software system to sync distributed backups of important data as efficiently as possible. The user will remain in control of the files, while providing an hardware fault-tolerant service without relying on any vulnerable external storage services.
+Distribackup shall be a software system to sync distributed backups of important data as efficiently as possible. The files will remain in possession of the user or users, providing extremely hardware fault-tolerant service without relying on any vulnerable external storage services.
 
 * distributed backup for the home user is an important area because ...
 
-This report proposes a project to create such a distributed backup solution, with particular emphasis on the technical aspects of implementing a robust, efficient transfer infrastructure to 
+This report presents a proposal for a project in distributed backup solutions, with particular emphasis on the technical aspects of implementing a robust, efficient transfer infrastructure to 
 
 * summary of aims ("The aims of this project are ...")
-* summary of content ("The project will involve two phases ...")
+* summary of content (“The project will involve two phases ...")
 * expected outcomes ("Results from the proposed project will be ...")
 
 
@@ -37,7 +35,7 @@ Computers have made it convenient to store all our important data digitally. Fam
 Unique data such as photos are often stored locally on a physical medium which is vulnerable to damage or corruption. CDs are damaged by heat, light and wear and tear. When this storage fails (mobile phones are lost, old PCs break down or are just replaced due to age, without sufficiently diligent data transferral), often the user unwittingly throws away or loses many years of irreplaceable.
 
 Lost laptops and pen drives cause frequent important data loss. Old PCs being replaced cause families to throw away accumulated personal data, without realising what is stored locally rather than on the internet
-    - Lack of of understanding causes further personal data loss upon hardware failure
+  - Lack of of understanding causes further personal data loss upon hardware failure
 
 * Describe the proposed system and give an overview of its functionality
 
@@ -58,12 +56,12 @@ Background
 <!--
 * A key section in setting the scene for the project
 * Should contain a significant literature survey of related systems/ approaches
-    - Key issue of scope
-    - e.g. networking -> P2P -> file sharing software
-    - May be sub-divided
-    - e.g. methodologies vs. existing systems
+  - Key issue of scope
+  - e.g. networking -> P2P -> file sharing software
+  - May be sub-divided
+  - e.g. methodologies vs. existing systems
 * Should say something!
-    - What are the implications for my project?
+  - What are the implications for my project?
 -->
 
 More than ever before there is a need for thorough backup software which is accessible for everyone. There are now years' worth of milestones in peoples' lives, all stored on a machine they don't fully understand.
@@ -71,15 +69,7 @@ More than ever before there is a need for thorough backup software which is acce
 Evaluation of Existing Solutions
 --------------------------------
 
-<!-- TODO: improve this
-	more words, less bullets 
-	also cover similar software:
-	ceph
-	sparkleshare
-	git-annex
-	-->
-
-### Dropbox ###
+###Dropbox
 
 Dropbox is an extremely popular solution for accessing data across multiple machines, and sharing files easily with small groups of people. As convenient as Dropbox is, there are downsides:
 
@@ -94,13 +84,13 @@ Dropbox is useful for keeping files synced across multiple machines; but by usin
 
 Dropbox can encumber your files with ownership and legal issues.
  
-### Bit-Torrent  ###
+###Bit-Torrent 
 * Collection contents cannot be changed after torrent creation
 * Unsecure by design (IP addresses and ISP hostnames are broadcast and used as identities)
   * Therefore vulnerable to poisoning
 * Nowadays highly stigmatised; associated with illegal activity (copyright theft) in public consciousness
 
-### Git ###
+###Git
 updates require user intervention
 git updates need to be synced by user, using commandline or seperate GUI
 - Not automatic
@@ -110,7 +100,7 @@ git updates need to be synced by user, using commandline or seperate GUI
 * Existing GUIs for git are unfinished, non-free, buggy or as confusing as the commandline interface, with none of the portability.
 * Git is much more complex than is necessary for this task
 
-### Commercial Solutions ###
+###Commercial Solutions
 
 Commercial solutions (such Amazon S3) entrust critical private data with large hosting
 
@@ -138,7 +128,7 @@ Aims and objectives
 <!--
 * State clearly the overall aim of project
 * State more specific objectives as bullet points
-    - Subdivide into categories if necessary
+  - Subdivide into categories if necessary
 * Are they measurable?
 * Are they achievable?
 * Do I know when I should stop?
@@ -183,10 +173,10 @@ Using Distributed Hash Tables may prove to be too complex for scope of this proj
 
 It shall use existing technology to provide this:-
 
-* Bit-torrent[bt-protocol] : good at reducing bandwidth costs of a one-to-many download, by trading pieces of files among peers. Means the original syncing file only needs to be uploaded once by the originator, (like Dropbox, to its central servers).
-* Rsync[^rsync] : robust file-transfer application, which uses differential transfer: only transfers new files, (or even parts of files, see differential transfer) that have changed. This would vastly improve sync times. 
-* Git[^git] : an existing solution for peers to exchange versions of files; I don't THINK I want version history in this program, but it could be added as an optional feature later.
-* inotify[^inotify] : filesystem update notification system implemented in the linux kernel. Avoids having to implement costly scans of watched files. Available on linux desktops, and on Android using the FileObserver wrapper.[^FileObserver]
+* [Bit-torrent][bt protocol]: good at reducing bandwidth costs of a one-to-many download, by trading pieces of files among peers. Means the original syncing file only needs to be uploaded once by the originator, (like Dropbox, to its central servers).
+* [rsync] : robust file-transfer application, which uses differential transfer: only transfers new files, (or even parts of files, see differential transfer) that have changed. This would vastly improve sync times. 
+* [Git] : an existing solution for peers to exchange versions of files; I don't THINK I want version history in this program, but it could be added as an optional feature later.
+* inotify
 * [PGP](http://www.cryptography.org/getpgp.htm): some kind of encryption will be needed to prevent unauthorised peers from getting copies of your files. An authentication system would be good, possibly along with encrypted packet transmission, and/or encrypted storage. [Pretty Good Privacy][PGP] is a good candidate for any of these.
 
 Possible Use Cases:
@@ -207,7 +197,7 @@ C was another choice, however aside from less familiarity with it than Java, its
 
 Java is also likely to run well on the target platforms, with minimal architecture-specific code (Android will require some kind of GUI, an may have a different file-access API to normal Java). Java runs on all the target platforms, which removes the work of maintaining (or at least cross-compiling) a seperate port for each.
 
-Java and its Virtual Machine still runs slightly slower than native C code. As a language, it tends to use a lot of memory for a given task (compared to the same task in another language); this may be an issue on Model A raspberry Pis, which only have 256MB of RAM. My initial reservation about using Java was its lack of support for the Raspberry Pi, whcih is the main platform I had in mind when I envisioned this project. This has recently been remedied[^raspi-java], and there is now an Oracle-supplied Java Development Kit available in the Raspbian softwqare repositories, which uses the hardware-float feature, making it much faster than previous efforts.
+Java and its Virtual Machine still runs slightly slower than native C code. As a language, it tends to use a lot of memory for a given task (compared to the same task in another language); this may be an issue on Model A raspberry Pis, which only have 256MB of RAM. My initial reservation about using Java was its lack of support for the Raspberry Pi, whcih is the main platform I had in mind when I envisioned this project. This has recently been remedied[1][raspi java], and there is now an Oracle-supplied Java Development Kit available in the Raspbian softwqare repositories, which uses the hardware-float feature, making it much faster than previous efforts.
 
 
 
@@ -235,11 +225,11 @@ Methodology
 -----------
 <!--
 * Software engineering approach
-    - e.g. Use of rapid prototyping
+  - e.g. Use of rapid prototyping
 * Planned evaluation strategy
-    - Testing methods to be used and why
-    - User evaluation? Performance evaluation?
-    - Qualitative evaluation? Quantitative evaluation?
+  - Testing methods to be used and why
+  - User evaluation? Performance evaluation?
+  - Qualitative evaluation? Quantitative evaluation?
 -->
 
 Evaluation???
@@ -249,10 +239,10 @@ Evaluation???
 * Needs to be discussed with your supervisor
 * Has to be tailored to the particular project and to the aims and objectives
 * What aspects of your system can be evaluated?
-    - Quantitative
+  - Quantitative
     - Performance of the system
     - Software metrics, e.g. related to reusability
-    - Qualitative
+  - Qualitative
     - User experience
 * What is realistic given the timescales?
 
@@ -276,17 +266,16 @@ Programme of Work
 <!--
 * Start with overall timescale for the project
 * Each task should have defined and measurable outcomes
-    - sub-goals
-    - short description
-    - duration
-    - milestones and deliverables
+  - sub-goals
+  - short description
+  - duration
+  - milestones and deliverables
 * Overall schedule:
-    - use of appropriate diagrammatic notation
+  - use of appropriate diagrammatic notation
 -->
 
 
 Working under the assumption that the deadline for this project is roughly the same as last year's Final Year Project deadline, then there are 6 months from the start of term in October, to the deadline in late march. March to complete this project. Because this project is self-derived, ie I came up with it without any outside advice on scale (and therefore it might prove to be too much work), I have attempted to keep the desired goals to a bare minimum, in order to give myself the best chance of finishing the core functionality, which is as follows:-
-
 
 Stage | Time Given
 ------|-----------
@@ -294,38 +283,38 @@ Research | 2-3 weeks
 early experimentation | 5-6 weeks
 testing and cleanup | 1 month
 
-
 Phase 1 (weeks 0-12): Blah
 -------------
-### Task 1 ###
+
+###Task 1
 During this time the project developer will chew on a stick, preferably a liquorice root, and twirl his moustache
 
 Phase 2 (weeks 12-24): blah blah
 --------------------------------
 Further beard growth will be made available to intersted parties at this time, inluding a one-time fire-and-forget german-model fritzenstoppe
 
-###  Major Technical Tasks ###
+###Major Technical Tasks:
 
 These subcomponents need to be implemented in order for the software to achieve its primary function.
 
 * Node discovery - given that nodes have dynamically assigned IP addresses and <100% uptime?
-    - use DHTs eg Kademlia
-        - is DHT node discovery too difficult to implement in the given time?
+  - use DHTs eg Kademlia
+  - is DHT node discovery too difficult to implement in the given time?
 * Identifying/authenticating nodes - preventing man-in the middle attacks
-    - use SSH authentication model
+  - use SSH authentication model
 * Implementing p2p file transfer - à la bit torrent
-    - downloading a file from multiple peers at once by splitting into file pieces
-        - will be heavily related to rsync-derived algorithm 
+  - downloading a file from multiple peers at once by splitting into file pieces
+    - will be heavily related to rsync-derived algorithm 
 * Sending file changes only
-    - look at rsync algorithm, remote differential compression, diff, bsdiff, chromium's Courgette[^courgette]
-    - Process edge-case file updates efficiently - eg renaming a file, swapping file piece order
+  - look at rsync algorithm, remote differential compression, diff, bsdiff, chromium's [Courgette](http://dev.chromium.org/developers/design-documents/software-updates-courgette)
+  - Process edge-case file updates efficiently - eg renaming a file, swapping file piece order
 * Detecting changes rapidly
-    - using inotify? (linux systems only)
+  - using inotify? (linux systems only)
 * merging conflicting versions - just do what dropbox does and rename conflicts /create copies
 * Working out which files and versions are most up to date -  propagating most up-to-date file
 * Obtaining an open outgoing port - UPnP?
 
-###  Possible Extensions (Beyond Initial Scope) ###
+###Possible Extensions (Beyond Initial Scope)
 
 These features are good areas for further work, but are not essential in the first iteration of development.
 
@@ -334,12 +323,12 @@ These features are good areas for further work, but are not essential in the fir
 * Web interface 
 * Android client?
 * Version control for managed files
-    - Likely to be implemented using Git
+  - Likely to be implemented using Git
 * fine-grained folder watch lists - just watch one folder for now
 * GUI - stick to a daemon (and setup wizard?) with config file for now
 * fine-grained file subscriptions
-    - nodes only mirroring files they're interested in
-    - Risk of low availability for undesirable/unpopular files - bad
+  - nodes only mirroring files they're interested in
+  - Risk of low availability for undesirable/unpopular files - bad
 * Merging conflicting file updates automatically (modification times, diffs, git?)
 * Multiple peer lists, multiple folders
   * This could get complex for the user very quickly
@@ -393,38 +382,36 @@ References
 <!--
 * Be complete
 * Use a well recognised style
-    - E.g. formatting style recommended for your short report
-    - Web resources change, so put revision/accessed dates
+  - E.g. formatting style recommended for your short report
+  - Web resources change, so put revision/accessed dates
 -->
 
-[^engquote]:http://www.raspberrypi.org/a-birthday-present-from-broadcom/#comment-493992-------------------------------
-[^wang13]: Liang Wang and Jussi Kangasharju, "Measuring Large-Scale Distributed Systems:
+
+
+Liang Wang and Jussi Kangasharju, "Measuring Large-Scale Distributed Systems:
 Case of BitTorrent Mainline DHT", 13-th IEEE International Conference on Peer-to-Peer Computing
 (http://www.cs.helsinki.fi/u/lxwang/publications/P2P2013_13.pdf) (accessed 19/06/14)
 <!--_-->
-
-
-
 Related Software
 ----------------
 
-[^Tahoe]: http://tahoe-lafs.org/trac/tahoe-lafs
-[^MogileFS]: http://code.google.com/p/mogilefs/
-[^ceph]:http://ceph.com/
-[^sparkleshare]:http://sparkleshare.org/
-[^git-annex]:http://git-annex.branchable.com/
+* http://tahoe-lafs.org/trac/tahoe-lafs
+* http://code.google.com/p/mogilefs/
+* http://ceph.com/
+* http://sparkleshare.org/
+* http://git-annex.branchable.com/
 
 Protocols and Libraries
 -----------------------
 
-[^raspi-java]: http://www.raspberrypi.org/oracle-java-on-raspberry-pi
-[^git]:http://git-scm.com/
-[^rsync]:http://rsync.samba.org/tech_report
-[^bt-protocol]:http://www.bittorrent.org/beps/bep_0003.html
-[^courgette]:http://dev.chromium.org/developers/design-documents/software-updates-courgette
-[^FileObserver]:https://developer.android.com/reference/android/os/FileObserver.html
+[raspi java]:http://www.raspberrypi.org/oracle-java-on-raspberry-pi
+[Git]:http://git-scm.com/
+[rsync]:http://rsync.samba.org/tech_report
+[bt protocol]:http://www.bittorrent.org/beps/bep_0003.html
 
 
+* get rsync delta algorithm
 * get BitTorrent distributed piece trading (p2p file chunks transfers) algorithm
+* use inotify(?) to listen for file updates
 * use lz4 or lzo for fast file compression
   * need a way to check that data is compressible
