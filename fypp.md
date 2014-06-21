@@ -10,6 +10,11 @@ Abstract
 Technical expertise should not be a requirement for preserving family history.
 Distribackup shall be a software system to sync distributed backups of important data as efficiently as possible. The user will remain in control of the files, while providing an hardware fault-tolerant service without relying on any vulnerable external storage services.
 
+Distribox is a cloud-based solution for backup of irreplaceable data, such as
+family photos and videos. It places the user in control of their data (as opposed to hosting the file with a company that has a binding contract which may waive original ownerhsip), by having 
+them provide the infrastructure of distributed storage. Distribox handles syncing the geographically distant copies.
+
+
 * distributed backup for the home user is an important area because ...
 
 This report proposes a project to create such a distributed backup solution, with particular emphasis on the technical aspects of implementing a robust, efficient transfer infrastructure to 
@@ -342,7 +347,7 @@ These features are good areas for further work, but are not essential in the fir
     - Risk of low availability for undesirable/unpopular files - bad
 * Merging conflicting file updates automatically (modification times, diffs, git?)
 * Multiple peer lists, multiple folders
-  * This could get complex for the user very quickly
+    * This could get complex for the user very quickly
 
 Gantt Chart
 -----------
@@ -386,7 +391,11 @@ The following libraries and APIs will be necessary to develop from:
 
 * Rsync source - algorithm reference
 * Bit-Torrent example implementation
-  * Also a protocol specification for reference 
+    * Also a protocol specification for reference
+  
+* get BitTorrent distributed piece trading (p2p file chunks transfers) algorithm
+* use lz4 or lzo for fast file compression
+    * need a way to check that data is compressible
 
 References
 =========
@@ -403,19 +412,11 @@ Case of BitTorrent Mainline DHT", 13-th IEEE International Conference on Peer-to
 (http://www.cs.helsinki.fi/u/lxwang/publications/P2P2013_13.pdf) (accessed 19/06/14)
 <!--_-->
 
-
-
-Related Software
-----------------
-
 [^Tahoe]: http://tahoe-lafs.org/trac/tahoe-lafs
 [^MogileFS]: http://code.google.com/p/mogilefs/
 [^ceph]:http://ceph.com/
 [^sparkleshare]:http://sparkleshare.org/
 [^git-annex]:http://git-annex.branchable.com/
-
-Protocols and Libraries
------------------------
 
 [^raspi-java]: http://www.raspberrypi.org/oracle-java-on-raspberry-pi
 [^git]:http://git-scm.com/
@@ -425,6 +426,4 @@ Protocols and Libraries
 [^FileObserver]:https://developer.android.com/reference/android/os/FileObserver.html
 
 
-* get BitTorrent distributed piece trading (p2p file chunks transfers) algorithm
-* use lz4 or lzo for fast file compression
-  * need a way to check that data is compressible
+
