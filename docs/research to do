@@ -1,0 +1,8 @@
+research:
+UPnP and how you add port forwarding rules - also NAT traversal
+2 big challenges will be 1) finding other nodes, 2) gaining connection access
+DHT - how to extract useful information from the distributed hash table, and which impl is best for me
+	namely, how to find devices who are on our overlay network (this has already been solved by cleverer people than me)
+Rsync algorithm - how it calculates which chunks to send - it uses chunks right?
+	Sliding window blah blah?
+bit-torrent piece trading algorithm

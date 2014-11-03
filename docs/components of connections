@@ -1,0 +1,35 @@
+MAX_INCOMING_CONNECTIONS
+MAX_OUTBOUND_CONNECTIONS
+pipe
+	peer
+		ip address, port
+listener
+a queue for downloads when no connection ports are free
+
+min block size (256KB)
+mediocre domestic internet upload speed is still 1Mbps (128KB/s)
+so use that as a baseline for minimum useful chunk size
+
+max block size is 16MB
+a reasonable amount of data to have in memory at once, especially for RasPis
+
+Types of Message extension
+
+file block
+	file name/path
+	index/offset from filestart
+	checksum?
+	length?
+	payload:byte[]
+	revision number:int/long
+
+block checksum(s)(as per rsync)
+'haveblock' advertisements to fellow subscribed mirrors
+block requests to other peers
+
+request for peers
+peer list
+some kind of consistency check with the publisher (checksum/length check over all files?)
+version/revision numbers for each block or update
+
+use bson?

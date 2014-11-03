@@ -1,0 +1,6 @@
+http://www.samba.org/~tridge/phd_thesis.pdf
+Andrew Tridgell's original PhD thesis on Rsync
+contains chapters about implementation
+
+https://rsync.samba.org/how-rsync-works.html
+How Rsync works: a practical (if incomplete) non-mathematical guide to the algorithm
