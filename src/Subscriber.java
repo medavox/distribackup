@@ -1,6 +1,5 @@
 public class Subscriber
 {
-	
     public Subscriber()
     {
         
