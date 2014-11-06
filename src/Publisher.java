@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Publisher
 {
-	private List<Peer> peers = new LinkedList();
+    private List<Peer> peers = new LinkedList<Peer>();
     
     public Publisher()
     {

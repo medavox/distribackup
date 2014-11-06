@@ -60,21 +60,21 @@ public class Connection extends Thread
 	
 	public void close()
 	{
-        try
-        {
-            bis.close();
-            bos.close();
-            s.close();
-            if(serverMode)
-            {
-                svr.close();
-            }
-        }
-        catch(IOException eio)
-        {
-            System.err.println("Unable to close Connection!");
-            leh(ioe);
-        }
+	    try
+	    {
+		bis.close();
+		bos.close();
+		s.close();
+		if(serverMode)
+		{
+		    svr.close();
+		}
+	    }
+	    catch(IOException eio)
+	    {
+		System.err.println("Unable to close Connection!");
+		leh(ioe);
+	    }
 	}
 	
 }
