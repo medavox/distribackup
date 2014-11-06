@@ -22,14 +22,26 @@ file block
 	length?
 	payload:byte[]
 	revision number:int/long
+	
+filesend
+version info
+upgrade or gtfo
 
-block checksum(s)(as per rsync)
 'haveblock' advertisements to fellow subscribed mirrors
-block requests to other peers
+block requests to other peers (broadcast to all known peers)
 
-request for peers
+request for peers (broadcast)
 peer list
 some kind of consistency check with the publisher (checksum/length check over all files?)
-version/revision numbers for each block or update
+checksum request
+checksum data (per-file or whole tree)
+filesystem state
+#version/revision numbers for each block or update
 
-use bson?
+Make sure to use a raised value for the connection backlog on the listener socket.
+This will allow more connections to be queued up before the OS returns "Connection refused",
+should your server application become momentarily busy and unable to respond to incoming connections quickly enough.
+
+If using ServerSocket in Java, specify the desired backlog as an argument to the constructor:
+
+ServerSocket server = new ServerSocket(listenPort, 50);
