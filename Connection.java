@@ -70,7 +70,7 @@ public class Connection extends Thread
 		    svr.close();
 		}
 	    }
-	    catch(IOException eio)
+	    catch(IOException ioe)
 	    {
 		System.err.println("Unable to close Connection!");
 		leh(ioe);
