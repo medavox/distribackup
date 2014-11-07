@@ -56,6 +56,8 @@ Without file differencing, their protocol is inefficient for updates to large fi
 
 With this star topology, we are enabling the possibility of a decentralising publishing platform - self-hosted web pages with built-in scalability
 
+
+each Peer has its own UUID, generated during first run and stored on-disk
 ------
 
 * Will not require an always-on machine - will reliably and efficiently (but not necessarily quickly) sync mirrors.

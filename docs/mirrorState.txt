@@ -1,0 +1,11 @@
+Used to compare whether remote filesystems are different
+
+mirror state
+	list of FileData objects
+	number of files/folders
+
+FileData
+	length in bytes
+	filename
+	checksum(which type...?)
+	
