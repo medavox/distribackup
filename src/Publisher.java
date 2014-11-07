@@ -1,14 +1,17 @@
 //import com.medavox.connections.*;
 import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.connections.*;
+
+import static java.nio.file.StandardWatchEventKinds.*;
 import java.util.*;
 import java.net.*;
+import java.io.IOException;
 import java.nio.file.*;
 
 public class Publisher extends Peer
 {
-    private int port = 1210;
-    private String defaultRoot = "/home/scc/distribackup/publisher-root";
+    private static int port = 1210;
+    private static Path defaultRoot = Paths.get("/home/scc/distribackup/publisher-root");
     public Path root;
     private List<Peer> peers = new LinkedList<Peer>();
     //private final Path root = Paths.get("root");
@@ -23,37 +26,37 @@ public class Publisher extends Peer
     /*whenever a file has changed or been added,
      * send that file to every subscriber
      * limit concurrent connections to something sensible*/
-    public Publisher()
+    /*public Publisher()
     {
-	super(Paths.get(defaultRoot), port);
+	super(defaultRoot, port);
     }
     
     public Publisher(Path root)
     {
 	super(root, port);
-    }
+    }*/
     
-    public void newSocket(Socket s)
+    public void fileChanged(Path file, String eventType)
     {
-	//see if we've seen the connecting peer before
-	//if not, create a new peer object (query for some info)
-	//if we have, then add this socket to that peer's open sockets
-	
-	//bis = new BufferedInputStream(s.getInputStream());
-	//bos = new BufferedOutputStream(s.getOutputStream());
-	
-	handshake(s);
-	
-	
-	
-	boolean isNewPeer = true;//STOPGAP: REMOVE
-	if(isNewPeer)
+	switch(eventType)
 	{
-	    byte[] version
-	}
-	else
-	{
+	    case "ENTRY_DELETE":
+	    //don't send anything
+	    break;
 	    
+	    case "ENTRY_CREATE":
+	    case "ENTRY_MODIFY":
+		try
+		{
+		    System.out.println("Sending file "+file);
+		    sendFile(file, bos);
+		}
+		catch(IOException ioe)
+		{
+		    ioe.printStackTrace();
+		    System.exit(1);
+		}
+	    break;
 	}
     }
     
@@ -68,14 +71,12 @@ public class Publisher extends Peer
 	//get the folder we need to watch 
 	try
 	{
-	    Publisher p = new Publisher();
-	    
+	    Publisher p = new Publisher(defaultRoot, port);
 	}
 	catch(InvalidPathException ipe)
 	{
 	    usage();
 	}
-	
     }
 }
 

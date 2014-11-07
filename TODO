@@ -1,0 +1,6 @@
+TODO:
+UUID and peerinfo sending
+callback to send file
+publisher maintain list of subscribers
+make exception catching consistent: have a consistent policy
+redo package structure
