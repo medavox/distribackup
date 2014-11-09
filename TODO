@@ -1,5 +1,10 @@
 TODO:
+implment receiving serialised file
+create your own serialisation format
+	type-length-value, bencode, MessagePack
+	list ALL possible message types, then derive needed data types
 UUID and peerinfo sending
+
 callback to send file
 publisher maintain list of subscribers
 make exception catching consistent: have a consistent policy

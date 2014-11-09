@@ -5,6 +5,7 @@ import java.net.*;
 /**Stores information about peers*/
 public class PeerInfo
 {
+	//how do you serialise a socket? and why bother sending it?
 	Socket socket;
 	int version;
 	public PeerInfo(Socket s, int version)
