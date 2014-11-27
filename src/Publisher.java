@@ -62,7 +62,7 @@ public class Publisher extends Peer
     
     private static void usage()
     {
-	System.out.println("Usage: LOLOLOL");
+	System.out.println("Usage: TODO");
 	System.exit(1);
     }
     

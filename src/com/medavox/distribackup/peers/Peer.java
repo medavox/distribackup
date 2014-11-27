@@ -127,7 +127,8 @@ public abstract class Peer
 		try
 		{
 			Socket s = new Socket(host, port);
-			bis = new BufferedInputStream(s.getInputStream());
+			newSocket(s);
+			/*bis = new BufferedInputStream(s.getInputStream());
 			bos = new BufferedOutputStream(s.getOutputStream());
 			
 			int handshook = checkVersions(bis, bos);
@@ -139,7 +140,7 @@ public abstract class Peer
 				bos.close();
 				s.close();
 				//return;
-			}
+			}*/
 		}
 		catch(UnknownHostException uhe)
 		{
@@ -156,7 +157,6 @@ public abstract class Peer
 	
 	public void sendFile(Path file, BufferedOutputStream bos) throws IOException
 	{
-		
 		String fileName = file.getFileName().toString();
 		
 		String location = file.relativize(root).toString();

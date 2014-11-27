@@ -1,0 +1,82 @@
+List of Possible messages
+=========================
+
+Request for Peers
+
+Peer(s) Info List
+    PeerInfo[]
+
+File Chunk "File Data for any missing or failed-checksum files"
+    byte[] payload
+    which file it relates to
+    long offset
+    
+FileSend
+    String name
+    String(relative path) location
+    byte[] payload
+    revision number
+
+Global Revision Number Request
+Global Revision Number
+
+File Tree Status Request
+
+File Tree Status "recursive list of local files it has, and their checksums"
+    FileInfo[]
+
+Publisher Only: Filetree Update Announcement
+    FileIdentifier[] of affected files, with new (latest) revision numbers
+    
+File (/Chunk) Request
+    FileIdentifier
+
+File Request Reply: Sorry, I don't have that version/file
+
+Greeting
+    UUID
+    Listen Port
+
+Exit Announcement
+
+Wild Speculation
+================
+
+Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
+
+Subscriber announcement of the latest revision number when it becomes up to date
+
+
+List of Classes/Objects Inferred From Messages
+==============================================
+
+These are not java classes, they are data types to implement in binary!
+
+FileIdentifier
+    Name
+    Path
+    Revision Number
+    Checksum?
+PeerInfo
+    UUID
+    GlobalRevisionNumber
+    isPublisherOrPeer
+    Address[]
+        IP/hostname
+        short listenPort
+        boolean isUp
+        Date lastTimeAddressWasKnownToBeValid
+DirectoryInfo
+    String name
+    Path path
+    File/DirectoryInfo[] containedFiles/Directories
+FileInfo
+    name
+    path
+    revision number
+    checksum(s)?
+
+Global Revision Number
+    - a simple counter, incremented on every revision
+
+There must be a local state object which records open sockets, and which peers they pertain to

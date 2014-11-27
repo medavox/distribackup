@@ -1,10 +1,8 @@
-<!-- MAX_INCOMING_CONNECTIONS
-MAX_OUTBOUND_CONNECTIONS
+<!-- MAX_CONNECTIONS
 pipe
 	peer
 		ip address, port
-listener
-a queue for downloads when no connection ports are free -->
+listener -->
 
 each file tree will need its own UUID and friendly name (which can be the name of the root directory)
 
@@ -19,7 +17,7 @@ max block size is 16MB
 -------
 * a reasonable amount of data to have in memory at once, especially for RasPis
 
-each update to a file will incremeent the revision of number of that file.
+each update to a file will increment the revision of number of that file.
 
 Types of Message extension
 ==========================
