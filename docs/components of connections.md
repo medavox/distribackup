@@ -52,6 +52,10 @@ should your server application become momentarily busy and unable to respond to 
 If using ServerSocket in Java, specify the desired backlog as an argument to the constructor:
     ServerSocket server = new ServerSocket(listenPort, 50);
 
+when there's a new publisher, each node can choose to join the new version of this swarm, or stick with the old, static on
+
+need to build in support for different swarms
+
 Step-By-Step
 ============
 1. handshake - protocol/version number exchange, min java version
