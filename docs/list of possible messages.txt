@@ -7,18 +7,16 @@ Peer(s) Info List
     PeerInfo[]
 
 File Chunk "File Data for any missing or failed-checksum files"
+    FileID
     byte[] payload
-    which file it relates to
     long offset
     
 FileSend
-    String name
-    String(relative path) location
+    FileID
     byte[] payload
-    revision number
 
-Global Revision Number Request
-Global Revision Number
+//Global Revision Number Request
+//Global Revision Number
 
 File Tree Status Request
 
@@ -26,12 +24,12 @@ File Tree Status "recursive list of local files it has, and their checksums"
     FileInfo[]
 
 Publisher Only: Filetree Update Announcement
-    FileIdentifier[] of affected files, with new (latest) revision numbers
+    FileID[] of affected files, with new (latest) revision numbers
     
 File (/Chunk) Request
     FileIdentifier
 
-File Request Reply: Sorry, I don't have that version/file
+File Request Reply: I don't have that version/file
 
 Greeting
     UUID
@@ -52,7 +50,7 @@ List of Classes/Objects Inferred From Messages
 
 These are not java classes, they are data types to implement in binary!
 
-FileIdentifier
+FileInfoID
     Name
     Path
     Revision Number
@@ -70,11 +68,6 @@ DirectoryInfo
     String name
     Path path
     File/DirectoryInfo[] containedFiles/Directories
-FileInfo
-    name
-    path
-    revision number
-    checksum(s)?
 
 Global Revision Number
     - a simple counter, incremented on every revision
