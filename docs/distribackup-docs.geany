@@ -24,11 +24,14 @@ long_line_column=80
 
 [files]
 current_page=4
-FILE_NAME_0=1298;Markdown;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Fcomponents%20of%20connections.md;0;4
+FILE_NAME_0=608;Markdown;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Fcomponents%20of%20connections.md;0;4
 FILE_NAME_1=0;Markdown;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2FDesign%20Document.md;0;4
 FILE_NAME_2=3372;Markdown;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Flifecycles%20and%20uses%20cases.md;0;4
 FILE_NAME_3=96;None;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Fmessage%20anatomy;0;4
-FILE_NAME_4=141;None;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Flist%20of%20possible%20messages.txt;0;4
+FILE_NAME_4=550;None;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Flist%20of%20possible%20messages.txt;0;4
+FILE_NAME_5=1363;Markdown;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Fmessage%20binary%20spec.md;0;4
+FILE_NAME_6=23370;Markdown;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Ffypp%2Ffypp.md;0;4
+FILE_NAME_7=418;HTML;0;EUTF-8;0;1;0;%2Fhome%2Fscc%2Fdistribackup%2Fdocs%2Fstyle.html;0;4
 
 [VTE]
 last_dir=/home/scc
