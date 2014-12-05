@@ -25,7 +25,7 @@ File Tree Status "recursive list of local files it has, and their checksums"
 
 Publisher Only: Filetree Update Announcement
     FileID[] of affected files, with new (latest) revision numbers
-    
+
 File (/Chunk) Request
     FileIdentifier
 
