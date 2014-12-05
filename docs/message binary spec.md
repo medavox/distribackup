@@ -54,8 +54,8 @@ Element             | Type
 4. revision number  | ULong
 5. checksum         | SHA1
 
-DirectoryID Order of Constituent Objects
-----------------------------------------
+DirectoryID
+-----------
 
 when directory is the root, this is a reply to file tree status req
 
@@ -75,8 +75,8 @@ Element             | Type
 0. (Length)         | UInteger
 1. elements | each with their own ID Byte
 
-PeerInfo Order of Constituent Objects
--------------------------------------
+PeerInfo
+--------
 Element                | Type
 -----------------------|--------
 0. (ID Byte)           | a byte
@@ -88,8 +88,8 @@ Element                | Type
 5. Addresses           | List:Address
 
 
-Address: Order of Constituent Objects
-------------------------------------
+Address
+-------
 Element                | Type
 -----------------------|--------
 0. (ID Byte)           | a byte
@@ -105,6 +105,9 @@ Element                | Type
 List
 -----
 
+Lists of static-length elements will just be a series of payloads without delimiters;
+variable-length elements in a list will each have their own length field
+
 Element                 | Type
 ------------------------|--------
 0. (ID Byte)            | a byte
@@ -113,8 +116,8 @@ Element                 | Type
 3. number of elements   | int
 4. &lt;elements&gt;     | ?
 
-FileData Order of Constituent Objects
-----------------------------------------
+FileData
+--------
 
 Element                 | Type
 ------------------------|--------

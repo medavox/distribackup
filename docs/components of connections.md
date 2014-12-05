@@ -8,7 +8,7 @@ each file tree will need its own UUID and friendly name (which can be the name o
 
 the above may be completely wrong, based on our misunderstanding of tcp
 
-min block size (256KB)
+min block size = 256KB
 -----
 * Mediocre domestic internet upload speed is still 1Mbps (128KB/s)
 * so use that as a baseline for minimum useful chunk size

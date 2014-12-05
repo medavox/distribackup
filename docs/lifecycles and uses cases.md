@@ -29,12 +29,13 @@ Common Scenarios
 
 1. New subscriber S connects to publisher P on P's listening port
 2. P and S exchange version numbers; if they don't match, disconnect and warn users at P and S
-2. P and S exchange UUIDs. THese will later serve as keys, mapping to PeerInfo objects.
-3. S sends P serialised Peer object, containing relevant info (see peer struct.txt)
-4. P sends S a list of other known peers
-5. P sends existing subscribers the Peer file for P
-6. S sends recursive list of local files it has, and their checksums
-7. P sends serialised FileData objects for any missing or failed-checksum files
+2. P and S exchange UUIDs. These will later serve as keys, mapping to PeerInfo objects.
+3. S sends P PeerInfo of itself, containing relevant info (see message binary spec)
+3. P sends S a File Tree Status object, informing S of the latest versions
+4. P sends S a PeerInfo List of the peers it knows about (hopefully all of them)
+5. S Greets peers it heard about from P, sends File Requests for files/versions it doesn't have
+6. Peers send back list of requested pieces they have/are able to send
+6. S chooses best peer to download each file or piece from, based on speed or other metrics
 8. Some kind of sanity check is performed to make sure everything went OK
 
 ##Publisher Has Updates to Push to All Subscribers / Publisher Adds Files
