@@ -16,11 +16,15 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 0D      | DirectoryInfo         | TLV   |   |
 0E      | List                  | see expl  |
 0F      | Address               | TLV   | Yes, See list    
-10      | Request for Peers     | TLV   | Can have no payload (length 0), or UUIDs of peers already known 
+10      | Request For Peers     | TLV   | Can have no payload (length 0), or UUIDs of peers already known 
 11      | PeerInfo List         | TLNV  | Simple Array
-12      | FileDataChunk         | TLV   | Yes, see list
-13      | WholeFileData         | TLV   | Contains FileID, followed by ByteArray
-
+12      | FileData              | TLV   | See list
+13      | File Request          | TLV   | Contains FileID; can be
+14      | Greeting              | 18    | Contains UUID + Listen Port
+15      | Exit Announcement     | 0     |   |
+16      | File Tree Status Req  | 0     |   |
+17      | Update Announcement   | 
+18      | DirectoryID           | TLV   |   |
 TLV
 :   Type-Length Value, a simple way of defining variable-length types such as Strings. Length is an unsigned Int: 32-bits, 0 to 2^32 -1
 
@@ -44,6 +48,11 @@ FileID Order of Constituent Objects
 4. revision number  :ULong
 5. checksum         :SHA1
 
+DirectoryID Order of Constituent Objects
+----------------------------------------
+0. (ID Byte)
+0. (Length)         :UInteger
+
 PeerInfo Order of Constituent Objects
 -------------------------------------
 0. (ID Byte)
@@ -58,24 +67,28 @@ PeerInfo Order of Constituent Objects
 Address: Order of Constituent Objects
 ------------------------------------
 0. (ID Byte)
-0. (Length)            :UInteger
-1. isUp                :bitfield<0>
-2. usingHostname(NotIP):bitfield<1>
-3. USing IPv6          :bitfield<2>
-4. IP/hostname         :ByteArray.4/String
-5. listenPort          :UShort
-6. lastKnownTimeOnline :Long (ms since epoch)
+1. (Length)            :UInteger
+2. isUp                :bitfield<0>
+3. usingHostname(NotIP):bitfield<1>
+4. USing IPv6          :bitfield<2>
+5. IP/hostname         :ByteArray.4/String
+6. listenPort          :UShort
+7. lastKnownTimeOnline :Long (ms since epoch)
 
 
 List
 -----
 0. (ID byte)
-0. (Length)            :UInteger
-1. ID byte of elements
-2. number of elements   :int
+1. (Length)            :UInteger
+2. ID byte of elements
+3. number of elements   :int
 4. &lt;elements&gt;
 
-FileDataChunk Order of Constituent Objects
+FileData Order of Constituent Objects
 ----------------------------------------
-
-
+0. (ID Byte)
+1. (Length)             :UInteger
+2. FileID
+3. isWholeFile          :bitfield<0>
+4. offset               :ULong
+5. payload              :ByteArray
