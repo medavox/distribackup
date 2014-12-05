@@ -1,3 +1,5 @@
+Protocol Binary Spec 
+
 ID byte | Name       | Payload length in bytes | Is Compound / Notes
 --------|------------|-------------------------|-------------|-------
 00      | bitfield              | 1     | Contains up to 8 booleans. Knowing which bits are used is left to implementation, though start with the LSB
@@ -25,6 +27,8 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 16      | File Tree Status Req  | 0     |   |
 17      | Update Announcement   | 
 18      | DirectoryID           | TLV   |   |
+19      | Heterogeneous List    | TLV   | each element has its own ID Byte
+
 TLV
 :   Type-Length Value, a simple way of defining variable-length types such as Strings. Length is an unsigned Int: 32-bits, 0 to 2^32 -1
 
@@ -40,55 +44,83 @@ Variable-length types (such as strings) still need their length field though.
 
 FileID Order of Constituent Objects
 -----------------------------------
-0. (ID Byte)
-0. (Length)         :UInteger
-1. Name             :String
-2. Path             :String
-3. file size        :ULong
-4. revision number  :ULong
-5. checksum         :SHA1
+Element             | Type
+--------------------|--------
+0. (ID Byte)        | a byte
+0. (Length)         | UInteger
+1. Name             | String
+2. Path             | String
+3. file size        | ULong
+4. revision number  | ULong
+5. checksum         | SHA1
 
 DirectoryID Order of Constituent Objects
 ----------------------------------------
-0. (ID Byte)
-0. (Length)         :UInteger
+
+when directory is the root, this is a reply to file tree status req
+
+Element             | Type
+--------------------|--------
+0. (ID Byte)        | a byte
+0. (Length)         | UInteger
+2. Name             | String
+3. Path             | String
+4. Contents         | HList:FileID,DirectoryID
+
+HList
+-----
+Element             | Type
+--------------------|--------
+0. (ID Byte)        | a byte
+0. (Length)         | UInteger
+1. elements | each with their own ID Byte
 
 PeerInfo Order of Constituent Objects
 -------------------------------------
-0. (ID Byte)
-0. (Length)            :UInteger
-1. UUID1               :Long
-2. UUID2               :Long
-3. GlobalRevisionNumber:ULong
-4. isPublisherOrPeer   :bitfield<0>
-5. Addresses           :List:Address
+Element                | Type
+-----------------------|--------
+0. (ID Byte)           | a byte
+0. (Length)            | UInteger
+1. UUID1               | Long
+2. UUID2               | Long
+3. GlobalRevisionNumber| ULong
+4. isPublisherOrPeer   | bitfield<0>
+5. Addresses           | List:Address
 
 
 Address: Order of Constituent Objects
 ------------------------------------
-0. (ID Byte)
-1. (Length)            :UInteger
-2. isUp                :bitfield<0>
-3. usingHostname(NotIP):bitfield<1>
-4. USing IPv6          :bitfield<2>
-5. IP/hostname         :ByteArray.4/String
-6. listenPort          :UShort
-7. lastKnownTimeOnline :Long (ms since epoch)
+Element                | Type
+-----------------------|--------
+0. (ID Byte)           | a byte
+1. (Length)            | UInteger
+2. isUp                | bitfield<0>
+3. usingHostname(NotIP)| bitfield<1>
+4. USing IPv6          | bitfield<2>
+5. IP/hostname         | ByteArray.4/String
+6. listenPort          | UShort
+7. lastKnownTimeOnline | Long (ms since epoch)
 
 
 List
 -----
-0. (ID byte)
-1. (Length)            :UInteger
-2. ID byte of elements
-3. number of elements   :int
-4. &lt;elements&gt;
+
+Element                 | Type
+------------------------|--------
+0. (ID Byte)            | a byte
+1. (Length)             | UInteger
+2. ID byte of elements  | a byte
+3. number of elements   | int
+4. &lt;elements&gt;     | ?
 
 FileData Order of Constituent Objects
 ----------------------------------------
-0. (ID Byte)
-1. (Length)             :UInteger
-2. FileID
-3. isWholeFile          :bitfield<0>
-4. offset               :ULong
-5. payload              :ByteArray
+
+Element                 | Type
+------------------------|--------
+0. (ID Byte)            | a byte
+1. (Length)             | UInteger
+2. FileID               | FileID
+3. isWholeFile          | bitfield<0>
+4. offset               | ULong
+5. payload              | ByteArray
