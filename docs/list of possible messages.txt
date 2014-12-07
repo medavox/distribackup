@@ -1,32 +1,33 @@
 List of Possible messages
 =========================
 
-Request for Peers
+Request for Peers       DONE
 
-Peer(s) Info List
+Peer(s) Info List       DONE
     PeerInfo[]
 
-File Chunk "File Data for any missing or failed-checksum files"
+File Chunk              DONE
+:   "File Data for any missing or failed-checksum files"
     FileID
     byte[] payload
     long offset
     
-FileSend
+FileSend                DONE
     FileID
     byte[] payload
 
 //Global Revision Number Request
 //Global Revision Number
 
-File Tree Status Request
+File Tree Status RequestDONE
 
-File Tree Status "recursive list of local files it has, and their checksums"
+File Tree Status "recursive list of local files it has, and their checksums" DONE
     FileInfo[]
 
-Publisher Only: Filetree Update Announcement
+Publisher Only: Filetree Update Announcement  DONE
     FileID[] of affected files, with new (latest) revision numbers
 
-File (/Chunk) Request
+File (/Chunk) Request   DONE
     FileIdentifier
 
 File Request Reply: I don't have that version/file
