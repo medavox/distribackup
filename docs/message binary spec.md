@@ -1,5 +1,5 @@
 Protocol Binary Spec 
-
+====================
 ID byte | Name       | Payload length in bytes | Is Compound / Notes
 --------|------------|-------------------------|-------------|-------
 00      | bitfield              | 1     | Contains up to 8 booleans. Knowing which bits are used is left to implementation, though start with the LSB

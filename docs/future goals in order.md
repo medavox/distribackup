@@ -1,8 +1,9 @@
+1. file sending!
 1. subscriber trading
 1. publisher switching
-1. rsync-like remote diffing
-2. nat traversal
-3. compression
-4. better serialisation
-5. android port
-5. encryption
+2. rsync-like remote diffing
+3. nat traversal
+4. compression
+5. better serialisation
+6. android port
+7. encryption

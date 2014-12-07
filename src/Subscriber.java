@@ -63,4 +63,3 @@ public class Subscriber extends Peer
      * if someone else announces they have it while you're waiting, request it from them
      * */
 }
-

@@ -48,7 +48,7 @@ public abstract class Peer
 	
 	/**Called by Listener's thread whenever someone connects to the ServerSocket
 	 * and creates a new Socket.*/
-	public void newSocket(Socket s)
+	public void newIncomingSocket(Socket s)
 	{
 		try
 		{
