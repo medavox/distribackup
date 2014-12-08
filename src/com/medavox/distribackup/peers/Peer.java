@@ -15,13 +15,10 @@ public abstract class Peer
 	private int listenPort;
     private String defaultRoot = "/home/scc/distribackup/publisher-root";
     public Path root;
-    //private List<PeerInfo> peers = new LinkedList<PeerInfo>();
     ConcurrentHashMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+    PeerInfo publisherInfo;
+    UUID publisherID;
     UUID myUUID;
-	//public void newSocket(Socket s);
-	
-	public BufferedInputStream bis;
-	public BufferedOutputStream bos;
 	
 	static final short version = 1;//increment this manually on every release
 	
@@ -53,8 +50,8 @@ public abstract class Peer
 		try
 		{
 			System.out.println("incoming connection from "+s.getInetAddress());
-			bis = new BufferedInputStream(s.getInputStream());
-			bos = new BufferedOutputStream(s.getOutputStream());
+			BufferedInputStream bis = new BufferedInputStream(s.getInputStream());
+			BufferedOutputStream bos = new BufferedOutputStream(s.getOutputStream());
 			int handshook = checkVersions(bis, bos);
 			if(handshook == -1)
 			{
@@ -64,8 +61,11 @@ public abstract class Peer
 				s.close();
 				return;
 			}
-			
-			//get their UUID
+			//construct a new BinaryMarshall
+			BinaryMarshall bm
+			//send a greeting, expect a greeting
+				//send our UUID
+				//get theirs
 			//check it with the local PeerInfo store
 			
 			boolean isNewPeer = true;//STOPGAP: REMOVE
@@ -83,7 +83,7 @@ public abstract class Peer
 			ioe.printStackTrace();
 			System.exit(1);
 		}
-	}	
+	}
 	/**Checks that local and remote program versions match*/
 	public int checkVersions(BufferedInputStream bips, BufferedOutputStream bops) throws IOException
     {

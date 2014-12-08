@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import com.medavox.distribackup.peers.Peer;
-
+/**Assigns new Sockets to incoming connections*/
 public class Listener extends Thread
 {
 	static PrintStream o = System.out;

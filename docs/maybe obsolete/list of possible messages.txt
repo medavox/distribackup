@@ -38,14 +38,6 @@ Greeting
 
 Exit Announcement
 
-Wild Speculation
-================
-
-Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
-
-Subscriber announcement of the latest revision number when it becomes up to date
-
-
 List of Classes/Objects Inferred From Messages
 ==============================================
 
@@ -70,7 +62,3 @@ DirectoryInfo
     Path path
     File/DirectoryInfo[] containedFiles/Directories
 
-Global Revision Number
-    - a simple counter, incremented on every revision
-
-There must be a local state object which records open sockets, and which peers they pertain to
