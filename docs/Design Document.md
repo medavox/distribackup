@@ -41,12 +41,17 @@ diff between remote copies and the new copies in the spoke, as the remote files 
 We don't need to solve rsync's diff between remote files problem, we can just use a normal diff algo
 
 ##One-Way At A Time Sync
-publisher authority (ie which mirror can update the network) can be controlled with an arbitrary token
+publisher authority (ie which mirror can update the network) can be controlled with an arbitrary token, eg RSA key
 
 * allowing us to move the publishing mirror dynamically
 * which moves us back into the use-case area of 1 person, many machines like dropbox!
 * something like ssh private key? possibly a password? should be sth. intangible, portable
 * this has the bonus of being conceptually easy for lay users to understand
+
+when there's a new publisher,
+
+* each node can choose to join the new version of this swarm, or stick with the old, static one
+* Subscribers sticking with the old Publisher can serve common files (while there are files in common) to other subscribers in both swarms 
 
 #Bt-Sync
 Bit-torrent sync is now our main competitor --
