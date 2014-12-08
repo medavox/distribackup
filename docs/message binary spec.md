@@ -13,21 +13,29 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 08      | Integer               | 4     |   |
 09      | Long                  | 8     |   |
 0A      | ByteArray             | TLV   |   |
-0B      | FileID                | TLV; total | Yes, see list    
-0C      | PeerInfo              | TLV; total | Yes, see list    
+0B      | FileInfo              | TLV; total | Yes, see list
+0C      | PeerInfo              | TLV; total | Yes, see list
 0D      | DirectoryInfo         | TLV   |   |
 0E      | List                  | see expl  |
 0F      | Address               | TLV   | Yes, See list    
 10      | Request For Peers     | TLV   | Can have no payload (length 0), or UUIDs of peers already known 
 11      | PeerInfo List         | TLNV  | Simple Array
 12      | FileData              | TLV   | See list
-13      | File Request          | TLV   | Contains FileID; can be
-14      | Greeting              | 18    | Contains UUID + Listen Port
+13      | File Request          | TLV   | Contains FileInfo; can be
+14      | Greeting              | 18    | Contains UUID
 15      | Exit Announcement     | 0     |   |
 16      | File Tree Status Req  | 0     |   |
 17      | Update Announcement   | 
 18      | DirectoryID           | TLV   |   |
 19      | Heterogeneous List    | TLV   | each element has its own ID Byte
+
+TODO
+----
+
+* File Request Reply: I don't have that version/file
+* Global Revision Number
+    - a simple counter for the whole file tree, incremented on every revision
+* There must be a local state object which records open sockets, and which peers they pertain to
 
 TLV
 :   Type-Length Value, a simple way of defining variable-length types such as Strings. Length is an unsigned Int: 32-bits, 0 to 2^32 -1
@@ -42,7 +50,7 @@ follow for a certain message type), followed by its payload.
 Objects inside a compound object don't need an ID byte; their type is inferred from the object's structure definition.
 Variable-length types (such as strings) still need their length field though.
 
-FileID Order of Constituent Objects
+FileInfo Order of Constituent Objects
 -----------------------------------
 Element             | Type
 --------------------|--------
@@ -65,7 +73,7 @@ Element             | Type
 0. (Length)         | UInteger
 2. Name             | String
 3. Path             | String
-4. Contents         | HList:FileID,DirectoryID
+4. Contents         | HList:FileInfo,DirectoryID
 
 HList
 -----
@@ -123,7 +131,15 @@ Element                 | Type
 ------------------------|--------
 0. (ID Byte)            | a byte
 1. (Length)             | UInteger
-2. FileID               | FileID
+2. FileInfo             | FileInfo
 3. isWholeFile          | bitfield<0>
 4. offset               | ULong
 5. payload              | ByteArray
+
+Wild Speculation
+================
+
+Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
+
+Subscriber announcement of the latest revision number when it becomes up to date
+
