@@ -9,6 +9,7 @@ Peer
 
 FileInfo
 DirInfo
+
 PeerInfo
 Address
 
@@ -16,3 +17,5 @@ BinaryMarshall
 	looks after a Socket
 PeerLiaison
 	per-peer
+
+FileInfo

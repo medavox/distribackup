@@ -1,23 +1,23 @@
 public enum Message
 {
-	BITFIELD		((byte)0x00),
-	STRING			((byte)0x01),
-	UBYTENUM		((byte)0x02),
-	USHORT			((byte)0x03),
-	UINTEGER		((byte)0x04),
-	ULONG			((byte)0x05),
-	BYTENUM			((byte)0x06),
-	SHORT			((byte)0x07),
-	INTEGER			((byte)0x08),
-	LONG			((byte)0x09),
-	BYTE_ARRAY		((byte)0x0A),
-	FILE_INFO		((byte)0x0B),
-	PEER_INFO		((byte)0x0C),
-	DIRECTORY_INFO	((byte)0x0D),
-	LIST			((byte)0x0E),
-	ADDRESS			((byte)0x0F),
-	REQ_FOR_PEERS	((byte)0x10),
-	NOT_IMPL		((byte)0x11),
+	BITFIELD		((byte)0x00,  2),
+	STRING			((byte)0x01, -1),
+	UBYTENUM		((byte)0x02,  2),
+	USHORT			((byte)0x03,  3),
+	UINTEGER		((byte)0x04,  5),
+	ULONG			((byte)0x05,  9),
+	BYTENUM			((byte)0x06,  2),
+	SHORT			((byte)0x07,  3),
+	INTEGER			((byte)0x08,  5),
+	LONG			((byte)0x09,  9),
+	BYTE_ARRAY		((byte)0x0A, -1),
+	FILE_INFO		((byte)0x0B, -2),
+	PEER_INFO		((byte)0x0C, -2),
+	DIRECTORY_INFO	((byte)0x0D, -2),
+	LIST			((byte)0x0E, -1),
+	ADDRESS			((byte)0x0F, -2),
+	REQ_FOR_PEERS	((byte)0x10,  0),
+	/*NOT_IMPL		((byte)0x11,  0),*/
 	FILEDATA		((byte)0x12),
 	FILE_REQUEST	((byte)0x13),
 	GREETING		((byte)0x14),
@@ -26,4 +26,17 @@ public enum Message
 	UPDATE_ANNOUNCE	((byte)0x17),
 	DIRECTORY_ID	((byte)0x18),
 	HLIST			((byte)0x19),
+    
+    private final byte IDByte;
+    private final int length;
+    /**A length value of -1 or -2 means Message length must be calculated during
+    construction. Length of -1 indicates it's of variable-length using TLV,
+    -2 indicates it's a compound message.
+    Length in this context means the total Message length, including IDByte and 
+    any other headers.*/
+    Message(byte IDByte, int length)
+    {
+        this.IDByte = IDByte;
+        this.length = length;
+    }
 }

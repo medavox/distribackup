@@ -53,6 +53,8 @@ Common Scenarios
 3. Sockets etc are closed
 4. Peers set their record for this Peer as 'offline'
 
+##Subscriber is in the Middle of Downloading a FileID, When a New Version is Announced
+
 ##Publisher Leaves Network Gracefully
 
 the publisher may intend for the files to remain static, so a new publisher won't be elected unless (good_reason).
