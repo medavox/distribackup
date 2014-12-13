@@ -1,7 +1,29 @@
 Protocol Binary Spec 
 ====================
+
+###ID Bytes
+
+Each Message type will have an ID byte, follow either by its payload (for static-length types)
+or a length int (without the int type header attached, because we know what should 
+follow for a certain message type), followed by its payload.
+
+Objects inside a compound object don't need an ID byte; their type is inferred from the object's structure definition.
+Variable-length types (such as strings) still need their length field though.
+
+###Message Lengths
+
+Message types with a static payload length (eg bitfield, ULong) don't have (or need) a length attribute. Their length is built into the spec.
+
+Variable-length homogenous types (String, ByteArray) are TLV; see below.
+
+TLV
+:   Type Length Value, a simple way of defining variable-length types such as Strings. Length is an unsigned Int: 32-bits, 0 to 2^32 -1
+
+TLNV
+:   Type Length Number Value. An extra field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
+
 ID byte | Name       | Payload length in bytes | Is Compound / Notes
---------|------------|-------------------------|-------------|-------
+--------|------------|-------------------------|-------------|
 00      | bitfield              | 1     | Contains up to 8 booleans. Knowing which bits are used is left to implementation, though start with the LSB
 01      | String                | TLV   | UTF16; but length is still in bytes |
 02      | UByteNum              | 1     |   |
@@ -13,20 +35,20 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 08      | Integer               | 4     |   |
 09      | Long                  | 8     |   |
 0A      | ByteArray             | TLV   |   |
-0B      | FileInfo              | TLV; total | Yes, see list
-0C      | PeerInfo              | TLV; total | Yes, see list
-0D      | DirectoryInfo         | TLV   |   |
-0E      | List                  | see expl  |
-0F      | Address               | TLV   | Yes, See list    
-10      | Request For Peers     | TLV   | Can have no payload (length 0), or UUIDs of peers already known 
-11      | PeerInfo List         | TLNV  | Simple Array
-12      | FileData              | TLV   | See list
-13      | File Request          | TLV   | Contains FileInfo; can be
+0B      | FileInfo              | Compound | Yes, see entry below
+0C      | PeerInfo              | Compound | Yes, see entry below
+0D      | DirectoryInfo         | Compound | Yes, see entry below
+0E      | List                  | see expl |
+0F      | Address               | Compound | Yes, see entry below
+10      | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
+11      | Not Used Currently    | -        | -
+12      | FileData              | Compound | Yes, see entry below
+13      | File Request          | TLV   | Contains FileInfo;
 14      | Greeting              | 18    | Contains UUID
-15      | Exit Announcement     | 0     |   |
-16      | File Tree Status Req  | 0     |   |
-17      | Update Announcement   | 
-18      | DirectoryID           | TLV   |   |
+15      | Exit Announcement     | 0     |   | Usually sent to all known peers
+16      | File Tree Status Req  | 0     |   | Sent to 1 peer at a time
+17      | Update Announcement   | Compound | New GRN, plus a FileID List of affected files   |
+18      | DirectoryID           | TLV   | Similar to FileID, but can contain other FileID or DirectoryIDs |
 19      | Heterogeneous List    | TLV   | each element has its own ID Byte
 
 TODO
@@ -35,20 +57,10 @@ TODO
 * File Request Reply: I don't have that version/file
 * Global Revision Number
     - a simple counter for the whole file tree, incremented on every revision
-* There must be a local state object which records open sockets, and which peers they pertain to
+    - is now contained as a ULong inside a PeerInfo
+* 'I now have this file version' announcement
+    - announces to network that this peer now has this FileID upon completion, so others can request it
 
-TLV
-:   Type-Length Value, a simple way of defining variable-length types such as Strings. Length is an unsigned Int: 32-bits, 0 to 2^32 -1
-
-TLNV
-: An extra field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
-
-Each type will have an ID byte, follow either by its payload (for static-length types)
-or a length int (without the int type header attached, because we know what should 
-follow for a certain message type), followed by its payload.
-
-Objects inside a compound object don't need an ID byte; their type is inferred from the object's structure definition.
-Variable-length types (such as strings) still need their length field though.
 
 FileInfo Order of Constituent Objects
 -----------------------------------
@@ -64,8 +76,7 @@ Element             | Type
 
 DirectoryID
 -----------
-
-when directory is the root, this is a reply to file tree status req
+A reply to file tree status req, with this as root dir
 
 Element             | Type
 --------------------|--------
@@ -112,7 +123,6 @@ Element                | Type
 
 List
 -----
-
 Lists of static-length elements will just be a series of payloads without delimiters;
 variable-length elements in a list will each have their own length field
 
@@ -126,7 +136,6 @@ Element                 | Type
 
 FileData
 --------
-
 Element                 | Type
 ------------------------|--------
 0. (ID Byte)            | a byte

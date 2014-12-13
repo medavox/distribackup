@@ -9,7 +9,8 @@ import java.nio.file.*;
 import com.medavox.distribackup.connections.*;
 import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.fswatch.*;
-
+/* There must be a local state object which records open sockets, and which peers they pertain to
+*/
 public abstract class Peer
 {
 	private int listenPort;
@@ -18,10 +19,10 @@ public abstract class Peer
     ConcurrentHashMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
     PeerInfo publisherInfo;
     UUID publisherID;
-    UUID myUUID;
+    public UUID myUUID;
 	
-	static final short version = 1;//increment this manually on every release
-	
+	public static final short version = 1;//increment this manually on every release
+	List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();
 	public Peer(Path root, int port)
 	{
 		this.root = root;
@@ -49,23 +50,23 @@ public abstract class Peer
 	{
 		try
 		{
+			ConnectionOperator co = new ConnectionOperator(s);
+			int handshook = co.checkVersions();
 			System.out.println("incoming connection from "+s.getInetAddress());
-			BufferedInputStream bis = new BufferedInputStream(s.getInputStream());
-			BufferedOutputStream bos = new BufferedOutputStream(s.getOutputStream());
-			int handshook = checkVersions(bis, bos);
+			
 			if(handshook == -1)
 			{
 				System.err.println("Error! Connecting Peer "+s.getInetAddress()+" has wrong version!");
-				bis.close();
-				bos.close();
-				s.close();
+				co.close();
 				return;
 			}
-			//construct a new BinaryMarshall
-			BinaryMarshall bm
+			
 			//send a greeting, expect a greeting
 				//send our UUID
 				//get theirs
+			
+			//construct a new PeerInfo based on data requested and received
+
 			//check it with the local PeerInfo store
 			
 			boolean isNewPeer = true;//STOPGAP: REMOVE
@@ -84,40 +85,7 @@ public abstract class Peer
 			System.exit(1);
 		}
 	}
-	/**Checks that local and remote program versions match*/
-	public int checkVersions(BufferedInputStream bips, BufferedOutputStream bops) throws IOException
-    {
-		//see if we've seen the connecting peer before
-		//if not, create a new PeerInfo object (query for some info)
-		//if we have, then add this socket to that peer's open sockets
-		
-		//construct magic number and version number byte array
-		byte[] ret = new byte[2];
-		//short -> bytes
-		ret[1] = (byte)(version & 0xff);
-		ret[0] = (byte)(version >> 8);
-		
-		//"Be Selfless" + version:short
-		byte[] versionBytes = {(byte)0xBE, (byte)0x5E, (byte)0x1F, (byte)0x1E, (byte)0x55, ret[0], ret[1]};
-		
-		bops.write(versionBytes, 0, versionBytes.length);//send our version string
-		bops.flush();
-		
-		//read their version string
-		byte[] theirVersion = new byte[versionBytes.length];
-		bips.read(theirVersion, 0, theirVersion.length);
-		
-		//their version bytes -> short
-		short theirVer = (short) (theirVersion[theirVersion.length-1] | (theirVersion[theirVersion.length-2] << 8));
 
-		System.out.println("Our version:   "+version);
-		System.out.println("Their version: "+theirVer);
-		if(version != theirVer)
-		{
-			return -1;
-		}
-		return 0;
-    }
     
     /**TODO:
      store 1 bis-bos pair per socket entry
@@ -127,7 +95,7 @@ public abstract class Peer
 		try
 		{
 			Socket s = new Socket(host, port);
-			newSocket(s);
+			newIncomingSocket(s);
 			/*bis = new BufferedInputStream(s.getInputStream());
 			bos = new BufferedOutputStream(s.getOutputStream());
 			
