@@ -10,22 +10,21 @@ public enum Message
 	SHORT			((byte)0x07,  3),
 	INTEGER			((byte)0x08,  5),
 	LONG			((byte)0x09,  9),
-	BYTE_ARRAY		((byte)0x0A, -1),
-	FILE_INFO		((byte)0x0B, -2),
+	ADDRESS			((byte)0x0A, -2),
+	BYTE_ARRAY		((byte)0x0B, -1),
 	PEER_INFO		((byte)0x0C, -2),
 	DIRECTORY_INFO	((byte)0x0D, -2),
 	LIST			((byte)0x0E, -1),
-	ADDRESS			((byte)0x0F, -2),
+	FILE_INFO		((byte)0x0F, -2),
 	REQ_FOR_PEERS	((byte)0x10,  0),
 	/*NOT_IMPL		((byte)0x11,  0),*/
-	FILEDATA		((byte)0x12),
-	FILE_REQUEST	((byte)0x13),
+	FILEDATA		((byte)0x12, -2),
+	FILE_REQUEST	((byte)0x13, -2),
 	GREETING		((byte)0x14),
 	EXIT_ANNOUNCE	((byte)0x15),
 	TREE_STATUS_REQ	((byte)0x16),
 	UPDATE_ANNOUNCE	((byte)0x17),
-	DIRECTORY_ID	((byte)0x18),
-	HLIST			((byte)0x19),
+	HLIST			((byte)0x18),
     
     private final byte IDByte;
     private final int length;
