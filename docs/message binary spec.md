@@ -3,11 +3,11 @@ Protocol Binary Spec
 
 ###ID Bytes
 
-Each Message type will have an ID byte, follow either by its payload (for static-length types)
+Each Object type will have an ID byte, followed either by its payload (for static-length types)
 or a length int (without the int type header attached, because we know what should 
 follow for a certain message type), followed by its payload.
 
-Objects inside a compound object don't need an ID byte; their type is inferred from the object's structure definition.
+Objects inside a compound object don't need an ID byte; their type is known from the object's structure definition.
 Variable-length types (such as strings) still need their length field though.
 
 ###Message Lengths
@@ -34,22 +34,21 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 07      | Short                 | 2     |   |
 08      | Integer               | 4     |   |
 09      | Long                  | 8     |   |
-0A      | ByteArray             | TLV   |   |
-0B      | FileInfo              | Compound | Yes, see entry below
-0C      | PeerInfo              | Compound | Yes, see entry below
-0D      | DirectoryInfo         | Compound | Yes, see entry below
+0A      | Address               | Compound | [Yes, see entry below](#Address)
+0B      | ByteArray             | TLV   |   |
+0C      | PeerInfo              | Compound | [Yes, see entry below](#PeerInfo)
+0D      | DirectoryInfo         | Compound | Similar to FileInfo, but can contain other FileID or DirectoryIDs [Yes, see entry below](#DirectoryInfo)
 0E      | List                  | see expl |
-0F      | Address               | Compound | Yes, see entry below
+0F      | FileInfo              | Compound | [Yes, see entry below](#FileInfo)
 10      | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11      | Not Used Currently    | -        | -
-12      | FileData              | Compound | Yes, see entry below
-13      | File Request          | TLV   | Contains FileInfo;
-14      | Greeting              | 18    | Contains UUID
+12      | FileData              | Compound | [Yes, see entry below](#FileData)
+13      | File Request          | TLV   | Contains FileInfo <!--; can be -->
+14      | Greeting              | 18    | Contains UUID. If UUID is unknown to receiver, it may request the sender's PeerInfo
 15      | Exit Announcement     | 0     |   | Usually sent to all known peers
 16      | File Tree Status Req  | 0     |   | Sent to 1 peer at a time
 17      | Update Announcement   | Compound | New GRN, plus a FileID List of affected files   |
-18      | DirectoryID           | TLV   | Similar to FileID, but can contain other FileID or DirectoryIDs |
-19      | Heterogeneous List    | TLV   | each element has its own ID Byte
+18      | Heterogeneous List    | TLV   | each element has its own ID Byte
 
 TODO
 ----
@@ -61,8 +60,7 @@ TODO
 * 'I now have this file version' announcement
     - announces to network that this peer now has this FileID upon completion, so others can request it
 
-
-FileInfo Order of Constituent Objects
+<a name="FileInfo" />FileInfo Order of Constituent Objects
 -----------------------------------
 Element             | Type
 --------------------|--------
@@ -74,7 +72,7 @@ Element             | Type
 4. revision number  | ULong
 5. checksum         | SHA1
 
-DirectoryID
+<a name="DirectoryInfo" />DirectoryInfo
 -----------
 A reply to file tree status req, with this as root dir
 
@@ -94,7 +92,7 @@ Element             | Type
 0. (Length)         | UInteger
 1. elements | each with their own ID Byte
 
-PeerInfo
+<a name="PeerInfo" />PeerInfo
 --------
 Element                | Type
 -----------------------|--------
@@ -107,7 +105,7 @@ Element                | Type
 5. Addresses           | List:Address
 
 
-Address
+<a name="Address" />Address
 -------
 Element                | Type
 -----------------------|--------
@@ -134,7 +132,7 @@ Element                 | Type
 3. number of elements   | int
 4. &lt;elements&gt;     | ?
 
-FileData
+<a name="FileData" />FileData
 --------
 Element                 | Type
 ------------------------|--------
