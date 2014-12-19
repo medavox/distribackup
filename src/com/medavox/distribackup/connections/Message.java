@@ -20,11 +20,11 @@ public enum Message
 	/*NOT_IMPL		((byte)0x11,  0),*/
 	FILEDATA		((byte)0x12, -2),
 	FILE_REQUEST	((byte)0x13, -2),
-	GREETING		((byte)0x14),
-	EXIT_ANNOUNCE	((byte)0x15),
-	TREE_STATUS_REQ	((byte)0x16),
-	UPDATE_ANNOUNCE	((byte)0x17),
-	HLIST			((byte)0x18),
+	GREETING		((byte)0x14, 16),
+	EXIT_ANNOUNCE	((byte)0x15,  0),
+	TREE_STATUS_REQ	((byte)0x16,  0),
+	UPDATE_ANNOUNCE	((byte)0x17, -2),
+	HLIST			((byte)0x18, -1),
     
     private final byte IDByte;
     private final int length;

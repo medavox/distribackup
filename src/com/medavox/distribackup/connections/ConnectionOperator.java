@@ -10,7 +10,7 @@ import java.util.UUID;
 import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
 
-/**Try to keep logic in this class just pertaining to conversion to and from binary*/
+/**This class handles communication over an individual Socket connection, after its initialisation. */
 public class ConnectionOperator extends Thread
 {
     BufferedInputStream bis;
@@ -18,13 +18,13 @@ public class ConnectionOperator extends Thread
     Socket socket;
 	public ConnectionOperator(Socket s/*, PeerInfo*/) throws IOException
 	{
-        this.socket = s;
-        bis = new BufferedInputStream(s.getInputStream());
-        bos = new BufferedOutputStream(s.getOutputStream());
+	    this.socket = s;
+	    bis = new BufferedInputStream(s.getInputStream());
+	    bos = new BufferedOutputStream(s.getOutputStream());
 	}
     
     /**Checks that local and remote program versions match*/
-	public int checkVersions()
+    public int checkVersions()
         throws IOException
     {
 		//see if we've seen the connecting peer before
@@ -54,7 +54,7 @@ public class ConnectionOperator extends Thread
 		System.out.println("Their version: "+theirVer);
 		if(version != theirVer)
 		{
-			return -1;
+		    return -1;
 		}
 		return 0;
     }
@@ -66,8 +66,8 @@ public class ConnectionOperator extends Thread
 	{
         //package up data into a single bytestream before sending, 
         //(as opposed to sending each bit as we create it), to minimise packets
-        byte[] UUIDmsb BinaryTranslator.longToBytes(Peer.myUUID.getMostSignificantBits());
-        byte[] UUIDlsb BinaryTranslator.longToBytes(Peer.myUUID.getLeastSignificantBits());
+        byte[] UUIDmsb = BinaryTranslator.longToBytes(Peer.myUUID.getMostSignificantBits());
+        byte[] UUIDlsb = BinaryTranslator.longToBytes(Peer.myUUID.getLeastSignificantBits());
 		byte[] greetingSend = BinaryTranslator.concat(Message.GREETING, UUIDmsb, UUIDlsb);
         bos.write(greetingSend);
         bos.flush();
@@ -110,7 +110,7 @@ public class ConnectionOperator extends Thread
     
     public void close() throws IOException
 	{
-	    try
+		try
 	    {
             bis.close();
             bos.close();
