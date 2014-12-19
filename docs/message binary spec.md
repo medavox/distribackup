@@ -26,16 +26,16 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 --------|------------|-------------------------|-------------|
 00      | bitfield              | 1     | Contains up to 8 booleans. Knowing which bits are used is left to implementation, though start with the LSB
 01      | String                | TLV   | UTF16; but length is still in bytes |
-02      | UByteNum              | 1     |   |
-03      | UShort                | 2     |   |
-04      | UInteger              | 4     |   |
-05      | ULong                 | 8     |   |
-06      | ByteNum               | 1     |   |
-07      | Short                 | 2     |   |
-08      | Integer               | 4     |   |
-09      | Long                  | 8     |   |
+02      | UByteNum              | 1        |   |
+03      | UShort                | 2        |   |
+04      | UInteger              | 4        |   |
+05      | ULong                 | 8        |   |
+06      | ByteNum               | 1        |   |
+07      | Short                 | 2        |   |
+08      | Integer               | 4        |   |
+09      | Long                  | 8        |   |
 0A      | Address               | Compound | [Yes, see entry below](#Address)
-0B      | ByteArray             | TLV   |   |
+0B      | ByteArray             | TLV      |   |
 0C      | PeerInfo              | Compound | [Yes, see entry below](#PeerInfo)
 0D      | DirectoryInfo         | Compound | Similar to FileInfo, but can contain other FileID or DirectoryIDs [Yes, see entry below](#DirectoryInfo)
 0E      | List                  | see expl |
@@ -43,12 +43,12 @@ ID byte | Name       | Payload length in bytes | Is Compound / Notes
 10      | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11      | Not Used Currently    | -        | -
 12      | FileData              | Compound | [Yes, see entry below](#FileData)
-13      | File Request          | TLV   | Contains FileInfo <!--; can be -->
-14      | Greeting              | 18    | Contains UUID. If UUID is unknown to receiver, it may request the sender's PeerInfo
-15      | Exit Announcement     | 0     |   | Usually sent to all known peers
-16      | File Tree Status Req  | 0     |   | Sent to 1 peer at a time
+13      | File Request          | TLV      | Contains FileInfo <!--; can be -->
+14      | Greeting              | 16       | Contains UUID. If UUID is unknown to receiver, it may request the sender's PeerInfo
+15      | Exit Announcement     | 0        |   | Usually sent to all known peers
+16      | File Tree Status Req  | 0        |   | Sent to 1 peer at a time
 17      | Update Announcement   | Compound | New GRN, plus a FileID List of affected files   |
-18      | Heterogeneous List    | TLV   | each element has its own ID Byte
+18      | Heterogeneous List    | TLV      | each element has its own ID Byte
 
 TODO
 ----
