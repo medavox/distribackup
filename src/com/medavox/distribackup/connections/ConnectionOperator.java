@@ -61,7 +61,7 @@ public class ConnectionOperator extends Thread
     
 	/*SENDING:Methods to send data down the socket*/
     
-    /**Sends a greeting, waits for a greeting in reply, and returns the received UUID */
+    /**Sends a greeting (containing our UUID), waits for a greeting in reply, and returns the received UUID */
 	UUID greeting()
 	{
         //package up data into a single bytestream before sending, 
@@ -72,10 +72,9 @@ public class ConnectionOperator extends Thread
         bos.write(greetingSend);
         bos.flush();
         
-        //wait for UUID back
-        byte[] theirUUIDBytes = new byte[versionBytes.length];
-		bis.read(theirVersion, 0, theirVersion.length);
-        
+        //wait for greeting back
+        byte[] theirGreeting = new byte[Message.GREETING.length-2];//minus header
+		bis.read(theirGreeting, 2, theirGreeting.length);//again, skip header
 	}
 	
 	void announceExit()

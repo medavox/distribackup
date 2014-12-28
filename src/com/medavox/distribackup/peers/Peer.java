@@ -19,7 +19,7 @@ public abstract class Peer
     ConcurrentHashMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
     PeerInfo publisherInfo;
     UUID publisherID;
-    public UUID myUUID;
+    public static UUID myUUID;
 	
 	public static final short version = 1;//increment this manually on every release
 	List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();
