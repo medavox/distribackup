@@ -61,6 +61,13 @@ Without file differencing, their protocol is inefficient for updates to large fi
 
 With this star topology, we are enabling the possibility of a decentralising publishing platform - self-hosted web pages with built-in scalability
 
+##Handling Incoming Messages
+
+* a queue of enums which each represent incoming events 
+* a single event handling thread deals with each event in order
+* each event enum will need info about it attached, like WHICH peer announced its exit
+* connection operators receiving bytes (which they then decode into messages) will add to the queue
+
 
 each Peer has its own UUID, generated during first run and stored on-disk
 ------
