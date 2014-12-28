@@ -3,8 +3,8 @@ package com.medavox.distribackup.connections;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.nio.file.Path;
-import java.ioDataOutputStream;
-import java.ioDataInputStream;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
 
 import com.medavox.distribackup.peers.PeerInfo;
 
@@ -12,7 +12,7 @@ import com.medavox.distribackup.peers.PeerInfo;
 public class BinaryTranslator
 {
     DataOutputStream dos;
-    //DataInputStream dis;
+    DataInputStream dis;
     ByteArrayOutputStream ba = new ByteArrayOutputStream();
 	public BinaryTranslator()
 	{
@@ -39,6 +39,11 @@ public class BinaryTranslator
         ba.reset();//reset byte output buffer
         dos.writeLong(l);
         return ba.toByteArray();
+    }
+    
+    public static long bytesToLong(byte[] b) throws IOException, EOFException
+    {
+        
     }
     
     public static byte[] concat(byte[]... bytes)
