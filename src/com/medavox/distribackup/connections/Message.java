@@ -28,8 +28,8 @@ public enum Message
 	UPDATE_ANNOUNCE	((byte)0x17, -2),
 	HLIST			((byte)0x18, -1);
     
-    private final byte IDByte;
-    private final int length;
+    public final byte IDByte;
+    public final int length;
     /**A length value of -1 or -2 means Message length must be calculated during
     construction. Length of -1 indicates it's of variable-length using TLV,
     -2 indicates it's a compound message.

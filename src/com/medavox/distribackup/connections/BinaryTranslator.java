@@ -29,41 +29,40 @@ public class BinaryTranslator
 	LONG			((byte)0x09,  9),*/
 	
 	/**TODO:
-	ubyte  -> byte
-	byte   -> byte
+	byte   -> byte		N/A
+	ubyte  -> byte		DONE
+	short  -> bytes		DONE
 	ushort -> bytes
-	short  -> bytes    DONE
+	int    -> bytes		DONE
 	uint   -> bytes
-	int    -> bytes    DONE
+	long   -> bytes		DONE
 	ulong  -> bytes
-	long   -> bytes    DONE
 	 
-	byte  -> ubyte
-	byte  -> byte
-	bytes -> ushort
-	bytes -> shortm
+	byte  -> byte		N/A
+	byte  -> ubyte		DONE
+	bytes -> short		DONE
+	bytes -> ushort		DONE
+	bytes -> int		DONE
 	bytes -> uint
-	bytes -> int
+	bytes -> long		DONE
 	bytes -> ulong
-	bytes -> long      DONE
 	
 	
-	bitfield		-> byte
-	byte			-> bitfield
+	bitfield	-> byte			DONE
+	byte		-> bitfield		DONE
 	
-	String			-> bytes
-	bytes			-> String
+	String		-> bytes
+	bytes		-> String
 
-	FileInfo	    -> bytes
-	bytes       	-> FileInfo
-	 
+	PeerInfo    -> bytes
+	byte		-> PeerInfo
+	
+	FileInfo	-> bytes
+	bytes       -> FileInfo
+	
 	DirectoryInfo   -> bytes
 	bytes           -> DirectoryInfo
-	
-	PeerInfo    	-> bytes
-	byte			-> PeerInfo
-	
-	 */
+	*/
 	static DataOutputStream dos;
 	//DataInputStream dis;
 	static ByteArrayOutputStream ba = new ByteArrayOutputStream();
@@ -73,6 +72,16 @@ public class BinaryTranslator
 		dos = new DataOutputStream(ba);
 	}
 	
+	public static byte UByteToByte(short l) throws IOException, NumberFormatException
+	{
+		if(l > 255
+		|| l < 0)
+		{
+			throw new NumberFormatException("number must be between 0 and 255!");
+		}
+		//+128
+		return (byte)((l & 0xff)+128); 
+	}
 
 	public static byte[] shortToBytes(short l) throws IOException
 	{
@@ -95,9 +104,59 @@ public class BinaryTranslator
 		return ba.toByteArray();
 	}
 	
+	public static short byteToUByte(byte b) throws IOException, EOFException
+	{//crazy, crazy manual bit manipulation to get an unsigned value from a byte
+		short accumulator = 1;
+		short converted = 0;
+		for(int i = 0; i < 8; i++)
+		{
+			byte mask = 0x1;
+			byte test = (byte)((b >> i) & mask);
+			if(test == 1)
+			{
+				converted += accumulator;
+			}
+			accumulator *= 2;
+		}
+		return converted;
+	}
+
+	public static short bytesToShort(byte[] b) throws IOException, EOFException, NumberFormatException
+	{
+		if(b.length != 2)
+		{
+			throw new NumberFormatException("wrong number of bytes to convert to int!");
+		}
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b) );
+		return dis.readShort();
+	}
+	
+	public static int bytesToUShort(byte[] b) throws IOException, EOFException, NumberFormatException
+	{//this is the only bytes-to-unsigned conversion that can use the built-in method
+		if(b.length != 2)
+		{
+			throw new NumberFormatException("wrong number of bytes to convert to int!");
+		}
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b) );
+		return dis.readUnsignedShort();
+	}
+	
+	public static int bytesToInt(byte[] b) throws IOException, EOFException, NumberFormatException
+	{
+		if(b.length != 4)
+		{
+			throw new NumberFormatException("wrong number of bytes to convert to int!");
+		}
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b) );
+		return dis.readInt();
+	}
+	
 	public static long bytesToLong(byte[] b) throws IOException, EOFException
 	{
-		
+		if(b.length != 8)
+		{
+			throw new NumberFormatException("wrong number of bytes to convert to long!");
+		}
 		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b) );
 		return dis.readLong();
 	}
@@ -107,7 +166,7 @@ public class BinaryTranslator
 		byte out = (byte)0;
 		if(bools.length > 8)
 		{
-			throw new Exception("Too many booleans to fit inside a byte!"); 
+			throw new NumberFormatException("Too many booleans to fit inside a byte!"); 
 		}
 		else
 		{
@@ -122,7 +181,30 @@ public class BinaryTranslator
 		}
 		return out;
 	}
-	
+
+	public static boolean[] byteToBitfield(byte in, byte numFields)
+	{
+		if(numFields > 8)
+		{
+			System.err.println("WARNING: number of requested fields from a byte was >8!\nassuming 8 fields.");
+			numFields = 8;
+		}
+		else if(numFields < 1)
+		{
+			throw new NumberFormatException("byte must specify at least one field!");
+		}
+		
+		boolean[] fields = new boolean[numFields];
+		
+		for(int i = 0; i < numFields; i++)
+		{
+			byte mask = (byte)(0x1 << i);
+			byte test = (byte)(in & mask);
+			fields[i] = (test != 0);
+		}
+		return fields;
+	}
+	/*
 	public static byte[] generateFileInfoBytes(Path p)
 	{
 		/*
@@ -132,28 +214,12 @@ public class BinaryTranslator
 		2. Path             | String
 		3. file size        | ULong
 		4. revision number  | ULong
-		5. checksum         | SHA1*/
+		5. checksum         | SHA1
 		
 		byte byteID = Message.FILE_INFO.IDByte;
-		long length 
-	}
-	
-	public static boolean[] byteToBitfield(byte in, byte numFields)
-	{
-		if(numFields > 8)
-		{
-			System.err.println("WARNING: number of requested fields from a byte was >8!\nassuming 8 fields.");
-			numFields = 8;
-		}
-		boolean[] fields = new boolean[numFields];
+		long length;
 		
-		for(int i = 0; i < numFields; i++)
-		{
-			byte mask = (byte)(0x1 << i);
-			byte test = in & mask;
-			fields[i] = (test > 0);
-		}
-	}
+	}*/
 	
 	public static byte[] concat(byte[]... bytes)
 	{
