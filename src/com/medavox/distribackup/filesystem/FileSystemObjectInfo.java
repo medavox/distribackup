@@ -1,3 +1,5 @@
+package com.medavox.distribackup.filesystem;
+
 public abstract class FileSystemObjectInfo
 {
 	protected final String name;

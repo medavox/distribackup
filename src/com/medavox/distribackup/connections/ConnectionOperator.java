@@ -11,7 +11,8 @@ import java.util.Arrays;
 import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
 
-/**This class handles communication over an individual Socket connection, after its initialisation. */
+/**This class handles communication over an individual Socket connection, 
+ * after its initialisation. */
 public class ConnectionOperator extends Thread
 {
         
@@ -30,12 +31,12 @@ public class ConnectionOperator extends Thread
     BufferedInputStream bis;
     BufferedOutputStream bos;
     Socket socket;
-        public ConnectionOperator(Socket s/*, PeerInfo*/) throws IOException
-        {
-            this.socket = s;
-            bis = new BufferedInputStream(s.getInputStream());
-            bos = new BufferedOutputStream(s.getOutputStream());
-        }
+    public ConnectionOperator(Socket s/*, PeerInfo*/) throws IOException
+    {
+	this.socket = s;
+	bis = new BufferedInputStream(s.getInputStream());
+	bos = new BufferedOutputStream(s.getOutputStream());
+    }
     
     /**Checks that local and remote program versions match*/
     public int checkVersions()

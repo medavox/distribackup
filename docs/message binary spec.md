@@ -1,6 +1,12 @@
 Protocol Binary Spec 
 ====================
 
+Using UInt as the length of Messages presents a problem in Java: we are allowing byte arrays longer than the maximum length of an array (Integer.MAX_VALUE). In order to prevent problems, this would require a ByteBuffer (or something) in place of nearly every use of byte[]. Euch.
+
+However, even using int as the length field type would allow a string of Messages which are still strung together (ie a compound Message!) that could, combined, still overflow an integer's max value.
+
+It looks like we're going to have to use some fancy shit after all.
+
 ###ID Bytes
 
 Each Object type will have an ID byte, followed either by its payload (for static-length types)
