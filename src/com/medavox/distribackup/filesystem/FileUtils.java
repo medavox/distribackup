@@ -33,7 +33,7 @@ public abstract class FileUtils
 		return new byte[0];
 	}
 	
-	/**Reading an arbitrary-size file into memory is a bad idea
+	/*Reading an arbitrary-size file into memory is a bad idea
 	 * So for now, this method is on ice, until I work out what to do with it*/
 	/*public static byte[] getBytes(File f) throws IOException
 	{

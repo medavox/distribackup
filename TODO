@@ -15,6 +15,7 @@ short term:
 
 1. Implement compound type binary conversion methods (to and from)
     * FileInfo	DONE (still needs other binary methods implementing)
+    * DirInfo
     * FileData	
     * PeerInfo
     * Address
