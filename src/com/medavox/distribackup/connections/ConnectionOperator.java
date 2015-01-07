@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.net.Socket;
 import java.util.UUID;
+import java.util.Arrays;
 
 import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
@@ -72,10 +73,10 @@ public class ConnectionOperator extends Thread
 	return 0;
     }
     
-        /*SENDING:Methods to send data down the socket*/
+    /*SENDING:Methods to send data down the socket*/
     
     /**Sends a greeting (containing our UUID), waits for a greeting in reply, and returns the received UUID */
-    UUID greeting()
+    UUID greeting() throws IOException
     {
         //package up data into a single bytestream before sending, 
         //(as opposed to sending each bit as we create it), to minimise packets
@@ -95,39 +96,41 @@ public class ConnectionOperator extends Thread
 	return new UUID(theirUUIDmsb, theirUUIDlsb);
     }
         
-    void announceExit()
+    void announceExit() throws IOException
     {
-	bos.write(Message.EXIT_ANNOUNCE.IDByte, 0, 1);
+	byte[] exitAnnounce = {Message.EXIT_ANNOUNCE.IDByte};
+	bos.write(exitAnnounce, 0, 1);
 	bos.flush();
     }
     
-    void requestMorePeers(PeerInfo[] knownPeers)
+    void requestMorePeers(PeerInfo[] knownPeers) throws IOException
     {
-	bos.write(Message.REQ_FOR_PEERS.IDByte, 0, 1);
+	byte[] reqForPeers = {Message.REQ_FOR_PEERS.IDByte};
+	bos.write(reqForPeers, 0, 1);
 	bos.flush();
     }
     
-    void sendPeerInfo(PeerInfo[] peers)
+    void sendPeerInfo(PeerInfo[] peers) // TODO
     {
 	
     }
     
-    void sendTreeStatus()
+    void sendTreeStatus() // TODO
     {
 	
     }
     
-    void sendFileData()
+    void sendFileData() // TODO
     {
 	
     }
         
-    void requestFile(Path p)
+    void requestFile(Path p) // TODO
     {
 	
     }
     /*RECEIVER: Handling incoming data*/
-    public void run()
+    public void run() // TODO
     {
         
     }

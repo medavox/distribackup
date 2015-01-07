@@ -8,7 +8,7 @@ import java.nio.file.*;
 
 import com.medavox.distribackup.connections.*;
 import com.medavox.distribackup.peers.*;
-import com.medavox.distribackup.fswatch.*;
+import com.medavox.distribackup.filesystem.*;
 /* There must be a local state object which records open sockets, and which peers they pertain to
 */
 public abstract class Peer
