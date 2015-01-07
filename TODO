@@ -1,4 +1,4 @@
-TODO:
+LONGTERM:
 implment receiving serialised file
 create your own serialisation format
 	type-length-value, bencode, MessagePack
@@ -9,3 +9,15 @@ callback to send file
 publisher maintain list of subscribers
 make exception catching consistent: have a consistent policy
 redo package structure
+
+short term:
+
+0. Finish primitive dataype binary conversion methods as needed
+
+1. Implement compound type binary conversion methods (to and from)
+    * FileInfo
+    * PeerInfo
+    * FileDataChunk
+    
+2. Write the actual methods which do the transferring
+write the action of the doing of transferring; likely lots of consecutive actions/boilerplate
