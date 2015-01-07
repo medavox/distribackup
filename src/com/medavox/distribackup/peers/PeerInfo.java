@@ -5,16 +5,21 @@ import com.medavox.distribackup.connections.Address;
 import java.util.UUID;
 import java.net.Socket;
 /**Stores information about peers*/
+
+//1. UUID
+//3. GlobalRevisionNumber| ULong
+//5. Addresses           | List:Address
+
 public class PeerInfo
 {
 	Address[] addresses;
 	UUID uuid;
 	long globalRevisionNumber;
-	Socket socket;
+	//Socket socket;
 	
-	public PeerInfo(Socket s)
+	public PeerInfo()
 	{
-		this.socket = s;
+		//this.socket = s;
 	}
 	/*multiple sockets*/
 }

@@ -8,13 +8,15 @@ import java.io.DataOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.EOFException;
-
+import java.io.UnsupportedEncodingException;
 
 import java.nio.file.Path;
 
 import com.medavox.distribackup.peers.PeerInfo;
 
-/**Try to keep logic in this class just pertaining to conversion to and from binary*/
+/**Logic in this class just pertains to conversion of primitive types to and from binary.
+ * PeerInfo converts to and from binary with methods in its own class
+ * */
 public class BinaryTranslator
 {
 	/*BITFIELD		((byte)0x00,  2),
@@ -51,8 +53,8 @@ public class BinaryTranslator
 	bitfield	-> byte			DONE
 	byte		-> bitfield		DONE
 	
-	String		-> bytes
-	bytes		-> String
+	String		-> bytes        DONE
+	bytes		-> String       DONE
 
 	PeerInfo    -> bytes
 	byte		-> PeerInfo
@@ -103,7 +105,33 @@ public class BinaryTranslator
 		dos.writeLong(l);
 		return ba.toByteArray();
 	}
-	
+    
+    public static byte bitfieldToByte(boolean... bools) throws Exception
+	{
+		byte out = (byte)0;
+		if(bools.length > 8)
+		{
+			throw new NumberFormatException("Too many booleans to fit inside a byte!"); 
+		}
+		else
+		{
+			for(int i = 0; i < bools.length; i++)
+			{//fill fields up from lsb first
+				if(bools[i])
+				{
+					byte mask = (byte)(0x1 << i);
+					out &= mask;
+				}
+			}
+		}
+		return out;
+	}
+        
+    public static byte[] stringToBytes(String s) throws UnsupportedEncodingException
+    {
+        return s.getBytes("UTF-16");
+    }
+    
 	public static short byteToUByte(byte b) throws IOException, EOFException
 	{//crazy, crazy manual bit manipulation to get an unsigned value from a byte
 		short accumulator = 1;
@@ -161,26 +189,7 @@ public class BinaryTranslator
 		return dis.readLong();
 	}
 	
-	public static byte bitfieldToByte(boolean... bools) throws Exception
-	{
-		byte out = (byte)0;
-		if(bools.length > 8)
-		{
-			throw new NumberFormatException("Too many booleans to fit inside a byte!"); 
-		}
-		else
-		{
-			for(int i = 0; i < bools.length; i++)
-			{//fill fields up from lsb first
-				if(bools[i])
-				{
-					byte mask = (byte)(0x1 << i);
-					out &= mask;
-				}
-			}
-		}
-		return out;
-	}
+
 
 	public static boolean[] byteToBitfield(byte in, byte numFields)
 	{
@@ -214,12 +223,22 @@ public class BinaryTranslator
 		2. Path             | String
 		3. file size        | ULong
 		4. revision number  | ULong
-		5. checksum         | SHA1
+		5. checksum         | SHA1*
 		
 		byte byteID = Message.FILE_INFO.IDByte;
 		long length;
 		
 	}*/
+    
+    public static String bytesToString(byte[] b) throws UnsupportedEncodingException
+    {
+        return new String(b, "UTF-16");
+    }
+
+    /*public static PeerInfo bytesToPeerInfo(byte[] b)
+    {
+        
+    }*/
 	
 	public static byte[] concat(byte[]... bytes)
 	{
