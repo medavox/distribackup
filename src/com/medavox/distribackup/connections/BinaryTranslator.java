@@ -53,17 +53,17 @@ public class BinaryTranslator
 	bitfield	-> byte			DONE
 	byte		-> bitfield		DONE
 	
-	String		-> bytes        DONE
-	bytes		-> String       DONE
+	String		-> bytes		DONE
+	bytes		-> String		DONE
 
-	PeerInfo    -> bytes
+	PeerInfo	-> bytes
 	byte		-> PeerInfo
 	
 	FileInfo	-> bytes
-	bytes       -> FileInfo
+	bytes		-> FileInfo
 	
-	DirectoryInfo   -> bytes
-	bytes           -> DirectoryInfo
+	DirectoryInfo	-> bytes
+	bytes			-> DirectoryInfo
 	*/
 	
 	/**Primitive types omit a header by default; 
@@ -133,11 +133,11 @@ public class BinaryTranslator
 		return s.getBytes("UTF-16");
 	}
 	
-		/**This path should be relative to the repo root*/
+	/**This path should be relative to the repo root*/
 	public static byte[] fileInfoToBytes(File f) throws IOException//TODO
 	{/*
 		0. (ID Byte)        | a byte
-		0. (Length)         | UInteger
+		0. (Length)         | Integer
 		1. Name             | String
 		2. Path             | String
 		3. file size        | ULong
@@ -166,7 +166,7 @@ public class BinaryTranslator
 		
 		byte[] messageLength = 
 		intToBytes(name.length + path.length + fileSize.length + revNum.length +
-											checksum.length);//TODO: uintToBytes
+											checksum.length);
 		
 		return concat(messageLength, name, path, fileSize, revNum, checksum);
 	}
@@ -300,8 +300,12 @@ public class BinaryTranslator
 		3. file size        | ULong
 		4. revision number  | ULong
 		5. checksum         | SHA1*/
-		long  = 
-		String name = bytesToString(Arrays.copyOfRange(b, 0, 
+		int nameEndIndex = getNextMessageEndIndex(b);
+		String name = bytesToString(Arrays.copyOfRange(b, 4, nameEndIndex));
+		int pathEndIndex = getNextMessageEndIndex(b, nameEndIndex);
+		String path = bytesToString(Arrays.copyOfRange(b, nameEndIndex+4, pathEndIndex));
+		
+		
 	}
 	
 	/*public static PeerInfo bytesToPeerInfo(byte[] b)
@@ -319,9 +323,9 @@ public class BinaryTranslator
 	/**Returns the index of the first byte after the end of the first Message.
 	 * So for a message that spans from 0 to 35, is 32 bytes long (plus length bytes),
 	 * this method will return 36*/
-	public static long getEndOfNextMessage(byte[] b)
+	public static int getMessageEndIndex(byte[] b, int offset)
 	{
-		long len = bytesToUInt(Arrays.copyOfRange(b, 0, 4));
+		int len = bytesToInt(Arrays.copyOfRange(b, offset, 4));
 		return len;
 	}
 	
