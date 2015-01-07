@@ -1,6 +1,5 @@
-LONGTERM:
-implment receiving serialised file
-create your own serialisation format
+implement receiving serialised file
+create own serialisation format
 	type-length-value, bencode, MessagePack
 	list ALL possible message types, then derive needed data types
 UUID and peerinfo sending
@@ -15,9 +14,12 @@ short term:
 0. Finish primitive dataype binary conversion methods as needed
 
 1. Implement compound type binary conversion methods (to and from)
-    * FileInfo
+    * FileInfo	DONE (still needs other binary methods implementing)
+    * FileData	
     * PeerInfo
-    * FileDataChunk
+    * Address
+    * List
+
     
 2. Write the actual methods which do the transferring
 write the action of the doing of transferring; likely lots of consecutive actions/boilerplate

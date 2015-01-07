@@ -1,4 +1,4 @@
-package com.medavox.distribackup.fswatch;
+package com.medavox.distribackup.filesystem;
 
 import java.nio.file.*;
 import static java.nio.file.StandardWatchEventKinds.*;

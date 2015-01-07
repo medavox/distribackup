@@ -1,5 +1,6 @@
 package com.medavox.distribackup.connections;
 
+import java.io.File;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,23 +14,12 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 
 import com.medavox.distribackup.peers.PeerInfo;
+import com.medavox.distribackup.filesystem.FileUtils;
 
 /**Logic in this class just pertains to conversion of primitive types to and from binary.
- * PeerInfo converts to and from binary with methods in its own class
- * */
+ * PeerInfo converts to and from binary with methods in its own class*/
 public class BinaryTranslator
 {
-	/*BITFIELD		((byte)0x00,  2),
-	STRING			((byte)0x01, -1),
-	UBYTENUM		((byte)0x02,  2),
-	USHORT			((byte)0x03,  3),
-	UINTEGER		((byte)0x04,  5),
-	ULONG			((byte)0x05,  9),
-	BYTENUM			((byte)0x06,  2),
-	SHORT			((byte)0x07,  3),
-	INTEGER			((byte)0x08,  5),
-	LONG			((byte)0x09,  9),*/
-	
 	/**TODO:
 	byte   -> byte		N/A
 	ubyte  -> byte		DONE
@@ -65,10 +55,11 @@ public class BinaryTranslator
 	DirectoryInfo   -> bytes
 	bytes           -> DirectoryInfo
 	*/
+	
+	/**Primitive types omit a header by default; 
+	add one manually or write wrapper methods to add one*/
 	static DataOutputStream dos;
-	//DataInputStream dis;
 	static ByteArrayOutputStream ba = new ByteArrayOutputStream();
-	//ByteArrayInputStream bais = new ByteArrayInputStream();
 	public BinaryTranslator()
 	{
 		dos = new DataOutputStream(ba);
@@ -132,6 +123,52 @@ public class BinaryTranslator
         return s.getBytes("UTF-16");
     }
     
+    	/**This path should be relative to the repo root*/
+	public static byte[] fileInfoToBytes(File f) throws IOException//TODO
+	{/*
+		0. (ID Byte)        | a byte
+		0. (Length)         | UInteger
+		1. Name             | String
+		2. Path             | String
+		3. file size        | ULong
+		4. revision number  | ULong
+		5. checksum         | SHA1*/
+		
+		//make sure File object is an actual file (not a directory) before starting
+		if(!f.isFile())
+		{
+			throw new IOException("ERROR: supplied File Object is not actually a file!");
+		}
+		
+		byte[] byteID = {Message.FILE_INFO.IDByte};
+		
+		//i tried sticking to the new Path interface,
+		//but it has no methods for filesize checking!
+		
+		byte[] name = stringToBytes(f.getName());
+		byte[] path = stringToBytes(f.getPath());
+		byte[] fileSize = longToBytes(f.length());//TODO: implement ulongToBytes
+		byte[] revNum = longToBytes((long)0);//TODO: NOT YET IMPLEMENTED
+		byte[] checksum = FileUtils.checksum(f);
+		
+		byte[] messageLength = 
+		intToBytes(name.length + path.length + fileSize.length + revNum.length +
+											checksum.length);//TODO: uintToBytes
+		
+		return concat(byteID, messageLength, name, path, fileSize, revNum, checksum);
+	}
+	
+	public static byte[] dirInfoToBytes(File f) // TODO
+	{
+		//make sure File object is a directory (not a file) before starting
+		if(f.isFile())
+		{
+			throw new IOException("ERROR: supplied File Object is not a Directory!");
+		}
+		
+		
+	}
+    
 	public static short byteToUByte(byte b) throws IOException, EOFException
 	{//crazy, crazy manual bit manipulation to get an unsigned value from a byte
 		short accumulator = 1;
@@ -189,8 +226,6 @@ public class BinaryTranslator
 		return dis.readLong();
 	}
 	
-
-
 	public static boolean[] byteToBitfield(byte in, byte numFields)
 	{
 		if(numFields > 8)
@@ -213,23 +248,7 @@ public class BinaryTranslator
 		}
 		return fields;
 	}
-	/*
-	public static byte[] generateFileInfoBytes(Path p)
-	{
-		/*
-		0. (ID Byte)        | a byte
-		0. (Length)         | UInteger
-		1. Name             | String
-		2. Path             | String
-		3. file size        | ULong
-		4. revision number  | ULong
-		5. checksum         | SHA1*
-		
-		byte byteID = Message.FILE_INFO.IDByte;
-		long length;
-		
-	}*/
-    
+	
     public static String bytesToString(byte[] b) throws UnsupportedEncodingException
     {
         return new String(b, "UTF-16");
@@ -239,6 +258,21 @@ public class BinaryTranslator
     {
         
     }*/
+    
+    /**Convenience wrapper to handle a leading non-array byte*/
+    public static byte[] concat(byte b, byte[]... bytes)
+    {
+		byte[] bArray = {b};
+		concat(bytes);
+		
+		byte[][] out = new byte[bytes.length+1][];
+		out[0] = bArray;
+		for(int i = 1; i < out.length; i++)
+		{
+			out[i] = bytes[i-1];
+		}
+		return concat(out);
+	}
 	
 	public static byte[] concat(byte[]... bytes)
 	{
