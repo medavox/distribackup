@@ -20,6 +20,7 @@ short term:
     * PeerInfo
     * Address
     * List
+    * HList
 
     
 2. Write the actual methods which do the transferring
