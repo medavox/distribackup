@@ -27,17 +27,17 @@ public enum Message
 	TREE_STATUS_REQ	((byte)0x16,  0),
 	UPDATE_ANNOUNCE	((byte)0x17, -2),
 	HLIST			((byte)0x18, -1);
-    
-    public final byte IDByte;
-    public final int length;
-    /**A length value of -1 or -2 means Message length must be calculated during
-    construction. Length of -1 indicates it's of variable-length using TLV,
-    -2 indicates it's a compound message.
-    Length in this context means the total Message length, including IDByte and 
-    any other headers.*/
-    Message(byte IDByte, int length)
-    {
-        this.IDByte = IDByte;
-        this.length = length;
-    }
+	
+	public final byte IDByte;
+	public final int length;
+	/**A length value of -1 or -2 means Message length must be calculated during
+	construction. Length of -1 indicates it's of variable-length using TLV,
+	-2 indicates it's a compound message.
+	Length in this context means the total Message length, including IDByte and 
+	any other headers.*/
+	Message(byte IDByte, int length)
+	{
+		this.IDByte = IDByte;
+		this.length = length;
+	}
 }
