@@ -14,12 +14,12 @@ import com.medavox.distribackup.filesystem.*;
 public abstract class Peer
 {
 	private int listenPort;
-    private String defaultRoot = "/home/scc/distribackup/publisher-root";
-    public Path root;
-    ConcurrentHashMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
-    PeerInfo publisherInfo;
-    UUID publisherID;
-    public static UUID myUUID;
+	private String defaultRoot = "/home/scc/distribackup/publisher-root";
+	public Path root;
+	ConcurrentHashMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	PeerInfo publisherInfo;
+	UUID publisherID;
+	public static UUID myUUID;
 	
 	public static final short version = 1;//increment this manually on every release
 	List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();
@@ -86,12 +86,12 @@ public abstract class Peer
 		}
 	}
 
-    
-    /**TODO:
-     store 1 bis-bos pair per socket entry
+	
+	/**TODO:
+	 store 1 bis-bos pair per socket entry
 		or create one when a socket is referenced from the hashmap*/
-    public void connect(String host, int port)
-    {
+	public void connect(String host, int port)
+	{
 		try
 		{
 			Socket s = new Socket(host, port);
