@@ -28,15 +28,15 @@ import com.medavox.distribackup.filesystem.DirectoryInfo;
  * Byte arrays passsed to methods in this class should correspondingly have 
  * their IDBytes removed, and except for complex or compound types, also their length.
  * Simple variable length types such as String do not need this field. */
-public class BinaryTranslator
+public abstract class BinaryTranslator
 {
 	/**TODO:
 	byte   -> byte		N/A
 	ubyte  -> byte		DONE
 	short  -> bytes		DONE
-	ushort -> bytes
+	ushort -> bytes		DONE
 	int    -> bytes		DONE
-	uint   -> bytes
+	uint   -> bytes		DONE
 	long   -> bytes		DONE
 	ulong  -> bytes
 	 
@@ -45,7 +45,7 @@ public class BinaryTranslator
 	bytes -> short		DONE
 	bytes -> ushort		DONE
 	bytes -> int		DONE
-	bytes -> uint
+	bytes -> uint		DONE
 	bytes -> long		DONE
 	bytes -> ulong
 	
@@ -59,31 +59,38 @@ public class BinaryTranslator
 	PeerInfo	-> bytes
 	byte		-> PeerInfo
 	
-	FileInfo	-> bytes
-	bytes		-> FileInfo
+	FileInfo	-> bytes		DONE
+	bytes		-> FileInfo		DONE
 	
-	DirectoryInfo	-> bytes
-	bytes			-> DirectoryInfo
-	*/
+DirectoryInfo	-> bytes
+bytes			-> DirectoryInfo
+	
+	FileData	-> bytes
+	bytes 		-> FileData
+	
+	Address		-> bytes
+	bytes		-> Address
+	
+	List		-> bytes
+	bytes		-> List
+	
+	HList		-> bytes
+	bytes		-> HList*/
 	
 	/**Primitive types omit a header by default; 
 	add one manually or write wrapper methods to add one*/
-	static DataOutputStream dos;
 	static ByteArrayOutputStream ba = new ByteArrayOutputStream();
-	public BinaryTranslator()
-	{
-		dos = new DataOutputStream(ba);
-	}
+	static DataOutputStream dos = new DataOutputStream(ba);
 	
-	public static byte UByteToByte(short l) throws IOException, NumberFormatException
+	public static byte ubyteToByte(short l) throws IOException, NumberFormatException
 	{
 		if(l > 255
 		|| l < 0)
 		{
-			throw new NumberFormatException("number must be between 0 and 255!");
+			throw new NumberFormatException("ubyte value must be between 0 and 255!");
 		}
 		//+128
-		return (byte)((l & 0xff)+128); 
+		return (byte)(l & 0xff); 
 	}
 
 	public static byte[] shortToBytes(short l) throws IOException
@@ -93,11 +100,37 @@ public class BinaryTranslator
 		return ba.toByteArray();
 	}
 	
+	public static byte[] uShortToBytes(char l)
+	{
+		byte[] out = new byte[2];
+		out[0] = (byte)((l >> 8) & (byte)0xff);
+		out[1] = (byte)(l & (byte)0xff);
+		return out;
+	}
+	
 	public static byte[] intToBytes(int l) throws IOException
 	{
 		ba.reset();//reset byte output buffer
 		dos.writeInt(l);
 		return ba.toByteArray();
+	}
+	
+	public static byte[] uintToBytes(long l)throws NumberFormatException//TODO: fix broken method(s)
+	{//pronblem: our "uint" is stored in a long:8bytes wide
+	 //the uint has to be 4bytes wide, so we may lose precision 
+	 //based on what number is converted
+		if(l < 0
+		|| l > Math.pow(2, 32) - 1)
+		{
+			throw new NumberFormatException
+			("ERROR: Specified long falls outside uint range!\nvalue: "+l);
+		}
+		byte[] out = new byte[4];
+		out[3] = (byte)((l >> 24) & (byte)0xff);
+		out[2] = (byte)((l >> 16) & (byte)0xff);
+		out[1] = (byte)((l >>  8) & (byte)0xff);
+		out[0] = (byte)(l & (byte)0xff);
+		return out;
 	}
 	
 	public static byte[] longToBytes(long l) throws IOException
@@ -120,8 +153,8 @@ public class BinaryTranslator
 			{//fill fields up from lsb first
 				if(bools[i])
 				{
-					byte mask = (byte)(0x1 << i);
-					out &= mask;
+					byte set = (byte)(0x1 << i);
+					out |= set;
 				}
 			}
 		}
@@ -172,8 +205,8 @@ public class BinaryTranslator
 	}
 	
 	/**DirInfo objects are going to massive, due to their tree nature.
-	 Converting a directory into byte-form will invovle converting all objects inside it,
-	 * which also contain their own files. WHOA*/
+	 Converting a directory into byte-form will invoLve converting all objects
+	 * inside it, which also contain their own files. WHOA*/
 	/*public static byte[] dirInfoToBytes(File f) // TODO
 	{
 		//make sure File object is a directory (not a file) before starting
@@ -212,14 +245,14 @@ public class BinaryTranslator
 		return dis.readShort();
 	}
 	
-	public static int bytesToUShort(byte[] b) throws IOException, EOFException, NumberFormatException
+	public static char bytesToUShort(byte[] b) throws IOException, EOFException, NumberFormatException
 	{//this is the only bytes-to-unsigned conversion that can use the built-in method
 		if(b.length != 2)
 		{
 			throw new NumberFormatException("wrong number of bytes to convert to int!");
 		}
 		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b) );
-		return dis.readUnsignedShort();
+		return dis.readChar();
 	}
 	
 	public static int bytesToInt(byte[] b) throws IOException, EOFException, NumberFormatException
@@ -232,7 +265,7 @@ public class BinaryTranslator
 		return dis.readInt();
 	}
 	
-	public static long bytesToUInt(byte[] b) throws IOException, EOFException, NumberFormatException
+	public static long bytesToUInt(byte[] b)//TODO: fix broken method(s)
 	{
 		if(b.length != 4)
 		{
@@ -266,7 +299,7 @@ public class BinaryTranslator
 		return dis.readLong();
 	}
 	
-	public static boolean[] byteToBitfield(byte in, byte numFields)
+	public static boolean[] byteToBitfield(byte in, int numFields)
 	{
 		if(numFields > 8)
 		{
@@ -297,18 +330,42 @@ public class BinaryTranslator
 	public static FileInfo bytesToFileInfo(byte[] b)
 	{/*	1. Name             | String
 		2. Path             | String
-		3. file size        | ULong
-		4. revision number  | ULong
+		3. file size        | Long
+		4. revision number  | Long
 		5. checksum         | SHA1*/
-		int nameEndIndex = getNextMessageEndIndex(b);
-		String name = bytesToString(Arrays.copyOfRange(b, 4, nameEndIndex));
-		int pathEndIndex = getNextMessageEndIndex(b, nameEndIndex);
-		String path = bytesToString(Arrays.copyOfRange(b, nameEndIndex+4, pathEndIndex));
-		
-		
+		try
+		{
+			int nameEndIndex = getNextMessageEndIndex(b, 0);
+			String name = bytesToString(Arrays.copyOfRange(b, 4, nameEndIndex));
+			int pathEndIndex = getNextMessageEndIndex(b, nameEndIndex);
+			String path = bytesToString(Arrays.copyOfRange(b, nameEndIndex+4, pathEndIndex));
+			
+			long fileSize = bytesToLong(Arrays.copyOfRange(b, pathEndIndex+8, pathEndIndex+16));
+			long revisionNumber = bytesToLong(Arrays.copyOfRange(b, pathEndIndex, pathEndIndex+8));
+			
+			//there should be 20 bytes left, and they should all be the checksum
+			int checksumBegin = pathEndIndex+16;
+			byte[] checksum = Arrays.copyOfRange(b, checksumBegin, b.length);
+			
+			assert checksum.length == 20;
+			
+			//finally, reconstruct the FileInfo object from the decoded data
+			FileInfo rxFileInfo = new FileInfo(name, path, fileSize, revisionNumber, checksum);
+			
+			return rxFileInfo;
+		}
+		catch(UnsupportedEncodingException usee)
+		{
+			//do nothing, the encoding name never changes
+		}
+		catch(Exception e)//TODO proper exception handling, it's all bubbled here
+		{
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
-	/*public static PeerInfo bytesToPeerInfo(byte[] b)
+	/*public static PeerInfo bytesToPeerInfo(byte[] b)//TODO
 	{
 		
 	}*/
@@ -323,7 +380,7 @@ public class BinaryTranslator
 	/**Returns the index of the first byte after the end of the first Message.
 	 * So for a message that spans from 0 to 35, is 32 bytes long (plus length bytes),
 	 * this method will return 36*/
-	public static int getMessageEndIndex(byte[] b, int offset)
+	public static int getNextMessageEndIndex(byte[] b, int offset) throws IOException
 	{
 		int len = bytesToInt(Arrays.copyOfRange(b, offset, 4));
 		return len;

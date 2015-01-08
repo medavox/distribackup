@@ -2,8 +2,8 @@ package com.medavox.distribackup.filesystem;
 
 public abstract class FileSystemObjectInfo
 {
-	protected final String name;
-	protected final String path;
+	protected String name;
+	protected String path;
 	
 	public String getName()
 	{

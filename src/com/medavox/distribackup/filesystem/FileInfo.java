@@ -14,11 +14,11 @@ public class FileInfo extends FileSystemObjectInfo
 	private long fileSize;//but this is extremely inconvenient in Java
 	private byte[] checksum;
 	
-	public FileInfo(String name, String path, long revisionNumber, long fileSize, byte[] checksum)
+	public FileInfo(String name, String path, long fileSize, long revisionNumber, byte[] checksum)
 	{
 		this.name = name;
 		this.path = path;
-		this.revisionNuber = revisionNumber;
+		this.revisionNumber = revisionNumber;
 		this.fileSize = fileSize;
 		this.checksum = checksum;
 	}
@@ -33,7 +33,7 @@ public class FileInfo extends FileSystemObjectInfo
 		return fileSize;
 	}
 	
-	public long getChecksum()
+	public byte[] getChecksum()
 	{
 		return checksum;
 	}
