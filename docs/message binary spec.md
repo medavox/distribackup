@@ -73,7 +73,7 @@ Element             | Type
 1. Name             | String
 2. Path             | String
 3. file size        | Long
-4. revision number  | ULong
+4. revision number  | Long
 5. checksum         | SHA1
 
 <a name="DirectoryInfo" />DirectoryInfo

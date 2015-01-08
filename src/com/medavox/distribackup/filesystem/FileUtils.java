@@ -32,29 +32,7 @@ public abstract class FileUtils
 		}
 		return new byte[0];
 	}
-	
-	/*Reading an arbitrary-size file into memory is a bad idea
-	 * So for now, this method is on ice, until I work out what to do with it*/
-	/*public static byte[] getBytes(File f) throws IOException
-	{
-		FileInputStream fis = new FileInputStream(f);
-		//do checks to handle files longer than the max array size (MAX_INT)
-		int arrayLength;
-		if(f.length() > Integer.MAX_VALUE)
-		{
-			throw new IOException("ERROR: file is longer than max array size!"+
-			"\nThis is a limitation of java; I've not yet implemented a workaround");
-		}
-		else
-		{
-			arrayLength = (int)f.length();
-		}
-		byte[] fileContents = new byte[arrayLength];
-		fis.read(fileContents);
-		
-		return fileContents;
-	}*/
-	
+
 	public static String fileToString(File f)
 	{
 		try
