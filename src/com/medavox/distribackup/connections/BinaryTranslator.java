@@ -123,7 +123,7 @@ bytes			-> DirectoryInfo
 		return ba.toByteArray();
 	}
 	
-	public static byte[] uintToBytes(long l)throws NumberFormatException//TODO: fix broken method(s)
+	public static byte[] uintToBytes(long l)throws NumberFormatException
 	{//pronblem: our "uint" is stored in a long:8bytes wide
 	 //the uint has to be 4bytes wide, so we may lose precision 
 	 //based on what number is converted
@@ -175,7 +175,7 @@ bytes			-> DirectoryInfo
 	}
 	
 	/**This path should be relative to the repo root*/
-	public static byte[] fileInfoToBytes(File f) throws IOException//TODO
+	public static byte[] fileInfoToBytes(File f) throws IOException
 	{/*
 		0. (ID Byte)        | a byte
 		0. (Length)         | Integer
@@ -200,8 +200,8 @@ bytes			-> DirectoryInfo
 		//IDByte is omitted deliberately, for consistency with primitive types
 		byte[] name = stringToBytes(f.getName());
 		byte[] path = stringToBytes(f.getPath());
-		byte[] fileSize = longToBytes(f.length());//TODO: implement ulongToBytes
-		byte[] revNum = longToBytes((long)0);//TODO: NOT YET IMPLEMENTED
+		byte[] fileSize = longToBytes(f.length());
+		byte[] revNum = longToBytes((long)0);//TODO: REVNUMS NOT YET IMPLEMENTED
 		byte[] checksum = FileUtils.checksum(f);
 		
 		byte[] messageLength = 
@@ -238,7 +238,7 @@ bytes			-> DirectoryInfo
 		
 		boolean[] bitfield = {true};
 		byte[] isPubByte = {bitfieldToByte(bitfield)};
-		byte[] addresses = {(byte)0x00};//TODO: implement lists!
+		byte[] addresses = {(byte)0x00};//TODO: implement lists and Addresses!
 		
 		byte[] msgLength = 
 		intToBytes(getTotalLength(UUID1, UUID2, globalRevNum, isPubByte, addresses));
@@ -315,7 +315,7 @@ bytes			-> DirectoryInfo
 		return dis.readInt();
 	}
 	
-	public static long bytesToUInt(byte[] b)//TODO: fix broken method(s)
+	public static long bytesToUInt(byte[] b)
 	{
 		if(b.length != 4)
 		{
@@ -432,7 +432,6 @@ bytes			-> DirectoryInfo
 			
 			UUID uuid = new UUID(UUID1msb, UUID2lsb);
 			
-			//TODO: lists!
 			//TODO: do something with the isPublisher info we've received
 			
 			//finally, reconstruct the PeerInfo object from the decoded data
