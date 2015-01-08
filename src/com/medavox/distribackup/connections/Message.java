@@ -30,6 +30,7 @@ public enum Message
 	
 	public final byte IDByte;
 	public final int length;
+	
 	/**A length value of -1 or -2 means Message length must be calculated during
 	construction. Length of -1 indicates it's of variable-length using TLV,
 	-2 indicates it's a compound message.
@@ -39,5 +40,17 @@ public enum Message
 	{
 		this.IDByte = IDByte;
 		this.length = length;
+	}
+	
+	public static Message getMessageTypeFromID(byte id)
+	{
+		for(Message m : Message.values())//SUCH a useful, yet undocumented method!
+		{
+			if(m.IDByte == id)
+			{
+				return m;
+			}
+		}
+		return null;
 	}
 }

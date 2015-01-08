@@ -1,6 +1,7 @@
 package com.medavox.distribackup.connections;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import java.io.File;
 import java.io.BufferedInputStream;
@@ -20,14 +21,19 @@ import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.DirectoryInfo;
 
-/**Logic in this class just pertains to conversion of primitive types to and from binary.
- * PeerInfo converts to and from binary with methods in its own class. Note that
- * byte arrays constructed by this class do not contain an IDByte, as not all uses
- * of every given field requires it. Instances which need one, should add it manually.
+/**Logic in this class only pertains to conversion of primitive types to and from binary.
+ * Byte arrays constructed by this class do not contain an IDByte, as not all uses
+ * of every given field requires it. Instances which need one should add it manually.
  * 
- * Byte arrays passsed to methods in this class should correspondingly have 
- * their IDBytes removed, and except for complex or compound types, also their length.
- * Simple variable length types such as String do not need this field. */
+ * Methods which decode bytes expect no IDByte or length field; this header is
+ * only useful for parsing the Message payload from the network stream.
+ * The Message length can be determined from the byte[].length anyway.
+ * 
+ * However, methods which encode data INTO bytes prepend the length field for convenience.
+ * This means that bytes encoded with one method cannot be immediately passed
+ * back to the corresponding decoding method, without some processing first. 
+ * 
+ * If this encoding is more hassle than help, then the behaviour can be changed.*/
 public abstract class BinaryTranslator
 {
 	/**TODO:
@@ -50,12 +56,14 @@ public abstract class BinaryTranslator
 	bytes -> ulong
 	
 	
+	
 	bitfield	-> byte			DONE
 	byte		-> bitfield		DONE
 	
 	String		-> bytes		DONE
 	bytes		-> String		DONE
-
+*/
+/**
 	PeerInfo	-> bytes
 	byte		-> PeerInfo
 	
@@ -71,8 +79,8 @@ bytes			-> DirectoryInfo
 	Address		-> bytes
 	bytes		-> Address
 	
-	List		-> bytes
-	bytes		-> List
+	List		-> bytes		DONE
+	bytes		-> List			DONE
 	
 	HList		-> bytes
 	bytes		-> HList*/
@@ -140,7 +148,7 @@ bytes			-> DirectoryInfo
 		return ba.toByteArray();
 	}
 	
-	public static byte bitfieldToByte(boolean... bools) throws Exception
+	public static byte bitfieldToByte(boolean... bools) throws NumberFormatException
 	{
 		byte out = (byte)0;
 		if(bools.length > 8)
@@ -182,15 +190,14 @@ bytes			-> DirectoryInfo
 		{
 			throw new IOException("ERROR: supplied File Object is not actually a file!");
 		}
-		
-		//ERK: all conversions to binary have so far omitted the IDByte
-		//and have not needed a length field. Are we going to keep compound types
-		//consistent with primitive types? YES
+
+		//consider whether to include a length field in each compound type builder
 		//byte[] byteID = {Message.FILE_INFO.IDByte};
 		
 		//i tried sticking to the new Path interface,
 		//but it has no methods for filesize checking!
 		
+		//IDByte is omitted deliberately, for consistency with primitive types
 		byte[] name = stringToBytes(f.getName());
 		byte[] path = stringToBytes(f.getPath());
 		byte[] fileSize = longToBytes(f.length());//TODO: implement ulongToBytes
@@ -198,15 +205,14 @@ bytes			-> DirectoryInfo
 		byte[] checksum = FileUtils.checksum(f);
 		
 		byte[] messageLength = 
-		intToBytes(name.length + path.length + fileSize.length + revNum.length +
-											checksum.length);
+		intToBytes(getTotalLength(name, path, fileSize, revNum,	checksum));
 		
 		return concat(messageLength, name, path, fileSize, revNum, checksum);
 	}
 	
 	/**DirInfo objects are going to massive, due to their tree nature.
-	 Converting a directory into byte-form will invoLve converting all objects
-	 * inside it, which also contain their own files. WHOA*/
+	 Converting a directory into byte-form will involve converting all files and
+	 directories inside it, which can also contain their own files. WHOA*/
 	/*public static byte[] dirInfoToBytes(File f) // TODO
 	{
 		//make sure File object is a directory (not a file) before starting
@@ -215,8 +221,52 @@ bytes			-> DirectoryInfo
 			throw new IOException("ERROR: supplied File Object is not a Directory!");
 		}
 		
-		
 	}*/
+	
+	public static byte[] peerInfoToBytes(PeerInfo p, boolean isPublisher) throws IOException, NumberFormatException
+	{/* 0. (ID Byte)           | a byte
+		0. (Length)            | Integer
+		1. UUID1               | Long
+		2. UUID2               | Long
+		3. GlobalRevisionNumber| Long
+		4. isPublisherOrPeer   | bitfield<0>
+		5. Addresses           | List:Address*/
+		//IDByte is omitted deliberately, for consistency with primitive types
+		byte[] UUID1 = longToBytes(p.getUUID().getMostSignificantBits());
+		byte[] UUID2 = longToBytes(p.getUUID().getLeastSignificantBits());
+		byte[] globalRevNum = longToBytes(p.getGRN());
+		
+		boolean[] bitfield = {true};
+		byte[] isPubByte = {bitfieldToByte(bitfield)};
+		byte[] addresses = {(byte)0x00};//TODO: implement lists!
+		
+		byte[] msgLength = 
+		intToBytes(getTotalLength(UUID1, UUID2, globalRevNum, isPubByte, addresses));
+		
+		return concat(msgLength, UUID1, UUID2, globalRevNum, isPubByte, addresses);
+	}
+	/**Takes a holding array of pre-converted byte[]s and turns them into a 
+	distribackup:List.
+	The Message byte[] elements must be pre-sorted, contain no IDByte, 
+	and only their length fields if the list is made of variable-length elements.*/
+	public static byte[] listToBytes(byte[][] items, byte elIDByte)
+	{/* 1. (Length)             | Long
+		2. ID byte of elements  | a byte
+		3. number of elements   | int
+		4. &lt;elements&gt;     | ?*/
+		
+		byte[] elIDByteWrapper = {elIDByte};
+		byte[] numElements = intToBytes(items.length);
+		
+		byte[] elements = concat(items);
+		byte[] messageLength = intToBytes(getTotalLength(numElements, elements)+1);//+1 for elements' IDByte
+		return concat(messageLength, elIDByteWrapper, numElements, elements);
+	}
+	
+	public static byte[] addressToBytes(Address addr)//TODO
+	{
+		
+	}
 	
 	public static short byteToUByte(byte b) throws IOException, EOFException
 	{//crazy, crazy manual bit manipulation to get an unsigned value from a byte
@@ -251,7 +301,7 @@ bytes			-> DirectoryInfo
 		{
 			throw new NumberFormatException("wrong number of bytes to convert to int!");
 		}
-		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b) );
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b));
 		return dis.readChar();
 	}
 	
@@ -365,10 +415,91 @@ bytes			-> DirectoryInfo
 		return null;
 	}
 	
-	/*public static PeerInfo bytesToPeerInfo(byte[] b)//TODO
+	/**Whether the length field needs to be left on for this method,
+	 * is up for debate*/
+	public static PeerInfo bytesToPeerInfo(byte[] b)//TODO
+	{/*	1. UUID1               | Long
+		2. UUID2               | Long
+		3. GlobalRevisionNumber| Long
+		4. isPublisherOrPeer   | bitfield<0>
+		5. Addresses           | List:Address*/
+		try
+		{
+			long UUID1msb = bytesToLong(Arrays.copyOfRange(b, 0, 8));
+			long UUID2lsb = bytesToLong(Arrays.copyOfRange(b, 8, 16));
+			long globalRevNum = bytesToLong(Arrays.copyOfRange(b, 16, 24));
+			boolean[] isPublisher = byteToBitfield(b[24], 1);
+			
+			UUID uuid = new UUID(UUID1msb, UUID2lsb);
+			
+			//TODO: lists!
+			//TODO: do something with the isPublisher info we've received
+			
+			//finally, reconstruct the PeerInfo object from the decoded data
+			PeerInfo rxPeerInfo = new PeerInfo(uuid, globalRevNum/*, addresses*/);
+			
+			return rxPeerInfo;
+		}
+		catch(UnsupportedEncodingException usee)
+		{
+			//do nothing, the encoding name never changes
+		}
+		catch(Exception e)//TODO proper exception handling, it's all bubbled here
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static byte[][] bytesToList(byte[] b)
+	{/* 2. ID byte of elements  | a byte
+		3. number of elements   | int
+		4. &lt;elements&gt;     | ?*/
+		Message type = Message.getMessageTypeFromID(b[0]);
+		int numElements = bytesToInt(Arrays.copyOfRange(b, 1, 5));
+		byte[][] output = new byte[numElements+1][];//save the first element for the IDByte
+		byte[] IDByteWrapper = {b[0]};
+		output[0] = IDByteWrapper;
+		if (type.length < 0)//the elements are variable-length or compound
+		{
+			int lengthLength;
+			if(type == Message.LIST
+			|| type == Message.HLIST)
+			{//the length value of lists and hlists is a long: 8, not 4, bytes wide
+				lengthLength = 8;
+			}
+			else
+			{
+				lengthLength = 4;
+			}
+			
+			int i = 5;
+			int elementCount = 1;
+			while(i < numElements)
+			{
+				int currentElementLength = 
+				bytesToInt(Arrays.copyOfRange(b, i, i+lengthLength));
+				elementEnd = i+currentElementLength+lengthLength;
+				output[elementCount] = Arrays.copyOfRange(b, i+lengthLength, elementEnd);//I am starting to sound worryingly obsessed with the word length
+				elementCount++;
+				i = elementEnd;
+			}
+		}
+		else//the elements are fixed-length
+		{
+			int length = type.length;
+			
+			for(int i = 0; i < numElements; i++)//split up the input byte[] into elements
+			{//I really hope Arrays.copyOfRange isn't expensive!
+				output[i+1] = Arrays.copyOfRange(b, (i*length)+5, (i*length)+5+length);
+			}
+		}
+	}
+	
+	public static Address bytesToAddress(byte[] b)//TODO
 	{
 		
-	}*/
+	}
 	
 	/**Pass a bunch of bytes which represent several Messages, with the first 4
 	 * bytes being the length of the first Message payload.
@@ -399,6 +530,16 @@ bytes			-> DirectoryInfo
 			out[i] = bytes[i-1];
 		}
 		return concat(out);
+	}
+	
+	public static int getTotalLength(byte[]... fields)
+	{
+		int sum = 0;
+		for(int i = 0; i < fields.length; i++)
+		{
+			sum += fields[i].length;
+		}
+		return sum;
 	}
 	
 	public static byte[] concat(byte[]... bytes)

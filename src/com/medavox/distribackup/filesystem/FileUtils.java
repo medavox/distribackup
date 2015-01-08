@@ -10,7 +10,6 @@ public abstract class FileUtils
 	public static byte[] checksum(File f) throws FileNotFoundException, IOException
 	{
 		int bufferSize = 16*1024*1024;//read 16MB of the file into RAM at a time
-		
 		try
 		{
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
