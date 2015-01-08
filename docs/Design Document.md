@@ -214,3 +214,6 @@ Next design phase: go through each component and specify external methods  (use 
 	- Transfer encryption - preventing digital wire taps from snooping on data being transferred is extremely important, especially given the use of a public network (the internet) as the transmission medium.
 	- Authentication - prevent attackers from joining the network without permission.
 	- Local storage encryption - Focus on interfacing with existing filesystem encryption technology here
+* Human-readable anoynmous peer IDs
+    - map IP address of a peer to a country,
+    - then hash the peer's UUID to choose a name from a list specific for that country

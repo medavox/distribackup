@@ -48,7 +48,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 11 | Not Used Currently    | -        | -
 12 | FileData              | Compound | [Yes, see entry below](#FileData)
 13 | File Request          | TLV      | Contains FileInfo <!--; can be -->
-14 | Greeting              | 16       | Contains UUID. If UUID is unknown to receiver, it may request the sender's PeerInfo
+14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        |   | Usually sent to all known peers
 16 | File Tree Status Req  | 0        |   | Sent to 1 peer at a time
 17 | Update Announcement   | Compound | New GRN, plus a FileID List of affected files   |
@@ -64,7 +64,10 @@ TODO
 * 'I now have this file version' announcement
     - announces to network that this peer now has this FileID upon completion, so others can request it
 
-<a name="FileInfo" />FileInfo Order of Constituent Objects
+Compound Object Constituents
+----------------------------
+
+<a name="FileInfo" />FileInfo 
 -----------------------------------
 Element             | Type
 --------------------|--------
@@ -88,13 +91,29 @@ Element             | Type
 3. Path             | String
 4. Contents         | HList:FileInfo,DirectoryID
 
+List
+-----
+Lists of static-length elements will just be a series of payloads without delimiters;
+variable-length elements in a list will each have their own length field
+
+Element                 | Type
+------------------------|--------
+0. (ID Byte)            | a byte
+1. (Length)             | Long
+2. ID byte of elements  | a byte
+3. number of elements   | int
+4. &lt;elements&gt;     | ?
+
+
 HList
 -----
-Element             | Type
---------------------|--------
-0. (ID Byte)        | a byte
-0. (Length)         | Integer
-1. elements | each with their own ID Byte
+Element               | Type
+----------------------|--------
+0. (ID Byte)          | a byte
+0. (Length)           | Long
+1. Number of Elements | int
+1. elements | each has its own ID Byte
+
 
 <a name="PeerInfo" />PeerInfo
 --------
@@ -102,10 +121,10 @@ Element                | Type
 -----------------------|--------
 0. (ID Byte)           | a byte
 0. (Length)            | Integer
-1. UUID1               | Long
-2. UUID2               | Long
+1. UUID1:msb           | Long
+2. UUID2:lsb           | Long
 3. GlobalRevisionNumber| Long
-4. isPublisherOrPeer   | bitfield<0>
+4. isPublisher         | bitfield<0>
 5. Addresses           | List:Address
 
 
@@ -122,19 +141,6 @@ Element                | Type
 6. listenPort          | UShort
 7. lastKnownTimeOnline | Long (ms since epoch)
 
-
-List
------
-Lists of static-length elements will just be a series of payloads without delimiters;
-variable-length elements in a list will each have their own length field
-
-Element                 | Type
-------------------------|--------
-0. (ID Byte)            | a byte
-1. (Length)             | Integer
-2. ID byte of elements  | a byte
-3. number of elements   | int
-4. &lt;elements&gt;     | ?
 
 <a name="FileData" />FileData
 --------
