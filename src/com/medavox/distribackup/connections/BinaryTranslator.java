@@ -31,7 +31,7 @@ import com.medavox.distribackup.filesystem.DirectoryInfo;
  * 
  * However, methods which encode data INTO bytes prepend the length field for convenience.
  * This means that bytes encoded with one method cannot be immediately passed
- * back to the corresponding decoding method, without some processing first. 
+ * back to the corresponding decoding method without some processing first. 
  * 
  * If this encoding is more hassle than help, then the behaviour can be changed.*/
 public abstract class BinaryTranslator
@@ -108,7 +108,7 @@ bytes			-> DirectoryInfo
 		return ba.toByteArray();
 	}
 	
-	public static byte[] uShortToBytes(char l)
+	public static byte[] ushortToBytes(char l)
 	{
 		byte[] out = new byte[2];
 		out[0] = (byte)((l >> 8) & (byte)0xff);
@@ -264,8 +264,30 @@ bytes			-> DirectoryInfo
 	}
 	
 	public static byte[] addressToBytes(Address addr)//TODO
-	{
+	{/* 0. (ID Byte)           | a byte
+		1. (Length)            | Integer
+		2. isUp                | bitfield<0>
+		3. usingHostname(NotIP)| bitfield<1>
+		4. USing IPv6          | bitfield<2>
+		5. IP/hostname         | ByteArray.4/String
+		6. listenPort          | UShort
+		7. lastKnownTimeOnline | Long (ms since epoch)*/
+		byte bitfield = bitfieldToByte(addr.isOnline(), addr.usingHostName(), addr.isIPv6());
+		byte[] addrField;
+		if(addr.usingHostName())
+		{
+			addrField = stringToBytes(addr.getHostName());
+		}
+		else
+		{//whether it's 4 bytes or 16 ie IPv4 or IPv6, doesn't matter here. 
+			addrField = addr.getRawIPAddress();//We know from the bitfield
+		}
+		byte[] port = ushortToBytes(addr.getPort());
+		byte[] lastSpotted = longToBytes(addr.getLastKnownTimeOnline().getTime());
 		
+		byte[] bfWrapper = {bitfield};
+		byte[] len = intToBytes(getTotalLength(bfWrapper, addrField, port, lastSpotted));
+		return concat(len, bfWrapper, addrField, port, lastSpotted);
 	}
 	
 	public static short byteToUByte(byte b) throws IOException, EOFException
@@ -433,6 +455,7 @@ bytes			-> DirectoryInfo
 			UUID uuid = new UUID(UUID1msb, UUID2lsb);
 			
 			//TODO: do something with the isPublisher info we've received
+			//TODO: Addresses!
 			
 			//finally, reconstruct the PeerInfo object from the decoded data
 			PeerInfo rxPeerInfo = new PeerInfo(uuid, globalRevNum/*, addresses*/);
@@ -446,6 +469,7 @@ bytes			-> DirectoryInfo
 		catch(Exception e)//TODO proper exception handling, it's all bubbled here
 		{
 			e.printStackTrace();
+			System.exit(1);
 		}
 		return null;
 	}
@@ -477,9 +501,9 @@ bytes			-> DirectoryInfo
 			while(i < numElements)
 			{
 				int currentElementLength = 
-				bytesToInt(Arrays.copyOfRange(b, i, i+lengthLength));
-				elementEnd = i+currentElementLength+lengthLength;
-				output[elementCount] = Arrays.copyOfRange(b, i+lengthLength, elementEnd);//I am starting to sound worryingly obsessed with the word length
+					bytesToInt(Arrays.copyOfRange(b, i, i+lengthLength));
+				int elementEnd = i+currentElementLength+lengthLength;//I am starting to sound worryingly obsessed with the word length
+				output[elementCount] = Arrays.copyOfRange(b, i+lengthLength, elementEnd);
 				elementCount++;
 				i = elementEnd;
 			}
@@ -496,8 +520,57 @@ bytes			-> DirectoryInfo
 	}
 	
 	public static Address bytesToAddress(byte[] b)//TODO
-	{
-		
+	{/*	2. isUp                | bitfield<0>
+		3. usingHostname(NotIP)| bitfield<1>
+		4. Using IPv6          | bitfield<2>
+		5. IP/hostname         | ByteArray.4/String
+		6. listenPort          | UShort
+		7. lastKnownTimeOnline | Long (ms since epoch)*/
+		try
+		{
+			boolean[] bools = byteToBitfield(b[0], 3);
+			boolean isOnline = bools[0];
+			boolean usingHostName = bools[1];
+			boolean isIPv6 = bools[2];
+			String hostName = "";//initialise to empty values to prevent java complaining about the unused one
+			byte[] rawIP;
+			int addressEnd;
+			if(usingHostName)
+			{
+				addressEnd = getNextMessageEndIndex(b, 1);
+				hostName = bytesToString(Arrays.copyOfRange(b, 1, addressEnd));
+				
+			}
+			else if(isIPv6)
+			{
+				addressEnd = 17;
+			}
+			else
+			{//plain old IPv4
+				addressEnd = 5;
+			}
+			rawIP = Arrays.copyOfRange(b, 1, addressEnd);
+			
+			char port = bytesToUShort(Arrays.copyOfRange(b, addressEnd, addressEnd+2));
+			
+			long lastSpotted = bytesToLong(Arrays.copyOfRange(b, addressEnd+2, addressEnd+10));
+			
+			Address rxAddress;
+			
+			if(usingHostName)
+			{
+				rxAddress = new Address(hostName, port, isOnline, lastSpotted);
+			}
+			else
+			{
+				rxAddress = new Address(rawIP, isIPv6, port, isOnline, lastSpotted);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 	
 	/**Pass a bunch of bytes which represent several Messages, with the first 4
