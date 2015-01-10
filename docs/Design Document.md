@@ -7,12 +7,12 @@ Remember this is NOT a Source Code Management solution
 main use case is large, rarely-changing binary files such as images and videos
 optimised for networks with low common uptime
 
-I've been working all along under the (secret) assumption that my network will be resistant to attack
+I've been working all along under the (unwritten) assumption that my network will be resistant to attack
 and takedown requests, ie there's no central "hub" (as defined below) without which the network fails.
 
 However making an easy photo/video sharing ad backup solution doesn't require this robustness.
 
-How do we reconcile these two viewpoints satisfiably -- ie without compromising goals of either?
+How do we reconcile these two viewpoints acceptably -- ie without compromising the goals of either?
 
 You could have selection of a new central hub if the incumbent one "fails" - becomes unavailable, or notifies spokes of withdrawal, etc...
 
@@ -59,7 +59,7 @@ we're more or less building an opensource clone -- except I don't plan to suppor
 
 Without file differencing, their protocol is inefficient for updates to large files
 
-With this star topology, we are enabling the possibility of a decentralising publishing platform - self-hosted web pages with built-in scalability
+With this star topology, we are enabling the possibility of a decentralised publishing platform - self-hosted web pages with built-in scalability
 
 ##Handling Incoming Messages
 
@@ -70,6 +70,7 @@ With this star topology, we are enabling the possibility of a decentralising pub
 
 
 each Peer has its own UUID, generated during first run and stored on-disk
+
 ------
 
 * Will not require an always-on machine - will reliably and efficiently (but not necessarily quickly) sync mirrors.

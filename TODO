@@ -22,6 +22,6 @@ short term:
     * List
     * HList
 
-    
+
 2. Write the actual methods which do the transferring
 write the action of the doing of transferring; likely lots of consecutive actions/boilerplate
