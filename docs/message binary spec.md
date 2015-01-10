@@ -1,9 +1,32 @@
 Protocol Binary Spec 
 ====================
 
-Using UInt as the length of Messages presents a problem in Java: we are allowing byte arrays longer than the maximum length of an array (Integer.MAX_VALUE). In order to prevent problems, this would require a ByteBuffer (or something) in place of nearly every use of byte[]. Euch.
+Current Issues
+--------------
+
+###UNSIGNED MELODY
+
+Using UInt as the length of Messages presents a problem in Java: byte array length fields are currently uints. This means they can be longer than the maximum length of a native Java array (Integer.MAX_VALUE). In order to prevent this causing problems, this would require a ByteBuffer (or something) in place of nearly every use of byte[]. Euch.
 
 However, even using int as the length field type would allow a string of Messages which are still strung together (ie a compound Message!) that could, combined, still overflow an integer's max value.
+
+###LENGTH FIELDS IN LISTS AND THEIR CONTAINING OBJECTS
+
+PeerInfo length field is an int; however, one of its containing types is a List, whose length field is a long!
+this means we can have 
+
+But then we could have a List (whose length field was an int) inside a PeerInfo that's longer than PeerInfo's length field can hold anyway, if the List is close to Integer.MAX_VALUE
+
+Basically there is a tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array
+
+SOLUTIONS:
+
+1. Just disallow Lists inside PeerInfo objects from being so big that they overflow PeerInfo's length field?
+    - Clunky, as the length measures total bytes, not nubmer of elements, and this would be annoying to count all the time to make sure we're not going over, especially in HLists
+
+2. Make it so that PeerInfo (and any other Message types which contain a List r HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the rest of the message
+    
+    - downside is, it makes it so that you hav to check 2 places to find the total Message length (including List)
 
 ###ID Bytes
 
@@ -47,7 +70,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11 | Not Used Currently    | -        | -
 12 | FileData              | Compound | [Yes, see entry below](#FileData)
-13 | File Request          | TLV      | Contains FileInfo <!--; can be -->
+13 | File Request          | TLV      | Contains FileInfo
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        |   | Usually sent to all known peers
 16 | File Tree Status Req  | 0        |   | Sent to 1 peer at a time
@@ -117,6 +140,7 @@ Element               | Type
 
 <a name="PeerInfo" />PeerInfo
 --------
+
 Element                | Type
 -----------------------|--------
 0. (ID Byte)           | a byte
