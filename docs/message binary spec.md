@@ -4,11 +4,9 @@ Protocol Binary Spec
 Current Issues
 --------------
 
-###Unsigned Melody
+###Length Fields In Lists And Their Containing Objects
 
 Using int as the length field type could allow a string of Messages, when still strung together as a byte[] (ie a compound Message!), to overflow an integer's max value.
-
-###Length Fields In Lists And Their Containing Objects
 
 PeerInfo length field is an int; however, one of its containing types is a List, whose length field is a long!
 this means we could have an enclosed List whose length was longer than the enclosing object, whose length is supposed to be the sum of all of its elements.
@@ -16,6 +14,9 @@ this means we could have an enclosed List whose length was longer than the enclo
 Basically there is a tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
 
 Any situation in which a potentially infinite (or at least very large) array-like object like List, String or HList is enclosed by another object (with the same or smaller max length) whose length field should total everything inside it, could cause this to happen.
+
+Any situation where an object encloses another object, and their length fields are the same size, could cause this to happen.
+
 
 ###Possible Solutions:
 
