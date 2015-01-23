@@ -2,6 +2,7 @@ package com.medavox.distribackup.peers;
 
 //import java.net.*;
 import com.medavox.distribackup.connections.Address;
+import com.medavox.distribackup.connections.Communicable;
 import java.util.UUID;
 import java.util.List;
 //import java.net.Socket;
@@ -13,7 +14,7 @@ import java.util.List;
 5. Addresses           | List:Address
 */
 
-public class PeerInfo
+public class PeerInfo implements Communicable
 {
 	private UUID uuid;
 	private long globalRevisionNumber;

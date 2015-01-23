@@ -22,6 +22,12 @@ short term:
     * List
     * HList
 
-
 2. Write the actual methods which do the transferring
 write the action of the doing of transferring; likely lots of consecutive actions/boilerplate
+
+
+work out if we want to keep the length fields of List and Hlist as longs 
+(unlike EVERY OTHER distribackup message object),
+or turn them into TNV (type-number-value) objects,
+without a number-of-bytes length field, but with a number-of-elements field
+or just keep thwem as ints

@@ -45,7 +45,7 @@ Types of Message extension
     filesystem state
     //version/revision numbers for each block or update
 
-* Make sure to use a raised value for the connection backlog on the listener socket.
+* Make sure to use a higher value for the connection backlog on the listener socket.
     * This will allow more connections to be queued up before the OS returns "Connection refused",
 should your server application become momentarily busy and unable to respond to incoming connections quickly enough.
 

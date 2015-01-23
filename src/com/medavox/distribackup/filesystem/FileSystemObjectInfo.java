@@ -1,6 +1,8 @@
 package com.medavox.distribackup.filesystem;
 
-public abstract class FileSystemObjectInfo
+import com.medavox.distribackup.connections.Communicable;
+
+public abstract class FileSystemObjectInfo implements Communicable
 {
 	protected String name;
 	protected String path;

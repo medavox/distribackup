@@ -20,7 +20,7 @@ public enum Message
 	FILE_INFO		((byte)0x0F, -2),
 	REQ_FOR_PEERS	((byte)0x10,  0),
 	/*NOT_IMPL		((byte)0x11,  0),*/
-	FILEDATA		((byte)0x12, -2),
+	FILE_DATA_CHUNK ((byte)0x12, -2),
 	FILE_REQUEST	((byte)0x13, -2),
 	GREETING		((byte)0x14, 18),
 	EXIT_ANNOUNCE	((byte)0x15,  0),

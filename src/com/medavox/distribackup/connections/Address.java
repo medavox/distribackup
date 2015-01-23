@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 
-public class Address//TODO: flesh this class out
+public class Address implements Communicable//TODO: flesh this class out
 {
 	/*host (IP/IPv6/hostname)
 	listenPort: short

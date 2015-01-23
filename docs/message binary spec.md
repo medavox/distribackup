@@ -4,40 +4,42 @@ Protocol Binary Spec
 Current Issues
 --------------
 
-###UNSIGNED MELODY
+###Unsigned Melody
 
-Using UInt as the length of Messages presents a problem in Java: byte array length fields are currently uints. This means they can be longer than the maximum length of a native Java array (Integer.MAX_VALUE). In order to prevent this causing problems, this would require a ByteBuffer (or something) in place of nearly every use of byte[]. Euch.
+Using int as the length field type could allow a string of Messages, when still strung together as a byte[] (ie a compound Message!), to overflow an integer's max value.
 
-However, even using int as the length field type would allow a string of Messages which are still strung together (ie a compound Message!) that could, combined, still overflow an integer's max value.
-
-###LENGTH FIELDS IN LISTS AND THEIR CONTAINING OBJECTS
+###Length Fields In Lists And Their Containing Objects
 
 PeerInfo length field is an int; however, one of its containing types is a List, whose length field is a long!
-this means we can have 
+this means we could have an enclosed List whose length was longer than the enclosing object, whose length is supposed to be the sum of all of its elements.
 
-But then we could have a List (whose length field was an int) inside a PeerInfo that's longer than PeerInfo's length field can hold anyway, if the List is close to Integer.MAX_VALUE
+Basically there is a tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
 
-Basically there is a tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array
+Any situation in which a potentially infinite (or at least very large) array-like object like List, String or HList is enclosed by another object (with the same or smaller max length) whose length field should total everything inside it, could cause this to happen.
 
-SOLUTIONS:
+###Possible Solutions:
 
 1. Just disallow Lists inside PeerInfo objects from being so big that they overflow PeerInfo's length field?
-    - Clunky, as the length measures total bytes, not nubmer of elements, and this would be annoying to count all the time to make sure we're not going over, especially in HLists
+    - Clunky, as the length measures total bytes, not number of elements, and this would be annoying to count all the time to make sure we're not going over, especially in HLists
 
-2. Make it so that PeerInfo (and any other Message types which contain a List r HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the rest of the message
-    
+2. Make it so that PeerInfo (and any other Message types which contain a List or HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the rest of the message
+
     - downside is, it makes it so that you hav to check 2 places to find the total Message length (including List)
+    
+3. Lists and HLists could become TNV, dropping the length field. Variable-length elements would need their own length fields (as before), and fixed-length elements' length would be known. Downside is, it would be slow to iterate through Lists of variable-length messages. The total byte-length would not be known - but would also not NEED to be known by Java, which is an advantage for supporting large arrays.
 
-###ID Bytes
+ID Bytes
+--------
 
-Each Object type will have an ID byte, followed either by its payload (for static-length types)
+Each Object type has an ID byte, followed either by its payload (for static-length types)
 or a length int (without the int type header attached, because we know what should 
 follow for a certain message type), followed by its payload.
 
 Objects inside a compound object don't need an ID byte; their type is known from the object's structure definition.
 Variable-length types (such as strings) still need their length field though.
 
-###Message Lengths
+Message Lengths
+---------------
 
 Message types with a static payload length (eg bitfield, ULong) don't have (or need) a length attribute. Their length is built into the spec.
 
@@ -48,6 +50,8 @@ TLV
 
 TLNV
 :   Type Length Number Value. An extra field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
+
+
 
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
@@ -69,8 +73,8 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 0F | FileInfo              | Compound | [Yes, see entry below](#FileInfo)
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11 | Not Used Currently    | -        | -
-12 | FileData              | Compound | [Yes, see entry below](#FileData)
-13 | File Request          | TLV      | Contains FileInfo
+12 | File Data Chunk       | Compound | [Yes, see entry below](#FileDataChunk)
+13 | File Request          | TLV      | Contains FileInfo. FileInfo's RevNum can be for a specific version, or -1 for latest version
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        |   | Usually sent to all known peers
 16 | File Tree Status Req  | 0        |   | Sent to 1 peer at a time
@@ -166,7 +170,7 @@ Element                | Type
 7. lastKnownTimeOnline | Long (ms since epoch)
 
 
-<a name="FileData" />FileData
+<a name="FileDataChunk" />FileDataChunk
 --------
 Element                 | Type
 ------------------------|--------
@@ -179,6 +183,11 @@ Element                 | Type
 
 Wild Speculation
 ================
+
+* change List and Hlist from TLNV to just TNV, to prevent cases where the total number of bytes is > Integer.MAX_VALUE
+* Add the following message types:
+    - Request for all files: used by a new peer to ask for all the files in the archive, without having to specifically request each one (also avoid querying for them)
+* Differentiate bewteen supporting data types (like int, bitfield, String) and objects that can actually be sent down the Socket. The latter are more likely to have a custom java class, and implement Communicable.
 
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
 

@@ -10,6 +10,8 @@ import java.util.Arrays;
 
 import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
+import com.medavox.distribackup.filesystem.FileInfo;
+import com.medavox.distribackup.filesystem.FileDataChunk;
 
 /**This class handles communication over an individual Socket connection, 
  * after its initialisation. */
@@ -18,18 +20,19 @@ public class ConnectionOperator extends Thread
 	/*ADDRESS               ((byte)0x0A, -2),
 	BYTE_ARRAY              ((byte)0x0B, -1),
 	PEER_INFO               ((byte)0x0C, -2),
-	DIRECTORY_INFO  ((byte)0x0D, -2),
+	DIRECTORY_INFO          ((byte)0x0D, -2),
 	LIST                    ((byte)0x0E, -1),
 	FILE_INFO               ((byte)0x0F, -2),
-	FILEDATA                ((byte)0x12, -2),
-	FILE_REQUEST    ((byte)0x13, -2),
+	FILE_DATA_CHUNK         ((byte)0x12, -2),
+	FILE_REQUEST            ((byte)0x13, -2),
 	GREETING                ((byte)0x14, 18),
-	TREE_STATUS_REQ ((byte)0x16,  0),
-	UPDATE_ANNOUNCE ((byte)0x17, -2),
+	TREE_STATUS_REQ         ((byte)0x16,  0),
+	UPDATE_ANNOUNCE         ((byte)0x17, -2),
 	HLIST                   ((byte)0x18, -1);*/
 	BufferedInputStream bis;
 	BufferedOutputStream bos;
 	Socket socket;
+    private UUID connectedPeer;
 	public ConnectionOperator(Socket s/*, PeerInfo*/) throws IOException
 	{
 		this.socket = s;
@@ -75,10 +78,10 @@ public class ConnectionOperator extends Thread
 	/*SENDING:Methods to send data down the socket*/
 	
 	/**Sends a greeting (containing our UUID), waits for a greeting in reply, and returns the received UUID */
-	UUID greeting() throws IOException
+	UUID exchangeGreetings() throws IOException
 	{
-		//package up data into a single bytestream before sending, 
-		//(as opposed to sending each bit as we create it), to minimise packets
+		//package up data into a single byte[] before sending, 
+		//(as opposed to sending each part as we create it), to minimise packets
 		byte[] UUIDmsb = BinaryTranslator.longToBytes(Peer.myUUID.getMostSignificantBits());
 		byte[] UUIDlsb = BinaryTranslator.longToBytes(Peer.myUUID.getLeastSignificantBits());
 		byte[] greetingSend = BinaryTranslator.concat(Message.GREETING.IDByte, UUIDmsb, UUIDlsb);
@@ -88,11 +91,13 @@ public class ConnectionOperator extends Thread
 		//wait for greeting back
 		byte[] theirGreeting = new byte[Message.GREETING.length-2];//minus header
 		bis.read(theirGreeting, 2, theirGreeting.length);//again, skip header
-					
+        
 		long theirUUIDmsb = BinaryTranslator.bytesToLong(Arrays.copyOfRange(theirGreeting, 0, 7));
 		long theirUUIDlsb = BinaryTranslator.bytesToLong(Arrays.copyOfRange(theirGreeting, 8, 15));
 		
-		return new UUID(theirUUIDmsb, theirUUIDlsb);
+		UUID theirUUID = new UUID(theirUUIDmsb, theirUUIDlsb);
+        connectedPeer = theirUUID;
+        return theirUUID;
 	}
 		
 	void announceExit() throws IOException
@@ -109,9 +114,10 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	void sendPeerInfo(PeerInfo[] peers) // TODO
+	void sendPeerInfoList(PeerInfo[] peers) // TODO
 	{
-		
+		byte IDByte = Message.PEER_INFO.IDByte;
+        
 	}
 	
 	void sendTreeStatus() // TODO
@@ -119,19 +125,107 @@ public class ConnectionOperator extends Thread
 		
 	}
 	
-	void sendFileData() // TODO
+	void sendFileData(FileDataChunk fdc)
 	{
-	
+        try
+        {
+            byte IDByte = Message.FILE_DATA_CHUNK.IDByte;
+            byte[] dataChunkBin = BinaryTranslator.fileDataChunkToBytes(fdc);
+            byte[] message = BinaryTranslator.concat(IDByte, dataChunkBin);
+            bos.write(message, 0, message.length);
+            bos.flush();
+        }
+        catch(Exception e)
+        {
+            reportException(e);
+        }
 	}
 		
-	void requestFile(Path p) // TODO
-	{
-		
+	void requestFile(FileInfo fi) // TODO
+	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
+    //having two seperate length field for this seems unecessary, but is consistent with the current spec
+    //maybe it can be changed later
+        try
+        {
+            byte IDByte = Message.FILE_REQUEST.IDByte;
+            byte[] fileInfoBin = BinaryTranslator.fileInfoToBytes(fi);
+            byte[] messageLength = BinaryTranslator.intToBytes(fileInfoBin.length);
+            
+            byte[] message = BinaryTranslator.concat(IDByte, messageLength, fileInfoBin);
+            bos.write(message, 0, message.length);
+            bos.flush();
+        }
+        catch(Exception e)
+        {
+            reportException(e);
+        }
 	}
-	/*RECEIVER: Handling incoming data*/
+    
+    private void reportException(Exception e)
+    {
+        System.err.println("ERROR: ConnectionOperator thread \""+this.getName()+
+            "\" reports "+e);
+        e.printStackTrace();
+    }
+    
+	/*TODO RECEIVER: Handling incoming data*/
 	public void run() // TODO
-	{
-		
+	{/**a queue of enums which each represent incoming events 
+    a single event handling thread deals with each event in order
+    each event enum will need info about it attached, like WHICH peer announced its exit
+    connection operators receiving bytes (which they then decode into messages) will add to the queue*/
+		while(!socket.isClosed())
+        {
+            try
+            {
+                int nextID = bis.read();
+                if(nextID == -1)//TODO
+                {//stream has closed or "end has been reached"
+                    //guard clause
+                }
+                byte nextIDByte = (byte)nextID;
+                Message nextMessage = Message.getMessageTypeFromID(nextIDByte);
+                if(Message == null)//TODO
+                {//guard clause
+                    //another error; no Message was found with that IDByte
+                }
+                
+                if(nextMessage.length == 0)//TODO
+                {//this is a no-payload message, so we're ready to send it off
+                    //...
+                }
+                else if(nextMessage.length < 0)
+                {//incoming message is variable-length
+                //read next 4 bytes (the length field) to work out how many
+                //more bytes we need to read
+                    int lengthLength;
+                    if(nextMessage == Message.LIST ||
+                        nextMessage == Message.HLIST)
+                    {//currently, Lists and HLists employ a long (not an int) for their length fields
+                        lengthLength = 8;
+                    }
+                    else
+                    {
+                        lengthLength = 4;
+                    }
+                    
+                    byte[] lengthBytes = new byte[lengthLength];
+                    bis.read(lengthBytes, 0, lengthLength);
+                    int nextLength = BinaryTranslator.bytesToInt(lengthBytes);
+                    byte[] messageBodyBin = new byte[nextLength];
+                    bis.read(messageBodyBin, 0, nextLength);
+                    
+                }
+                else
+                {
+                    
+                }
+            }
+            catch(Exception e)
+            {
+                reportException(e);
+            }
+        }
 	}
 	
 	public void close() throws IOException

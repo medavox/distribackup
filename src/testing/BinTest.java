@@ -1,7 +1,7 @@
 import com.medavox.distribackup.connections.*;
 import java.io.*;
 import java.util.Random;
-/**Performs tests for the type conversions to binary,
+/**Performs tests for conversions between binary and Distribackup Message types,
  to make sure they are encoded and decoded correctly*/
 public class BinTest
 {
@@ -17,7 +17,7 @@ public class BinTest
 	uint		notimpl
 	long		PASSED
 	ulong		notimpl
-	bitfield	FAILED
+	bitfield	PASSED
 	String*/
 	public static void main(String[] args)
 	{
