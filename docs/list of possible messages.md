@@ -1,16 +1,17 @@
 List of Communicables
 =========================
 
-* Peer(s) Info List
 * File Data Chunk
 * Personal PeerInfo Request
+* Request for more PeerInfo
+* Peer(s) Info List
 * Personal PeerInfo
 * File Tree Status Request
-* File Tree Status
-* Publisher Only: Filetree Update Announcement 
-* File (/Chunk) Request   DONE
-* File Request Reply: I don't have that version/file
-* Greeting
+* File Tree Status ----
+* Publisher Only: Filetree Update Announcement
+* File (/Chunk) Request
+//* File Request Reply: I don't have that version/file
+//* Greeting
 * Exit Announcement
 
 

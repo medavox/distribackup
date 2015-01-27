@@ -4,30 +4,31 @@ Protocol Binary Spec
 Current Issues
 --------------
 
-###Length Fields In Lists And Their Containing Objects
+###Length Fields In Containing Objects
 
-Using int as the length field type could allow a string of Messages, when still strung together as a byte[] (ie a compound Message!), to overflow an integer's max value.
+Using int as the length field type could allow a string of Messages, when still strung together as a byte[] (ie a compound Message), to overflow an integer's max value.
 
-PeerInfo length field is an int; however, one of its containing types is a List, whose length field is a long!
-this means we could have an enclosed List whose length was longer than the enclosing object, whose length is supposed to be the sum of all of its elements.
+PeerInfo's length field is an int; however, one of its containing types is a List, whose length field is a long.
+This means we could have an enclosed List whose length was longer than the enclosing object, whose length is supposed to be the sum of all of its elements.
 
-Basically there is a tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
-
-Any situation in which a potentially infinite (or at least very large) array-like object like List, String or HList is enclosed by another object (with the same or smaller max length) whose length field should total everything inside it, could cause this to happen.
+There is an intrinsic tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
 
 Any situation where an object encloses another object, and their length fields are the same size, could cause this to happen.
 
 
 ###Possible Solutions:
 
-1. Just disallow Lists inside PeerInfo objects from being so big that they overflow PeerInfo's length field?
+1. Just disallow Lists inside PeerInfo objects from being so big that they overflow PeerInfo's length field.
     - Clunky, as the length measures total bytes, not number of elements, and this would be annoying to count all the time to make sure we're not going over, especially in HLists
 
-2. Make it so that PeerInfo (and any other Message types which contain a List or HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the rest of the message
+2. Make it so that PeerInfo (and any other Message types which contain a List or HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the length of the rest of the message
 
-    - downside is, it makes it so that you hav to check 2 places to find the total Message length (including List)
+    - downside: 2 locations must be checked to find the total Message length (including List)
     
-3. Lists and HLists could become TNV, dropping the length field. Variable-length elements would need their own length fields (as before), and fixed-length elements' length would be known. Downside is, it would be slow to iterate through Lists of variable-length messages. The total byte-length would not be known - but would also not NEED to be known by Java, which is an advantage for supporting large arrays.
+3. Lists and HLists could become TNV, dropping the length field. Variable-length elements would need their own length fields (as before), and fixed-length elements' length would be known. 
+
+    - Downside: it would be slow to iterate through Lists of variable-length messages. Each element would need its own own length field querying, and it would be difficult to know how far through the List we are.
+    The total byte-length would not be known - but would also not need to be known by Java, which is an advantage for supporting large arrays. Can't have an overflow of a value you don't explicitly store!
 
 ID Bytes
 --------
@@ -52,7 +53,10 @@ TLV
 TLNV
 :   Type Length Number Value. An extra field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
 
+Supporting Data Types
+---------------------
 
+The following Objects are not used as standalone Messages by Distribackup, but instead form part of compound Messages, and so are generally used without their ID Byte. Despite this, an ID Byte number is reserved for each in case this situation changes, or another program uses this library differently.
 
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
@@ -66,12 +70,21 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 07 | Short                 | 2        |   |
 08 | Integer               | 4        |   |
 09 | Long                  | 8        |   |
-0A | Address               | Compound | [Yes, see entry below](#Address)
+0A | Address               | Compound | [Yes, see entry below](#Address) |
 0B | ByteArray             | TLV      |   |
-0C | PeerInfo              | Compound | [Yes, see entry below](#PeerInfo)
-0D | DirectoryInfo         | Compound | Similar to FileInfo, but can contain other FileID or DirectoryIDs [Yes, see entry below](#DirectoryInfo)
-0E | List                  | see expl |
-0F | FileInfo              | Compound | [Yes, see entry below](#FileInfo)
+0C | PeerInfo              | Compound | [Yes, see entry below](#PeerInfo) |
+0D | DirectoryInfo         | Compound | [Yes, see entry below](#DirectoryInfo) Similar to FileInfo, but can contain other FileID or DirectoryIDs
+0F | FileInfo              | Compound | [Yes, see entry below](#FileInfo) |
+0E | List                  | TLNV     | |
+18 | Heterogeneous List    | TLNV     | Each element has its own ID Byte, and length field if applicable |
+
+Sendable (Communicable) Message Objects
+---------------------------------------
+
+These objects can be sent directly to another Peer.
+
+ID byte | Name  | Payload length in bytes | Is Compound / Notes
+---|------------|-------------------------|-------------|
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11 | Not Used Currently    | -        | -
 12 | File Data Chunk       | Compound | [Yes, see entry below](#FileDataChunk)
@@ -79,18 +92,12 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        |   | Usually sent to all known peers
 16 | File Tree Status Req  | 0        |   | Sent to 1 peer at a time
-17 | Update Announcement   | Compound | New GRN, plus a FileID List of affected files   |
-18 | Heterogeneous List    | TLV      | each element has its own ID Byte
+17 | Update Announcement   | Compound | Sendable by Publisher only. New GRN, then a List:FileID of affected files   |
 
-TODO
-----
-
-* File Request Reply: I don't have that version/file
-* Global Revision Number
-    - a simple counter for the whole file tree, incremented on every revision
-    - is now contained as a ULong inside a PeerInfo
-* 'I now have this file version' announcement
-    - announces to network that this peer now has this FileID upon completion, so others can request it
+* Personal PeerInfo Request
+* Peer(s) Info List
+* Personal PeerInfo
+* File Tree Status ---- provided by DirectoryInfo
 
 Compound Object Constituents
 ----------------------------
@@ -124,22 +131,22 @@ List
 Lists of static-length elements will just be a series of payloads without delimiters;
 variable-length elements in a list will each have their own length field
 
-Element                 | Type
-------------------------|--------
-0. (ID Byte)            | a byte
-1. (Length)             | Long
-2. ID byte of elements  | a byte
-3. number of elements   | int
-4. &lt;elements&gt;     | ?
+Element                | Type
+-----------------------|--------
+0. (ID Byte)           | a byte
+1. (Length)            | Long
+2. ID byte of elements | a byte
+3. number of elements  | int
+4. &lt;elements&gt;    | ?
 
 
 HList
 -----
-Element               | Type
-----------------------|--------
-0. (ID Byte)          | a byte
-0. (Length)           | Long
-1. Number of Elements | int
+Element                | Type
+-----------------------|--------
+0. (ID Byte)           | a byte
+0. (Length)            | Long
+1. Number of Elements  | int
 1. elements | each has its own ID Byte
 
 
@@ -173,22 +180,28 @@ Element                | Type
 
 <a name="FileDataChunk" />FileDataChunk
 --------
-Element                 | Type
-------------------------|--------
-0. (ID Byte)            | a byte
-1. (Length)             | Integer
-2. FileInfo             | FileInfo
-3. isWholeFile          | bitfield<0>
-4. offset               | Long
-5. payload              | ByteArray
+Element                | Type
+-----------------------|--------
+0. (ID Byte)           | a byte
+1. (Length)            | Integer
+2. FileInfo            | FileInfo
+3. isWholeFile         | bitfield<0>
+4. offset              | Long
+5. payload             | ByteArray
 
-Wild Speculation
-================
+TO DO?
+======
 
-* change List and Hlist from TLNV to just TNV, to prevent cases where the total number of bytes is > Integer.MAX_VALUE
+* Global Revision Number
+    - a simple counter for the whole file tree, incremented on every revision
+    
+* Change List and Hlist from TLNV to just TNV, to avoid cases where the total number of bytes is > Integer.MAX_VALUE
 * Add the following message types:
     - Request for all files: used by a new peer to ask for all the files in the archive, without having to specifically request each one (also avoid querying for them)
-* Differentiate bewteen supporting data types (like int, bitfield, String) and objects that can actually be sent down the Socket. The latter are more likely to have a custom java class, and implement Communicable.
+    - File Request Reply: I don't have that version/file
+    - 'I now have this file version' announcement
+        - announces to network that this peer now has this FileID upon completion, so others can request it
+* Differentiate between supporting data types (like int, bitfield, String) and objects that can actually be sent down the Socket. The latter are more likely to have a custom java class, and implement Communicable.
 
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
 

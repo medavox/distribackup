@@ -173,8 +173,7 @@ bytes			-> DirectoryInfo
 	
 	/**This path should be relative to the repo root*/
 	public static byte[] fileInfoToBytes(File f) throws IOException
-	{/*
-		0. (ID Byte)        | a byte
+	{/* 0. (ID Byte)        | a byte
 		0. (Length)         | Integer
 		1. Name             | String
 		2. Path             | String
@@ -223,7 +222,8 @@ bytes			-> DirectoryInfo
         byte[] checksum = fi.getChecksum();//checksums are already byte[]s
         byte[] length = intToBytes(getTotalLength(name, path, fileSize, revNum, checksum));
         return concat(length, name, path, fileSize, revNum, checksum);
-    }    
+    }
+    
     public static byte[] fileDataChunkToBytes(FileDataChunk fd) throws UnsupportedEncodingException, IOException//TODO
     {/*0. (ID Byte)         | a byte
     1. (Length)             | Integer
@@ -252,7 +252,7 @@ bytes			-> DirectoryInfo
 	/**DirInfo objects are going to massive, due to their tree nature.
 	 Converting a directory into byte-form will involve converting all files and
 	 directories inside it, which can also contain their own files. WHOA*/
-	/*public static byte[] dirInfoToBytes(File f) // TODO
+	public static byte[] directoryInfoToBytes(File f) throws IOException// TODO
 	{
 		//make sure File object is a directory (not a file) before starting
 		if(f.isFile())
@@ -260,7 +260,16 @@ bytes			-> DirectoryInfo
 			throw new IOException("ERROR: supplied File Object is not a Directory!");
 		}
 		
-	}*/
+	}
+    
+    public static byte[] directoryInfoToBytes(DirectoryInfo di)//TODO
+    {/* 0. (ID Byte)        | a byte
+        0. (Length)         | Integer
+        2. Name             | String
+        3. Path             | String
+        4. Contents         | HList:FileInfo,DirectoryID*/
+         
+    }
 	
 	public static byte[] peerInfoToBytes(PeerInfo p, boolean isPublisher) throws IOException, NumberFormatException
 	{/* 0. (ID Byte)           | a byte
@@ -640,20 +649,12 @@ bytes			-> DirectoryInfo
 		}
         return rxAddress;
 	}
-	
-	/**Pass a bunch of bytes which represent several Messages, with the first 4
-	 * bytes being the length of the first Message payload.
-	 * Useful for decoding String objects inside compound Messages.*/
-	/*public static byte[] getNextBytes(byte[] b)
-	{
-		
-	}*/
+
     /**invokes the appropriate conversion method on a byteArray to convert any 
      * binary message into a Communicable, the interface which all Java class 
      * versions of Distribackup message objects implement.*/
-    public static Communicable bytesToCommunicable(byte[] b, Message type)
-    {/*
-        PEER_INFO		((byte)0x0C, -2),
+    public static Communicable bytesToCommunicable(byte[] b, Message type)//TODO
+    {/* PEER_INFO		((byte)0x0C, -2),
         DIRECTORY_INFO	((byte)0x0D, -2),
         LIST			((byte)0x0E, -1),
         FILE_INFO		((byte)0x0F, -2),
@@ -668,35 +669,18 @@ bytes			-> DirectoryInfo
         Communicable vagueReturnType;
         switch(type)
         {
-            case Message.PEER_INFO:
+            case PEER_INFO:
+                return bytesToPeerInfo(b);
             
+            case FILE_INFO:
+                return bytesToFileInfo(b);
+            
+            case GREETING:
+                
             break;
             
-            case Message.FILE_INFO:
-            
-            break;
-            
-            case Message.REQ_FOR_PEERS:
-            
-            break;
-            
-            case Message.FILE_REQUEST:
-            
-            break;
-            
-            case Message.GREETING:
-            
-            break;
-            
-            case Message.EXIT_ANNOUNCE:
-            
-            break;
-            
-            case Message.TREE_STATUS_REQ:
-            
-            break;
-            case Message.UPDATE_ANNOUNCE:
-            
+            case UPDATE_ANNOUNCE:
+                
             break;
             
         }

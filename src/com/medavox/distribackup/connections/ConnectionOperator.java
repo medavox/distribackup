@@ -185,7 +185,7 @@ public class ConnectionOperator extends Thread
                 }
                 byte nextIDByte = (byte)nextID;
                 Message nextMessage = Message.getMessageTypeFromID(nextIDByte);
-                if(Message == null)//TODO
+                if(nextMessage == null)//TODO
                 {//guard clause
                     //another error; no Message was found with that IDByte
                 }
@@ -209,17 +209,26 @@ public class ConnectionOperator extends Thread
                         lengthLength = 4;
                     }
                     
+                    //get length of message from length field
                     byte[] lengthBytes = new byte[lengthLength];
                     bis.read(lengthBytes, 0, lengthLength);
                     int nextLength = BinaryTranslator.bytesToInt(lengthBytes);
+                    
+                    //read the entire message into a byte[]
                     byte[] messageBodyBin = new byte[nextLength];
                     bis.read(messageBodyBin, 0, nextLength);
                     
+                    //convert the byteArray into a Communicable
+                    Communicable details = BinaryTranslator.bytesToCommunicable(messageBodyBin, nextMessage);
+                    
+                    //construct a ReceivedMessage and add it to the IMP queue
                 }
                 else
-                {
+                {//Message is fixed-length; read the value from the Message enum
                     
                 }
+                
+                //convert this into ReceivedMessage
             }
             catch(Exception e)
             {
