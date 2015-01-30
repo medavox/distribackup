@@ -27,7 +27,11 @@ write the action of the doing of transferring; likely lots of consecutive action
 
 
 work out if we want to keep the length fields of List and Hlist as longs 
-(unlike EVERY OTHER distribackup message object),
+    (unlike EVERY OTHER distribackup message object),
 or turn them into TNV (type-number-value) objects,
-without a number-of-bytes length field, but with a number-of-elements field
+    without a number-of-bytes length field, but with a number-of-elements field
 or just keep thwem as ints
+
+create an evaluation framework
+
+finish file transfer
