@@ -19,7 +19,7 @@ public enum Message
 	LIST			((byte)0x0E, -1),
 	FILE_INFO		((byte)0x0F, -2),
 	REQ_FOR_PEERS	((byte)0x10,  0),
-	/*NOT_IMPL		((byte)0x11,  0),*/
+	REQ_ALL_FILES	((byte)0x11,  0),
 	FILE_DATA_CHUNK ((byte)0x12, -2),
 	FILE_REQUEST	((byte)0x13, -2),
 	GREETING		((byte)0x14, 18),

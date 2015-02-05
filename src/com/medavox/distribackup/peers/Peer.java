@@ -9,25 +9,25 @@ import java.nio.file.*;
 import com.medavox.distribackup.connections.*;
 import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.filesystem.*;
-/* There must be a local state object which records open sockets, and which peers they pertain to
-*/
+/* There must be a local state object which records open sockets, and 
+ * which peers they pertain to*/
 public abstract class Peer
 {
 	private int listenPort;
 	private String defaultRoot = "/home/scc/distribackup/publisher-root";
 	public Path root;
-	ConcurrentHashMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	Map<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
 	PeerInfo publisherInfo;
 	UUID publisherID;
 	public static UUID myUUID;
 	
 	public static final short version = 1;//increment this manually on every release
-	List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();
+	List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();//may need to become concurrent
 	public Peer(Path root, int port)
 	{
 		this.root = root;
 		this.listenPort = port;
-		myUUID = UUID.randomUUID();//need to keep this safe, as it uniquely IDs us on the network
+		myUUID = UUID.randomUUID();//this uniquely IDs us on the network
 		Listener listenHook = new Listener(port, this);
 		try
 		{
@@ -56,28 +56,16 @@ public abstract class Peer
 			
 			if(handshook == -1)
 			{
-				System.err.println("Error! Connecting Peer "+s.getInetAddress()+" has wrong version!");
+				System.err.println("Error! Connecting Peer "+s.getInetAddress()+
+                    " has wrong version!");
 				co.close();
 				return;
 			}
-			
-			//send a greeting, expect a greeting
-				//send our UUID
-				//get theirs
-			
+			//TODO:
 			//construct a new PeerInfo based on data requested and received
-
 			//check it with the local PeerInfo store
 			
-			boolean isNewPeer = true;//STOPGAP: REMOVE
-			if(isNewPeer)
-			{
-				//byte[] version;
-			}
-			else
-			{
-				
-			}
+			
 		}
 		catch(IOException ioe)
 		{
@@ -118,12 +106,10 @@ public abstract class Peer
 		{
 			//TODO
 		}
-		
-		//send UUID
-		
 	}
-	
-	public void sendFile(Path file, BufferedOutputStream bos) throws IOException
+	//DEPRECATED: uses Java's built-in serialisation, 
+        //which is both clunky to use and inefficient 
+	/*public void sendFile(Path file, BufferedOutputStream bos) throws IOException
 	{
 		String fileName = file.getFileName().toString();
 		
@@ -136,5 +122,5 @@ public abstract class Peer
 		ObjectOutputStream objos = new ObjectOutputStream(bos);
 		
 		objos.writeObject(ft);
-	}
+	}*/
 }

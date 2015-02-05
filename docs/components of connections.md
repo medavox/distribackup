@@ -32,7 +32,7 @@ Types of Message extension
     filesend
         file metadata, eg {filename, mod time, access time, permissions(?), owner/group(?)}
     version info
-    upgrade or gtfo
+    upgrade or leave
 
 <!-- //'haveblock' advertisements to fellow subscribed mirrors -->
     block/file requests to other peers (broadcast to all known peers)

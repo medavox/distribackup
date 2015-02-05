@@ -172,8 +172,9 @@ public class ConnectionOperator extends Thread
 	public void run() // TODO
 	{/**a queue of enums which each represent incoming events 
     a single event handling thread deals with each event in order
-    each event enum will need info about it attached, like WHICH peer announced its exit
-    connection operators receiving bytes (which they then decode into messages) will add to the queue*/
+    each event enum will need info about it attached, like WHICH peer announced 
+    its exit. Connection operators receiving bytes (which they then decode into
+    messages) will add to the queue*/
 		while(!socket.isClosed())
         {
             try
@@ -193,11 +194,18 @@ public class ConnectionOperator extends Thread
                 if(nextMessage.length == 0)//TODO
                 {//this is a no-payload message, so we're ready to send it off
                     //...
+                    ReceivedMessage rxmsg = new 
+                        ReceivedMessage(nextMessage, connectedPeer, this);
+                        
+                    IncomingMessageProcessor.getIMP().addToQueue(rxmsg);
                 }
-                else if(nextMessage.length < 0)
+                
+                int nextLength = -1;
+                
+                if(nextMessage.length < 0)
                 {//incoming message is variable-length
-                //read next 4 bytes (the length field) to work out how many
-                //more bytes we need to read
+                //read next 4 (or 8) bytes (the length field) to work out
+                //how many more bytes we need to read
                     int lengthLength;
                     if(nextMessage == Message.LIST ||
                         nextMessage == Message.HLIST)
@@ -212,22 +220,25 @@ public class ConnectionOperator extends Thread
                     //get length of message from length field
                     byte[] lengthBytes = new byte[lengthLength];
                     bis.read(lengthBytes, 0, lengthLength);
-                    int nextLength = BinaryTranslator.bytesToInt(lengthBytes);
-                    
-                    //read the entire message into a byte[]
-                    byte[] messageBodyBin = new byte[nextLength];
-                    bis.read(messageBodyBin, 0, nextLength);
-                    
-                    //convert the byteArray into a Communicable
-                    Communicable details = BinaryTranslator.bytesToCommunicable(messageBodyBin, nextMessage);
-                    
-                    //construct a ReceivedMessage and add it to the IMP queue
+                    nextLength = BinaryTranslator.bytesToInt(lengthBytes);
                 }
                 else
                 {//Message is fixed-length; read the value from the Message enum
-                    
+                    nextLength = nextMessage.length;
                 }
+            
+                //read the entire message into a byte[]
+                byte[] messageBodyBin = new byte[nextLength];
+                bis.read(messageBodyBin, 0, nextLength);
                 
+                //convert the byteArray into a Communicable
+                Communicable details = BinaryTranslator.bytesToCommunicable(messageBodyBin, nextMessage);
+                
+                //construct a ReceivedMessage and add it to the IMP queue
+                ReceivedMessage rxmsg = new
+                    ReceivedMessage(nextMessage, connectedPeer, this, details);
+                
+                IncomingMessageProcessor.getIMP().addToQueue(rxmsg);
                 //convert this into ReceivedMessage
             }
             catch(Exception e)

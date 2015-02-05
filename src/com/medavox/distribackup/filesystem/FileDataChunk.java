@@ -7,7 +7,9 @@ public class FileDataChunk implements Communicable
     private FileInfo fileInfo;
     private long offset;
     private byte[] payload;
-    public FileDataChunk(FileInfo fi, byte[] payload, long offset) throws NumberFormatException
+    
+    public FileDataChunk(FileInfo fi, byte[] payload, long offset)
+        throws NumberFormatException
     {
         if(offset < 0)
         {

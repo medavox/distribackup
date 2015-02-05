@@ -11,7 +11,7 @@ Using int as the length field type could allow a string of Messages, when still 
 PeerInfo's length field is an int; however, one of its containing types is a List, whose length field is a long.
 This means we could have an enclosed List whose length was longer than the enclosing object, whose length is supposed to be the sum of all of its elements.
 
-There is an intrinsic tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
+There is an inherent tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
 
 Any situation where an object encloses another object, and their length fields are the same size, could cause this to happen.
 
@@ -86,7 +86,7 @@ These objects can be sent directly to another Peer.
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
-11 | Not Used Currently    | -        | -
+11 | Request All Files     | 0        | Asks for latest known version of all files. Likely to be broadcast by a new subscriber, to all known peers.
 12 | File Data Chunk       | Compound | [Yes, see entry below](#FileDataChunk)
 13 | File Request          | TLV      | Contains FileInfo. FileInfo's RevNum can be for a specific version, or -1 for latest version
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
@@ -194,7 +194,7 @@ TO DO?
 
 * Global Revision Number
     - a simple counter for the whole file tree, incremented on every revision
-    
+
 * Change List and Hlist from TLNV to just TNV, to avoid cases where the total number of bytes is > Integer.MAX_VALUE
 * Add the following message types:
     - Request for all files: used by a new peer to ask for all the files in the archive, without having to specifically request each one (also avoid querying for them)
