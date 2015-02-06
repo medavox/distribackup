@@ -46,7 +46,7 @@ public class PeerInfo implements Communicable
 		globalRevisionNumber++;
 	}
 	
-	/**Convenience method to speed up what is (likely) 
+	/**Short-named method to speed typing up what is (likely) 
 	 * to be the most common operation on the GRN.*/
 	public void incrGRN()
 	{

@@ -1,4 +1,4 @@
 public class UpdateAnnouncement
 {
-    FileInfo[] changes;
+    FileInfo[] changedFiles;
 }

@@ -51,6 +51,10 @@ public abstract class IncomingMessageProcessor extends Thread
                     case TREE_STATUS_REQ:
                         handleFileTreeStatusRequest(next);
                     break;
+                    
+                    case UPDATE_ANNOUNCE:
+                        handleUpdateAnnouncement(next);
+                    break;
                 }
             }
         }
@@ -96,6 +100,11 @@ public abstract class IncomingMessageProcessor extends Thread
     public void handleFileTreeStatusRequest(ReceivedMessage ftsr)
     {
         
+    }
+    
+    public bvoid handleUpdateAnnouncement(ReceivedMessage ua)
+    {//do some basic validation to detect peers spoofing as publisher
+        if(
     }
     
     public void addToQueue(ReceivedMessage rxmsg)
