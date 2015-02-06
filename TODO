@@ -19,6 +19,11 @@ callback to send file
 2. Write the actual methods which do the transferring
 write the action of the doing of transferring; likely lots of consecutive actions/boilerplate
 
+* connect to the publisher
+* wait for update announcement, then
+* wait for incoming files
+* whenever one's finished, announce you have it and wait for requests
+* if someone else announces they have it while you're waiting, request it from them
 
 Structure/Design:
 ----------------

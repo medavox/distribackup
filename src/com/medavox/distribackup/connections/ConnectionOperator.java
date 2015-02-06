@@ -33,11 +33,14 @@ public class ConnectionOperator extends Thread
 	BufferedOutputStream bos;
 	Socket socket;
     private UUID connectedPeer;
-	public ConnectionOperator(Socket s/*, PeerInfo*/) throws IOException
+    private Peer owner;
+    
+	public ConnectionOperator(Socket s, Peer owner) throws IOException
 	{
 		this.socket = s;
 		bis = new BufferedInputStream(s.getInputStream());
 		bos = new BufferedOutputStream(s.getOutputStream());
+        this.owner = owner;
 	}
 	
 	/**Checks that local and remote program versions match*/
@@ -78,7 +81,7 @@ public class ConnectionOperator extends Thread
 	/*SENDING:Methods to send data down the socket*/
 	
 	/**Sends a greeting (containing our UUID), waits for a greeting in reply, and returns the received UUID */
-	UUID exchangeGreetings() throws IOException
+	UUID exchangeUUIDs() throws IOException
 	{
 		//package up data into a single byte[] before sending, 
 		//(as opposed to sending each part as we create it), to minimise packets
@@ -100,32 +103,41 @@ public class ConnectionOperator extends Thread
         return theirUUID;
 	}
 		
-	void announceExit() throws IOException
+	public void announceExit() throws IOException
 	{
 		byte[] exitAnnounce = {Message.EXIT_ANNOUNCE.IDByte};
 		bos.write(exitAnnounce, 0, 1);
 		bos.flush();
 	}
 	
-	void requestMorePeers(PeerInfo[] knownPeers) throws IOException
+	public void requestMorePeers(/*PeerInfo[] knownPeers*/) throws IOException
 	{
 		byte[] reqForPeers = {Message.REQ_FOR_PEERS.IDByte};
 		bos.write(reqForPeers, 0, 1);
 		bos.flush();
 	}
+    
+    public void sendPeerInfoRequest()
+    {
+        byte[] peerInfoReq = {Message.PEERINFO_REQUEST.IDByte};
+        bos.write(reqForPeers, 0, 1);
+		bos.flush();
+    }
+    
+    
 	
-	void sendPeerInfoList(PeerInfo[] peers) // TODO
+	public void sendPeerInfoList(PeerInfo[] peers) // TODO
 	{
 		byte IDByte = Message.PEER_INFO.IDByte;
         
 	}
 	
-	void sendTreeStatus() // TODO
+	public void sendTreeStatus() // TODO
 	{
 		
 	}
 	
-	void sendFileData(FileDataChunk fdc)
+	public void sendFileData(FileDataChunk fdc)
 	{
         try
         {
@@ -141,7 +153,7 @@ public class ConnectionOperator extends Thread
         }
 	}
 		
-	void requestFile(FileInfo fi) // TODO
+	public void requestFile(FileInfo fi) // TODO
 	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
     //having two seperate length field for this seems unecessary, but is consistent with the current spec
     //maybe it can be changed later
@@ -168,7 +180,10 @@ public class ConnectionOperator extends Thread
         e.printStackTrace();
     }
     
-	/*TODO RECEIVER: Handling incoming data*/
+	/**Binary data receiver. Gathers enough bytes to form the next complete 
+     message, translates it back to java types, wraps it in a ReceivedMessage
+     * which contains info about originating connection and Peer, then sends it
+     * to the Peer's IncomingMessageProcessor*/
 	public void run() // TODO
 	{/**a queue of enums which each represent incoming events 
     a single event handling thread deals with each event in order
@@ -197,7 +212,7 @@ public class ConnectionOperator extends Thread
                     ReceivedMessage rxmsg = new 
                         ReceivedMessage(nextMessage, connectedPeer, this);
                         
-                    IncomingMessageProcessor.getIMP().addToQueue(rxmsg);
+                    owner.addToQueue(rxmsg);
                 }
                 
                 int nextLength = -1;
@@ -238,7 +253,7 @@ public class ConnectionOperator extends Thread
                 ReceivedMessage rxmsg = new
                     ReceivedMessage(nextMessage, connectedPeer, this, details);
                 
-                IncomingMessageProcessor.getIMP().addToQueue(rxmsg);
+                owner.addToQueue(rxmsg);
                 //convert this into ReceivedMessage
             }
             catch(Exception e)

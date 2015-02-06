@@ -15,7 +15,7 @@ public enum Message
 	ADDRESS			((byte)0x0A, -2),
 	BYTE_ARRAY		((byte)0x0B, -1),
 	PEER_INFO		((byte)0x0C, -2),
-	DIRECTORY_INFO	((byte)0x0D, -2),
+	ARCHIVE_STATUS	((byte)0x0D, -2),
 	LIST			((byte)0x0E, -1),
 	FILE_INFO		((byte)0x0F, -2),
 	REQ_FOR_PEERS	((byte)0x10,  0),
@@ -26,7 +26,8 @@ public enum Message
 	EXIT_ANNOUNCE	((byte)0x15,  0),
 	TREE_STATUS_REQ	((byte)0x16,  0),
 	UPDATE_ANNOUNCE	((byte)0x17, -2),
-	HLIST			((byte)0x18, -1);
+	/*HLIST			((byte)0x18, -1),*/
+	PEERINFO_REQUEST((byte)0x19,  0);
 	
 	public final byte IDByte;
 	public final int length;

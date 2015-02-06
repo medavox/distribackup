@@ -55,11 +55,4 @@ public class Subscriber extends Peer
 	System.err.println("WARNING: Don't edit these files!");
 	System.err.println("They are merely copies, your changes will be overwritten!");
     }
-    
-    /* connect to the publisher
-     * wait for update announcement, then
-     * wait for incoming files
-     * whenever one's finished, announce you have it and wait for requests
-     * if someone else announces they have it while you're waiting, request it from them
-     * */
 }

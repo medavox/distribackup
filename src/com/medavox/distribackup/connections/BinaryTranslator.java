@@ -67,20 +67,14 @@ public abstract class BinaryTranslator
 	FileInfo	-> bytes		DONE?
 	bytes		-> FileInfo		DONE?
 	
-DirectoryInfo	-> bytes
-bytes			-> DirectoryInfo
-	
 	FileData	-> bytes        DONE
-	bytes 		-> FileData
+	bytes 		-> FileData     DONE
 	
 	Address		-> bytes        DONE
 	bytes		-> Address      DONE
 	
 	List		-> bytes		DONE
 	bytes		-> List			DONE
-	
-	HList		-> bytes
-	bytes		-> HList
     
     UpdAnnounce -> bytes        
     bytes       -> UpdAnnounce  */
@@ -210,21 +204,27 @@ bytes			-> DirectoryInfo
 	}
     
     public static byte[] fileInfoToBytes(FileInfo fi) throws UnsupportedEncodingException, IOException
-    {/*
-		0. (ID Byte)        | a byte
-		0. (Length)         | Integer
-		1. Name             | String
-		2. Path             | String
-		3. file size        | Long
-		4. revision number  | Long
-		5. checksum         | SHA1*/
+    {/* 1. Name             | String
+        2. Path             | String
+        2. isDirectory      | bitfield<0>
+        3. file size        | Long
+        4. revision number  | Long
+        5. checksum         | SHA1*/
         byte[] name = stringToBytes(fi.getName());
         byte[] path = stringToBytes(fi.getPath());
+        
+        byte isDirectoryByte = bitfieldToByte(fi.isDirectory());
+        byte[] isDirectory = {isDirectoryByte};
+        if(fi.isDirectory())//if the FileInfo represents a directory, don't bother with the file-specific fields
+        {
+            byte[] length = intToBytes(getTotalLength(name, path)+1);//+1 for bitfield
+            return concat(length, name, path, isDirectory);
+        }
         byte[] fileSize = longToBytes(fi.getFileSize());
         byte[] revNum = longToBytes(fi.getRevisionNumber());
         byte[] checksum = fi.getChecksum();//checksums are already byte[]s
         byte[] length = intToBytes(getTotalLength(name, path, fileSize, revNum, checksum));
-        return concat(length, name, path, fileSize, revNum, checksum);
+        return concat(length, name, path, isDirectory, fileSize, revNum, checksum);
     }
     
     public static byte[] fileDataChunkToBytes(FileDataChunk fd) throws UnsupportedEncodingException, IOException//TODO
@@ -456,11 +456,12 @@ bytes			-> DirectoryInfo
 	}
 
 	public static FileInfo bytesToFileInfo(byte[] b)
-	{/*	1. Name             | String
-		2. Path             | String
-		3. file size        | Long
-		4. revision number  | Long
-		5. checksum         | SHA1*/
+	{/* 1. Name             | String
+        2. Path             | String
+        2. isDirectory      | bitfield<0>
+        3. file size        | Long
+        4. revision number  | Long
+        5. checksum         | SHA1*/
 		try
 		{
 			int nameEndIndex = getNextMessageEndIndex(b, 0);
@@ -468,18 +469,30 @@ bytes			-> DirectoryInfo
 			int pathEndIndex = getNextMessageEndIndex(b, nameEndIndex);
 			String path = bytesToString(Arrays.copyOfRange(b, nameEndIndex+4, pathEndIndex));
 			
-			long fileSize = bytesToLong(Arrays.copyOfRange(b, pathEndIndex+8, pathEndIndex+16));
-			long revisionNumber = bytesToLong(Arrays.copyOfRange(b, pathEndIndex, pathEndIndex+8));
-			
-			//there should be 20 bytes left, and they should all be the checksum
-			int checksumBegin = pathEndIndex+16;
-			byte[] checksum = Arrays.copyOfRange(b, checksumBegin, b.length);
-			
-			assert checksum.length == 20;
-			
-			//finally, reconstruct the FileInfo object from the decoded data
-			FileInfo rxFileInfo = new FileInfo(name, path, fileSize, revisionNumber, checksum);
-			
+            pathEndIndex++;//move along one so as not to disrupt later addresses
+            
+            boolean isDirectory = byteToBitfield(b[pathEndIndex], 1);
+            
+            FileInfo rxFileInfo;
+            
+            if(isDirectory)//the file-specific fields are omitted if this is a directory
+            {
+                rxFileInfo = new FileInfo(name, path);
+            }
+            else
+            {
+                long fileSize = bytesToLong(Arrays.copyOfRange(b, pathEndIndex, pathEndIndex+8));
+                long revisionNumber = bytesToLong(Arrays.copyOfRange(b, pathEndIndex+8, pathEndIndex+16));
+                
+                //there should be 20 bytes left, and they should all be the checksum
+                int checksumBegin = pathEndIndex+16;
+                byte[] checksum = Arrays.copyOfRange(b, checksumBegin, b.length);
+                
+                assert checksum.length == 20;
+                
+                //finally, reconstruct the FileInfo object from the decoded data
+                rxFileInfo = new FileInfo(name, path, fileSize, revisionNumber, checksum);
+            }
 			return rxFileInfo;
 		}
 		catch(UnsupportedEncodingException usee)
@@ -599,8 +612,6 @@ bytes			-> DirectoryInfo
 				i = elementEnd;
 			}
 		}
-		
-		
         return output;
 	}
 	
@@ -659,7 +670,7 @@ bytes			-> DirectoryInfo
 	}
     
     public static UpdateAnnouncement bytesToUpdateAnnouncement(byte[] b)
-    {
+    {//TODO
         
     }
 

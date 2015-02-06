@@ -22,6 +22,8 @@ public class Publisher extends Peer
 	on a file change:
 	    send changed file to all subscribers*/
 	super(root, port);
+	
+	
     }
     /*whenever a file has changed or been added,
      * send that file to every subscriber

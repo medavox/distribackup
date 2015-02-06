@@ -33,7 +33,7 @@ In our case, each folder will be its own spoke, representing a collection of dat
 day out) belonging to one participant.
 "Pushing" this spoke's updates is sharing this data collection with viewers.
 
-Downside is, the system isn't as decentralised; we rely on a central mirror
+Downside is, the system isn't as decentralised; we rely on a central Publisher
 
 ##ALERT: Rsync is complex (and possibly unnecessary)
 if we are only supporting 1-way sync, then (ignoring user intervention for now) we always know the 

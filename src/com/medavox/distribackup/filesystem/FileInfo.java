@@ -3,7 +3,7 @@ package com.medavox.distribackup.filesystem;
 /**An immutable object whose purpose is to 
  * 1) uniquely identify a file, and
  * 2) provide Distribackup-specific information about it (checksum, revision number). 
- * Does not have to refer to an extant file. Consider referencing File Object AMAP*/
+ * Does not have to refer to an extant file. Consider referencing Java's File class AMAP*/
 public class FileInfo extends FileSystemObjectInfo
 {/*
 3. file size        | ULong
@@ -13,15 +13,33 @@ public class FileInfo extends FileSystemObjectInfo
 	private long revisionNumber;//currently the spec calls for ULongs here,
 	private long fileSize;//but this is extremely inconvenient in Java
 	private byte[] checksum;
+    private boolean isDirectory;
 	
 	public FileInfo(String name, String path, long fileSize, long revisionNumber, byte[] checksum)
 	{
+        isDirectory = false;
 		this.name = name;
 		this.path = path;
 		this.revisionNumber = revisionNumber;
 		this.fileSize = fileSize;
 		this.checksum = checksum;
 	}
+    /**Constructor for a FileInfo which represents a directory.*/
+    public FileInfo(String name, String path)
+    {
+        isDirectory = true;
+        this.name = name;
+        this.path = path;
+        
+        revisionNumber = -1;
+        fileSize = -1;
+        checksum = new byte[0];
+    }
+    
+    public boolean isDirectory()
+    {
+        return isDirectory;
+    }
 	
 	public long getRevisionNumber()
 	{

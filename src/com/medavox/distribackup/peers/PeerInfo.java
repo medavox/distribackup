@@ -11,14 +11,13 @@ import java.util.List;
 /*
 1. UUID
 3. GlobalRevisionNumber| Long
-5. Addresses           | List:Address
-*/
+5. Addresses           | List:Address*/
 
 public class PeerInfo implements Communicable
 {
 	private UUID uuid;
 	private long globalRevisionNumber;
-	public List<Address> addresses;
+	public List<Address> addresses;//ERROR: Lists aren't thread-safe!
 	//Socket socket;
 	
 	public PeerInfo(UUID uuid, long GRN, Address[] addresses)
@@ -62,4 +61,9 @@ public class PeerInfo implements Communicable
 	{
 		globalRevisionNumber = newGRN;
 	}
+    
+    public Address[] getAddresses()
+    {
+        
+    }
 }

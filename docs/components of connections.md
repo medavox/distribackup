@@ -8,16 +8,23 @@ each file tree will need its own UUID and friendly name (which can be the name o
 
 the above may be completely wrong, based on our misunderstanding of tcp
 
-min block size = 256KB
+min chunk size is 32KB
 -----
 * Mediocre domestic internet upload speed is still 1Mbps (128KB/s)
 * so use that as a baseline for minimum useful chunk size
 
-max block size is 16MB
+max chunk size is 4MB
 -------
-* a reasonable amount of data to have in memory at once, especially for RasPis
+* a reasonable amount of data to have in memory at once, even for RasPis
+* lowered from 16MB because we may have >1 chunk in memory at a time
 
 each update to a file will increment the revision of number of that file.
+
+Chunk Size Calculation for Idempotent Indexing
+---------------------------------------------
+We need to make sure all peers calculate the chunk size in a given file in the same way.
+
+Also, what if a file changes size between updates, corssing a chunk size boundary?
 
 Types of Message extension
 ==========================

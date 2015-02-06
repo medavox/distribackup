@@ -11,7 +11,7 @@ import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.filesystem.*;
 /* There must be a local state object which records open sockets, and 
  * which peers they pertain to*/
-public abstract class Peer
+public abstract class Peer extends Thread
 {
 	private int listenPort;
 	private String defaultRoot = "/home/scc/distribackup/publisher-root";
@@ -20,6 +20,8 @@ public abstract class Peer
 	PeerInfo publisherInfo;
 	UUID publisherID;
 	public static UUID myUUID;
+	private static IncomingMessageProcessor IMP = null;
+    private Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
 	
 	public static final short version = 1;//increment this manually on every release
 	List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();//may need to become concurrent
@@ -46,7 +48,7 @@ public abstract class Peer
 	
 	/**Called by Listener's thread whenever someone connects to the ServerSocket
 	 * and creates a new Socket.*/
-	public void newIncomingSocket(Socket s)
+	public void setupNewSocket(Socket s)
 	{
 		try
 		{
@@ -60,6 +62,21 @@ public abstract class Peer
                     " has wrong version!");
 				co.close();
 				return;
+			}
+			
+			UUID newPeerUUID = co.exchangeGreetings();
+			
+			if(!peers.containsKey(newPeerUUID))
+			{//ERROR:
+				//how do we get the GRN of a peer we've just connected to,
+				//in order to create a new PeerInfo about it?
+				co.sendPeerInfoRequest();
+				//now we've sent out for the PerInfo we need,
+				//we have to wait, or handle adding to peers List in a callback
+			}
+			else
+			{//we've already seen this Peer before
+				//add this new Connection info to its of connections
 			}
 			//TODO:
 			//construct a new PeerInfo based on data requested and received
@@ -83,20 +100,7 @@ public abstract class Peer
 		try
 		{
 			Socket s = new Socket(host, port);
-			newIncomingSocket(s);
-			/*bis = new BufferedInputStream(s.getInputStream());
-			bos = new BufferedOutputStream(s.getOutputStream());
-			
-			int handshook = checkVersions(bis, bos);
-			
-			if(handshook == -1)
-			{
-				System.err.println("Error! Connecting Peer "+s.getInetAddress()+" has wrong version!");
-				bis.close();
-				bos.close();
-				s.close();
-				//return;
-			}*/
+			setupNewSocket(s);
 		}
 		catch(UnknownHostException uhe)
 		{
@@ -107,20 +111,114 @@ public abstract class Peer
 			//TODO
 		}
 	}
-	//DEPRECATED: uses Java's built-in serialisation, 
-        //which is both clunky to use and inefficient 
-	/*public void sendFile(Path file, BufferedOutputStream bos) throws IOException
-	{
-		String fileName = file.getFileName().toString();
-		
-		String location = file.relativize(root).toString();
-		
-		byte[] fileArray;
-		fileArray = Files.readAllBytes(file);
-		FileTransfer ft = new FileTransfer(fileName, location, fileArray);
-		
-		ObjectOutputStream objos = new ObjectOutputStream(bos);
-		
-		objos.writeObject(ft);
-	}*/
+
+    public void run()
+    {
+        while(true)
+        {//spins until there is something in the queue
+            if(!messageQueue.isEmpty())
+            {
+                ReceivedMessage next = messageQueue.remove();
+                //TODO: probably a big old switch statement
+                switch(next.getType())
+                {/* Request For Peers
+                    Request All Files
+                    File Data Chunk
+                    File Request
+                    Greeting
+                    Exit Announcement
+                    File Tree Status Req
+                    Update Announcement*/
+                    case FILE_DATA_CHUNK:
+                        handleFileDataChunk(next);
+                    break;
+                    
+                    case FILE_REQUEST:
+                        handleFileRequest(next);
+                    break;
+                    
+                    case PEER_REQUEST:
+                        handlePeerRequest(next);
+                    break;
+                    
+                    case EXIT_ANNOUNCEMENT:
+                        handleExitAnnouncement(next);
+                    break;
+                    
+                    case REQ_ALL_FILES:
+                        handleAllFilesRequest(next);
+                    break;
+                    
+                    case TREE_STATUS_REQ:
+                        handleFileTreeStatusRequest(next);
+                    break;
+                    
+                    case UPDATE_ANNOUNCE:
+                        handleUpdateAnnouncement(next);
+                    break;
+                }
+            }
+        }
+    }
+    
+    public void handleFileDataChunk(ReceivedMessage rxmsg)
+    {
+        //check file exists
+        //if there are more pieces on the way before this update is finished,
+        //store them in some kind of cache
+        FileDataChunk fdc = (FileDataChunk)rxmsg.getCommunicable();
+        if(fdc.isWholeFile())
+        {//we have the whole file, check whether we have the whole UPDATE
+            
+        }
+        else
+        {
+            
+        }
+        
+    }
+    
+    public void handlePeerRequest(ReceivedMessage pr)
+    {
+        
+    }
+    
+    public void handleFileRequest(ReceivedMessage fr)
+    {
+        
+    }
+    
+    public void handleAllFilesRequest(ReceivedMessage afr)
+    {
+        
+    }
+    
+    public void handleExitAnnouncement(ReceivedMessage ea)
+    {
+        
+    }
+    
+    public void handleFileTreeStatusRequest(ReceivedMessage ftsr)
+    {
+        
+    }
+    
+    public void handleUpdateAnnouncement(ReceivedMessage ua)
+    {//do some basic validation to detect peers spoofing as publisher
+        if(this instanceof Publisher //if WE are the publisher
+        || !(publisherUUID.equals(ua.getUUID()) ))//or their UUID is not the Publisher's
+        {
+			
+		}
+		else
+		{//everything is fine, no spoofing here
+			make TreeStatus into a list ofFileInfos
+			give FileInfos a isDirectory:boolean property
+		}
+    }
+    
+    public void addToQueue(ReceivedMessage rxmsg)
+    {
+        messageQueue.add(rxmsg);
+    }
 }
