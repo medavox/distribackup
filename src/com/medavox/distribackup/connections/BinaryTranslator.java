@@ -80,7 +80,10 @@ bytes			-> DirectoryInfo
 	bytes		-> List			DONE
 	
 	HList		-> bytes
-	bytes		-> HList*/
+	bytes		-> HList
+    
+    UpdAnnounce -> bytes        
+    bytes       -> UpdAnnounce  */
 	
 	/**Primitive types omit a header by default; 
 	add one manually or write wrapper methods to add one*/
@@ -337,6 +340,11 @@ bytes			-> DirectoryInfo
 		byte[] len = intToBytes(getTotalLength(bfWrapper, addrField, port, lastSpotted));
 		return concat(len, bfWrapper, addrField, port, lastSpotted);
 	}
+    
+    public static byte[] updateAnnouncementToBytes(UpdateAnnouncement ua)
+    {
+        
+    }
 	
 	public static short byteToUByte(byte b) throws IOException, EOFException
 	{//crazy, crazy manual bit manipulation to get an unsigned value from a byte
@@ -649,6 +657,11 @@ bytes			-> DirectoryInfo
 		}
         return rxAddress;
 	}
+    
+    public static UpdateAnnouncement bytesToUpdateAnnouncement(byte[] b)
+    {
+        
+    }
 
     /**invokes the appropriate conversion method on a byteArray to convert any 
      * binary message into a Communicable, the interface which all Java class 

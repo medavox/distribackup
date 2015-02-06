@@ -62,7 +62,14 @@ public abstract class IncomingMessageProcessor extends Thread
         //if there are more pieces on the way before this update is finished,
         //store them in some kind of cache
         FileDataChunk fdc = (FileDataChunk)rxmsg.getCommunicable();
-        
+        if(fdc.isWholeFile())
+        {//we have the whole file, check whether we have the whole UPDATE
+            
+        }
+        else
+        {
+            
+        }
         
     }
     
