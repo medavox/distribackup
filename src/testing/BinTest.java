@@ -1,3 +1,5 @@
+package testing;
+
 import com.medavox.distribackup.connections.*;
 import java.io.*;
 import java.util.Random;

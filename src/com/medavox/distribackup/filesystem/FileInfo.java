@@ -9,7 +9,8 @@ public class FileInfo extends FileSystemObjectInfo
 3. file size        | ULong
 4. revision number  | ULong
 5. checksum         | SHA1*/
-
+//TODO: we're going to have a problem when a FileInfo is passed from a windows to a unix system:
+//the path separators will switch! 
 	private long revisionNumber;//the spec called for ULongs here and here,
 	private long fileSize;//but this is extremely inconvenient in Java
 	private byte[] checksum;
@@ -54,5 +55,10 @@ public class FileInfo extends FileSystemObjectInfo
 	public byte[] getChecksum()
 	{
 		return checksum;
+	}
+	
+	public String toString()
+	{
+		return path + name;
 	}
 }

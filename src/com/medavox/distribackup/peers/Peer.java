@@ -17,14 +17,22 @@ public abstract class Peer extends Thread
 	private final int MAX_CHUNK_SIZE = 4194304;//4MB
 	private final int MIN_CHUNK_SIZE = 32768;//32KB
 	private int listenPort;
-	private String defaultRoot;//must be specified by subclass
+	//private String defaultRoot;//must be specified by subclass
 	public Path root;
-	Map<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	private String cacheDir = ".distribackup-cache";
+	
 	PeerInfo publisherInfo;
 	UUID publisherUUID;
 	public static UUID myUUID;
-    private Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
-    private ConcurrentMap<String, FileInfo> filesToDownload = new ConcurrentHashMap<String, FileInfo>();
+    
+	private ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	
+	private Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
+    
+    private FileSet filesToDownload = new FileSet(-1, new FileInfo[0]);
+    
+    private FileSet globalArchiveState = new FileSet( -1, new FileInfo[0]);//initialise empty, then get state from network
+    private FileSet localArchiveState = new FileSet( -1, new FileInfo[0]);
 	
 	public static final short version = 2;//increment this manually on every release
 	
@@ -193,9 +201,39 @@ public abstract class Peer extends Thread
         //store them in some kind of cache
         FileDataChunk fdc = (FileDataChunk)rxmsg.getCommunicable();
         if(fdc.isWholeFile())
-        {//we have the whole file, do we now have all pieces of the update?
-			
-            
+        {//we have the whole file,
+			//do we now have all pieces of the update?
+        	//we're not doing per-revision pushes anymore
+            /*FileInfo fi = fdc.getFileInfo();
+            filesToDownload.remove(fi.toString());
+            if(filesToDownload.getSize() == 0)//if 
+            {
+            	
+            }*/
+        	//push the file into the archive
+        	FileInfo fi = fdc.getFileInfo();
+        	String sep = FileSystems.getDefault().getSeparator();
+        	Path newPath = root.resolve(fi.getPath()+sep+fi.getName());//create path to file
+        	File newFile = newPath.toFile();
+        	System.out.println("created path: "+newFile);
+        	try
+        	{
+        		if(newFile.exists())
+        		{
+        			newFile.delete();
+        		}
+        		newFile.createNewFile();
+        		FileOutputStream fos = new FileOutputStream(newFile);
+        		fos.write(fdc.getPayload());
+        		fos.flush();
+        		fos.close();
+        	}
+        	catch(Exception e)
+        	{
+        		e.printStackTrace();
+        		System.exit(1);
+        	}
+        	
         }
         else
         {//store this piece of the file in the cache until we have all the pieces of the update
@@ -214,6 +252,7 @@ public abstract class Peer extends Thread
 		PeerInfo peerInfo = (PeerInfo)pi.getCommunicable();
 		UUID uuid = pi.getUUID();
 		
+		peers.containsKey(uuid);
 	}
     
     public void handleFileRequest(ReceivedMessage fr)

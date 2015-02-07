@@ -4,12 +4,12 @@ import com.medavox.distribackup.connections.*;
 
 public class ArchiveInfo implements Communicable
 {
-    private long globalRevNum;
+    protected long globalRevNum;
     private FileInfo[] changedFiles;
     public ArchiveInfo(long GRN, FileInfo[] files)
     {
         globalRevNum = GRN;
-        this.changedFiles = changedFiles;
+        this.changedFiles = files;
     }
     
     public long getGRN()

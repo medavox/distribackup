@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import java.io.File;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
@@ -14,13 +12,12 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.io.UnsupportedEncodingException;
 
-import java.nio.file.Path;
-
 import com.medavox.distribackup.peers.PeerInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
 import com.medavox.distribackup.filesystem.DirectoryInfo;
+import com.medavox.distribackup.filesystem.ArchiveInfo;
 
 /**Logic in this class only pertains to conversion of primitive types to and from binary.
  * Byte arrays constructed by this class do not contain an IDByte, as not all uses
@@ -60,7 +57,7 @@ public abstract class BinaryTranslator
 	
 	String		-> bytes		DONE
 	bytes		-> String		DONE
-*//**
+
 	PeerInfo	-> bytes        DONE?
 	bytes		-> PeerInfo     DONE?
 	
@@ -345,7 +342,7 @@ public abstract class BinaryTranslator
     {
         byte[] GRN = longToBytes(ua.getGlobalRevisionNumber());
         
-        byte[] fileInfoList = fileInfoListToBytes(ua.getChangedFiles());
+        byte[] fileInfoList = fileInfoListToBytes(ua.getFiles());
         byte[] length = intToBytes(GRN.length + fileInfoList.length);
         return concat(length, GRN, fileInfoList);
     }

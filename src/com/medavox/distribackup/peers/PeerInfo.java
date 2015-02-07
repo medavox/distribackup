@@ -2,8 +2,10 @@ package com.medavox.distribackup.peers;
 
 import com.medavox.distribackup.connections.Address;
 import com.medavox.distribackup.connections.Communicable;
+import com.medavox.distribackup.connections.ConnectionOperator;
 import java.util.UUID;
 import java.util.List;
+import java.util.ArrayList;
 
 /*
 1. UUID
@@ -38,12 +40,17 @@ public class PeerInfo implements Communicable
 		return uuid;
 	}
     
-    public boolean hasOpenConnection()//TODO
+    public boolean hasOpenConnection()
     {
-        
+        return (openConnections.size() == 0);
     }
-    
-    
+    /*
+    //tries to start a new connection from the pool of Addresses;
+    //throws an IOException if none of them work, or if there are none to try.
+    public ConnectionOperator createNewConnection() throws IOException//TODO
+    {
+    	
+    }*/
 	
 	public long getGlobalRevisionNumber()
 	{

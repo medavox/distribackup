@@ -48,16 +48,17 @@ public class Publisher extends Peer
 	    
 	    case "ENTRY_CREATE":
 	    case "ENTRY_MODIFY":
-		try
-		{
+		/*try
+		{*/
 		    System.out.println("Sending file "+file);
-		    sendFile(file, bos);
-		}
+		    //sendFile(file, bos);
+		/*}
 		catch(IOException ioe)
 		{
 		    ioe.printStackTrace();
 		    System.exit(1);
-		}
+		}*/
+		
 	    break;
 	}
     }

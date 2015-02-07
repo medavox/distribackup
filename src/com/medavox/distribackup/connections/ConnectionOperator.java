@@ -16,19 +16,21 @@ import com.medavox.distribackup.filesystem.FileDataChunk;
 /**This class handles communication over an individual Socket connection, 
  * after its initialisation. */
 public class ConnectionOperator extends Thread
-{
-	/*ADDRESS               ((byte)0x0A, -2),
-	BYTE_ARRAY              ((byte)0x0B, -1),
-	PEER_INFO               ((byte)0x0C, -2),
-	DIRECTORY_INFO          ((byte)0x0D, -2),
-	LIST                    ((byte)0x0E, -1),
-	FILE_INFO               ((byte)0x0F, -2),
-	FILE_DATA_CHUNK         ((byte)0x12, -2),
-	FILE_REQUEST            ((byte)0x13, -2),
-	GREETING                ((byte)0x14, 18),
-	TREE_STATUS_REQ         ((byte)0x16,  0),
-	UPDATE_ANNOUNCE         ((byte)0x17, -2),
-	HLIST                   ((byte)0x18, -1);*/
+{/* PeerInfo				EXISTS
+	Archive Status			EXISTS
+	Request For Peers		EXISTS
+	Request All Files		EXISTS
+	File Data Chunk			EXISTS
+	File Request			EXISTS
+	Greeting				DONE
+	Exit Announcement		EXISTS
+	Archive Status Request	EXISTS
+	Update Announcement		EXISTS
+	"no haz" FileReq Reply	EXISTS
+	PeerInfo Request		EXISTS
+	"haz nao" announcement	
+	More Peers				EXISTS*/
+	
 	BufferedInputStream bis;
 	BufferedOutputStream bos;
 	Socket socket;
@@ -115,34 +117,47 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
+	public void announceHaveNowGotFile(FileInfo newlyAcquiredFile)
+	{
+		
+	}
+	
 	public void requestMorePeers(/*PeerInfo[] knownPeers*/) throws IOException
 	{
 		byte[] reqForPeers = {Message.REQ_FOR_PEERS.IDByte};
 		bos.write(reqForPeers, 0, 1);
 		bos.flush();
 	}
+	
+	public void sendPeerInfo() throws IOException
+	{
+		
+	}
+	
+	public void sendUpdateAnnouncement()//TODO
+	{
+		
+	}
     
-    public void sendPeerInfoRequest() throws IOException
+    public void requestPeerInfo() throws IOException
     {
         byte[] peerInfoReq = {Message.PEERINFO_REQUEST.IDByte};
         bos.write(peerInfoReq, 0, 1);
 		bos.flush();
     }
-    
-    
 	
-	public void sendPeerInfoList(PeerInfo[] peers) // TODO
+	public void sendMorePeers(PeerInfo[] peers) // TODO
 	{
-		byte IDByte = Message.PEER_INFO.IDByte;
+		byte IDByte = Message.MORE_PEERS.IDByte;
         
 	}
 	
-	public void sendTreeStatus() // TODO
+	public void sendArchiveStatus() // TODO
 	{
-		P
+		
 	}
 	
-	public void sendFileData(FileDataChunk fdc)
+	public void sendFileDataChunk(FileDataChunk fdc)
 	{
         try
         {
@@ -156,6 +171,16 @@ public class ConnectionOperator extends Thread
         {
             reportException(e);
         }
+	}
+	
+	public void sendNoHazFile(FileInfo[] unavailable files)
+	{
+		
+	}
+	
+	public void requestArchiveStatus()//TODO
+	{
+		
 	}
 		
 	public void requestFile(FileInfo fi) // TODO
@@ -176,6 +201,11 @@ public class ConnectionOperator extends Thread
         {
             reportException(e);
         }
+	}
+	
+	public void requestAllFiles()//TODO
+	{
+		
 	}
     
     private void reportException(Exception e)

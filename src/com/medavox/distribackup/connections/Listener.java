@@ -2,7 +2,6 @@ package com.medavox.distribackup.connections;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 import com.medavox.distribackup.peers.Peer;
 /**Assigns new Sockets to incoming connections*/
 public class Listener extends Thread
@@ -10,7 +9,6 @@ public class Listener extends Thread
 	static PrintStream o = System.out;
 	Peer owner;
 	private int port = 1210;//default value
-	private List<Socket> sockets = new LinkedList<Socket>();
 	private final int MAX_BACKLOG = 50;
 	
 	public Listener(int port, Peer owner)
