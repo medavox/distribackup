@@ -1,4 +1,7 @@
 package com.medavox.distribackup.connections;
+
+import java.util.UUID;
+
 public class ReceivedMessage
 {
     private Message type;

@@ -262,7 +262,7 @@ public abstract class BinaryTranslator
 		{
 			throw new IOException("ERROR: supplied File Object is not a Directory!");
 		}
-		
+		return new byte[0];//TODO
 	}
     
     public static byte[] directoryInfoToBytes(DirectoryInfo di)//TODO
@@ -271,7 +271,7 @@ public abstract class BinaryTranslator
         2. Name             | String
         3. Path             | String
         4. Contents         | HList:FileInfo,DirectoryID*/
-         
+        return new byte[0];//TODO
     }
 	
 	public static byte[] peerInfoToBytes(PeerInfo p, boolean isPublisher) throws IOException, NumberFormatException
@@ -341,9 +341,23 @@ public abstract class BinaryTranslator
 		return concat(len, bfWrapper, addrField, port, lastSpotted);
 	}
     
-    public static byte[] updateAnnouncementToBytes(UpdateAnnouncement ua)
+    public static byte[] archiveInfoToBytes(ArchiveInfo ua) throws IOException
     {
+        byte[] GRN = longToBytes(ua.getGlobalRevisionNumber());
         
+        byte[] fileInfoList = fileInfoListToBytes(ua.getChangedFiles());
+        byte[] length = intToBytes(GRN.length + fileInfoList.length);
+        return concat(length, GRN, fileInfoList);
+    }
+    
+    public static byte[] fileInfoListToBytes(FileInfo[] cf) throws UnsupportedEncodingException, IOException
+    {
+        byte[][] fileInfos = new byte[cf.length][];
+        for(int i = 0; i < cf.length; i++)
+        {
+            fileInfos[i] = fileInfoToBytes(cf[i]);
+        }
+        return listToBytes(fileInfos, Message.FILE_INFO.IDByte);
     }
 	
 	public static short byteToUByte(byte b) throws IOException, EOFException
@@ -471,11 +485,11 @@ public abstract class BinaryTranslator
 			
             pathEndIndex++;//move along one so as not to disrupt later addresses
             
-            boolean isDirectory = byteToBitfield(b[pathEndIndex], 1);
+            boolean[] isDirectory = byteToBitfield(b[pathEndIndex], 1);
             
             FileInfo rxFileInfo;
             
-            if(isDirectory)//the file-specific fields are omitted if this is a directory
+            if(isDirectory[0])//the file-specific fields are omitted if this is a directory
             {
                 rxFileInfo = new FileInfo(name, path);
             }
@@ -575,13 +589,12 @@ public abstract class BinaryTranslator
 		4. &lt;elements&gt;     | ?*/
 		Message type = Message.getMessageTypeFromID(b[0]);
 		int numElements = bytesToInt(Arrays.copyOfRange(b, 1, 5));
-		byte[][] output = new byte[numElements+1][];//save the first element for the IDByte
+		byte[][] output = new byte[numElements+1][];//save the first byte for the IDByte
 		byte[] IDByteWrapper = {b[0]};
 		output[0] = IDByteWrapper;
 		if (type.length >= 0)//the elements are fixed- or zero-length
         {
 			int length = type.length;
-			
 			for(int i = 0; i < numElements; i++)//split up the input byte[] into elements
 			{//I really hope Arrays.copyOfRange isn't expensive!
 				output[i+1] = Arrays.copyOfRange(b, (i*length)+5, (i*length)+5+length);
@@ -590,9 +603,8 @@ public abstract class BinaryTranslator
         else//the elements are variable-length or compound
 		{
 			int lengthLength;
-			if(type == Message.LIST
-			|| type == Message.HLIST)
-			{//the length value of lists and hlists is a long: 8, not 4, bytes wide
+			if(type == Message.LIST)
+			{//the length field of lists is a long: 8, not 4, bytes wide
 				lengthLength = 8;
 			}
 			else
@@ -606,7 +618,7 @@ public abstract class BinaryTranslator
 			{
 				int currentElementLength = 
 					bytesToInt(Arrays.copyOfRange(b, i, i+lengthLength));
-				int elementEnd = i+currentElementLength+lengthLength;//I am starting to sound worryingly obsessed with the word length
+				int elementEnd = i+currentElementLength+lengthLength;
 				output[elementCount] = Arrays.copyOfRange(b, i+lengthLength, elementEnd);
 				elementCount++;
 				i = elementEnd;
@@ -669,45 +681,60 @@ public abstract class BinaryTranslator
         return rxAddress;
 	}
     
-    public static UpdateAnnouncement bytesToUpdateAnnouncement(byte[] b)
-    {//TODO
-        
+    public static ArchiveInfo bytesToArchiveInfo(byte[] b) throws UnsupportedEncodingException, IOException
+    {/* 2. Global RevNum    | Long
+        3. Files            | List:FileInfo*/
+        long GRN = bytesToLong(Arrays.copyOfRange(b, 0, 8));
+        FileInfo[] fileInfos = bytesToFileInfoList(Arrays.copyOfRange(b, 8, b.length));
+        ArchiveInfo ai = new ArchiveInfo(GRN, fileInfos);
+        return ai;
+    }
+    
+    public static FileInfo[] bytesToFileInfoList(byte[] b) throws UnsupportedEncodingException, IOException
+    {
+        byte[][] lb = bytesToList(Arrays.copyOfRange(b, 0, b.length));
+        FileInfo[] fileInfos = new FileInfo[lb.length];
+        for(int i = 0; i < lb.length; i++)
+        {
+            fileInfos[i] = bytesToFileInfo(lb[i]);
+        }
+        return fileInfos;
     }
 
     /**invokes the appropriate conversion method on a byteArray to convert any 
      * binary message into a Communicable, the interface which all Java class 
      * versions of Distribackup message objects implement.*/
-    public static Communicable bytesToCommunicable(byte[] b, Message type)//TODO
-    {/* PEER_INFO		((byte)0x0C, -2),
-        DIRECTORY_INFO	((byte)0x0D, -2),
-        LIST			((byte)0x0E, -1),
-        FILE_INFO		((byte)0x0F, -2),
-        REQ_FOR_PEERS	((byte)0x10,  0),
-        FILE_DATA_CHUNK ((byte)0x12, -2),
-        FILE_REQUEST	((byte)0x13, -2),
-        GREETING		((byte)0x14, 18),
-        EXIT_ANNOUNCE	((byte)0x15,  0),
-        TREE_STATUS_REQ	((byte)0x16,  0),
-        UPDATE_ANNOUNCE	((byte)0x17, -2),
-        HLIST			((byte)0x18, -1);*/
+    public static Communicable bytesToCommunicable(byte[] b, Message type) throws UnsupportedEncodingException, IOException//TODO
+    {/* PeerInfo
+        Archive Status
+        File Data Chunk
+        File Request
+        Update Announcement
+        "no haz" FileReq Reply
+        "haz nao" announcement*/
         Communicable vagueReturnType;
+
         switch(type)
         {
             case PEER_INFO:
                 return bytesToPeerInfo(b);
             
-            case FILE_INFO:
-                return bytesToFileInfo(b);
-            
-            case GREETING:
-                
-            break;
-            
+            case ARCHIVE_STATUS:
             case UPDATE_ANNOUNCE:
-                
-            break;
+                return bytesToArchiveInfo(b);
             
+            case FILE_DATA_CHUNK:
+                return bytesToFileDataChunk(b);
+            
+            case NO_HAZ:
+            case HAZ_NAO:
+            //there is no encapsulating class, java or distribackup, for these
+            //just send the FileInfo[]?
+                byte[] wneud = Arrays.copyOfRange(b, 8, b.length);
+                FileInfo[] fi = bytesToFileInfoList(wneud);
+                return new FileInfoListWrapper(fi);
         }
+        throw new UnsupportedEncodingException("supplied bytes did not form a Message that needs converting!");
     }
 	/**Returns the index of the first byte after the end of the first Message.
 	 * So for a message that spans from 0 to 35, is 32 bytes long (plus length bytes),
@@ -725,7 +752,6 @@ public abstract class BinaryTranslator
 		{
 			sum += fields[i].length;
 		}
-        
 		return sum;
 	}
     

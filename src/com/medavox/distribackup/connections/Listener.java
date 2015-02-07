@@ -27,8 +27,7 @@ public class Listener extends Thread
 			while(true)
 			{//on a new socket connection:
 				Socket s = svr.accept();
-				owner.newIncomingSocket(s);//callback: pass new Socket back to main thread
-				//sockets.add(s);
+				owner.setupNewSocket(s);//callback: pass new Socket back to main thread
 				//o.println("connection "+connectionNumber+" established");
 			}
 		}

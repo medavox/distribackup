@@ -26,8 +26,9 @@ public enum Message
 	EXIT_ANNOUNCE	((byte)0x15,  0),
 	TREE_STATUS_REQ	((byte)0x16,  0),
 	UPDATE_ANNOUNCE	((byte)0x17, -2),
-	/*HLIST			((byte)0x18, -1),*/
-	PEERINFO_REQUEST((byte)0x19,  0);
+	NO_HAZ			((byte)0x18, -2),
+	PEERINFO_REQUEST((byte)0x19,  0),
+	HAZ_NAO         ((byte)0x1A, -2);
 	
 	public final byte IDByte;
 	public final int length;

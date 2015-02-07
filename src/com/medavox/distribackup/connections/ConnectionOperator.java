@@ -34,7 +34,7 @@ public class ConnectionOperator extends Thread
 	Socket socket;
     private UUID connectedPeer;
     private Peer owner;
-    
+    //if/when we add connection speed measuring, this is where it will go
 	public ConnectionOperator(Socket s, Peer owner) throws IOException
 	{
 		this.socket = s;
@@ -42,6 +42,11 @@ public class ConnectionOperator extends Thread
 		bos = new BufferedOutputStream(s.getOutputStream());
         this.owner = owner;
 	}
+    /*
+    public ConnectionOperator(Address a, Peer owner)//TODO
+    {
+        
+    }*/
 	
 	/**Checks that local and remote program versions match*/
 	public int checkVersions() throws IOException
@@ -81,7 +86,7 @@ public class ConnectionOperator extends Thread
 	/*SENDING:Methods to send data down the socket*/
 	
 	/**Sends a greeting (containing our UUID), waits for a greeting in reply, and returns the received UUID */
-	UUID exchangeUUIDs() throws IOException
+	public UUID exchangeUUIDs() throws IOException
 	{
 		//package up data into a single byte[] before sending, 
 		//(as opposed to sending each part as we create it), to minimise packets
@@ -117,10 +122,10 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
     
-    public void sendPeerInfoRequest()
+    public void sendPeerInfoRequest() throws IOException
     {
         byte[] peerInfoReq = {Message.PEERINFO_REQUEST.IDByte};
-        bos.write(reqForPeers, 0, 1);
+        bos.write(peerInfoReq, 0, 1);
 		bos.flush();
     }
     
@@ -134,7 +139,7 @@ public class ConnectionOperator extends Thread
 	
 	public void sendTreeStatus() // TODO
 	{
-		
+		P
 	}
 	
 	public void sendFileData(FileDataChunk fdc)
@@ -208,10 +213,8 @@ public class ConnectionOperator extends Thread
                 
                 if(nextMessage.length == 0)//TODO
                 {//this is a no-payload message, so we're ready to send it off
-                    //...
                     ReceivedMessage rxmsg = new 
                         ReceivedMessage(nextMessage, connectedPeer, this);
-                        
                     owner.addToQueue(rxmsg);
                 }
                 
@@ -222,9 +225,8 @@ public class ConnectionOperator extends Thread
                 //read next 4 (or 8) bytes (the length field) to work out
                 //how many more bytes we need to read
                     int lengthLength;
-                    if(nextMessage == Message.LIST ||
-                        nextMessage == Message.HLIST)
-                    {//currently, Lists and HLists employ a long (not an int) for their length fields
+                    if(nextMessage == Message.LIST )
+                    {//currently, Lists use a long (not an int) for their length fields
                         lengthLength = 8;
                     }
                     else

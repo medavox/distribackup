@@ -10,7 +10,7 @@ public class FileInfo extends FileSystemObjectInfo
 4. revision number  | ULong
 5. checksum         | SHA1*/
 
-	private long revisionNumber;//currently the spec calls for ULongs here,
+	private long revisionNumber;//the spec called for ULongs here and here,
 	private long fileSize;//but this is extremely inconvenient in Java
 	private byte[] checksum;
     private boolean isDirectory;

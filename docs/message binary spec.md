@@ -83,7 +83,7 @@ These objects can be sent directly to another Peer.
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
 0C | PeerInfo              | Compound | [Yes, see entry below](#PeerInfo) Can be sent in reply to a PeerInfo Request |
-0D | Archive Status        | Compound | [Yes, see entry below](#ArchiveStatus) Serves as reply to File Tree Status Request
+0D | Archive Status        | Compound | Same type as update announcment, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). A reply to Archive Status Request
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11 | Request All Files     | 0        | Asks for latest known version of all files. Likely to be broadcast by a new subscriber, to all known peers.
 12 | File Data Chunk       | Compound | [Yes, see entry below](#FileDataChunk)
@@ -91,8 +91,11 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        | Usually sent to all known peers
 16 | Archive Status Request| 0        | Queries overall archive status, not any 1 peer's mirror
-17 | Update Announcement   | Compound | Sendable by Publisher only. New GRN, then a List:FileID of affected files   |
+17 | Update Announcement   | Compound | Same type as Archive Status, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). Sendable by Publisher only.|
+18 | "no haz" FileReq Reply| Compound | Used as a reply to a File Request when a peer doesn't have a (version of a?) file requested of it. Contains a list of FileInfos that the requesting peer asked for, which the replying peer doesn't have. 
 19 | PeerInfo Request      | 0        | A request for the connected Peer's PeerInfo
+1A | "haz nao" announcement| Compound | announces to network upon completion that this peer now has this FileID, so others can request it. Contains a list (usually of length 1) of FileInfos of file this peer now has
+1B | Fresh Peers           | Compound | Contains a List:PeerInfo. Is a reply to a request for more Peers.
 
 * Personal PeerInfo Request
 * Peer(s) Info List
@@ -121,15 +124,20 @@ Element             | Type
 4. revision number  | Long
 5. checksum         | SHA1
 
-<a name="ArchiveStatus" />Archive Status
+<a name="ArchiveInfo" />Archive Status
 -----------
-A reply to file tree status req. 
-Gives the known status of the global archive, not the requested peer's local mirror.
+
+A "joint type": this structure represent two Communicables: Archive Status and Update Announcement.
+
+The information within is used differently depending on the label. 
+Only the Publisher can send an Update Announcement.
+As an Archive Status, it's a reply to file tree status req. 
+It gives the known status of the global archive, not the requested peer's local mirror.
 
 Element             | Type
 --------------------|--------
 0. (ID Byte)        | a byte
-0. (Length)         | Integer
+1. (Length)         | Integer
 2. Global RevNum    | Long
 3. Files            | List:FileInfo
 
@@ -186,13 +194,6 @@ Element                | Type
 4. offset              | Long
 5. payload             | ByteArray
 
-Update Announcement
--------------------
-Element                | Type
------------------------|----------
-0. (ID Byte)           | a byte
-1. (Length)            | Integer
-2. GlobalRevisionNumber| Long
 
 Each peer has to request files it wants
 Other peers will help by sending requested files (or pieces of it), but can also reply with "I don't have it"
@@ -208,15 +209,12 @@ Instead, it's asking what a peer knows about the about the global archive tree
 TO DO?
 ======
 
-* Global Revision Number
-    - a simple counter for the whole file tree, incremented on every revision
-
-* Change List and Hlist from TLNV to just TNV, to avoid cases where the total number of bytes is > Integer.MAX_VALUE
+* Change List from TLNV to just TNV, to avoid cases where the total number of bytes is > Integer.MAX_VALUE
 * Add the following message types:
-    - File Request Reply: I don't have that version/file
+    
     - 'I now have this file version' announcement
         - announces to network that this peer now has this FileID upon completion, so others can request it
-
+* Merge Update announcement with Archive Status, as they are functioanlly the same, without allowing peers other than the Publisher to push updates
 
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
 
@@ -225,8 +223,11 @@ Subscriber announcement of the latest revision number when it becomes up to date
 DONE
 =====
 
+* Global Revision Number
+    - a simple counter for the whole file tree, incremented on every revision
 * Request for all files: used by a new peer to ask for all the files in the archive, 
 without having to specifically request each one (also avoid querying for them)
+* File Request Reply: I don't have that version/file
 * Differentiate between supporting data types (like int, bitfield, String) and 
 objects that can actually be sent down the Socket. 
 The latter are more likely to have a custom java class, and implement Communicable.
