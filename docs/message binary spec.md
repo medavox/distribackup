@@ -95,7 +95,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 18 | "no haz" FileReq Reply| Compound | Used as a reply to a File Request when a peer doesn't have a (version of a?) file requested of it. Contains a list of FileInfos that the requesting peer asked for, which the replying peer doesn't have. 
 19 | PeerInfo Request      | 0        | A request for the connected Peer's PeerInfo
 1A | "haz nao" announcement| Compound | announces to network upon completion that this peer now has this FileID, so others can request it. Contains a list (usually of length 1) of FileInfos of file this peer now has
-1B | More Peers           | Compound | Contains a List:PeerInfo. Is a reply to a request for more Peers.
+1B | More Peers            | Compound | Contains a List:PeerInfo. Is a reply to a request for more Peers.
 
 * Personal PeerInfo Request
 * Peer(s) Info List
@@ -215,7 +215,7 @@ TO DO?
     - 'I now have this file version' announcement
         - announces to network that this peer now has this FileID upon completion, so others can request it
 * Merge Update announcement with Archive Status, as they are functioanlly the same, without allowing peers other than the Publisher to push updates
-
+* add a bitfield hasBeenDeleted (or something) to FileInfos, so they can describe the deletion of a file in an Update Announcement
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
 
 Subscriber announcement of the latest revision number when it becomes up to date

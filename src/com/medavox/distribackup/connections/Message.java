@@ -22,12 +22,12 @@ public enum Message
 	REQ_ALL_FILES	((byte)0x11,  0),
 	FILE_DATA_CHUNK ((byte)0x12, -2),
 	FILE_REQUEST	((byte)0x13, -2),
-	GREETING		((byte)0x14, 18),
+	GREETING		((byte)0x14, 16),
 	EXIT_ANNOUNCE	((byte)0x15,  0),
 	TREE_STATUS_REQ	((byte)0x16,  0),
 	UPDATE_ANNOUNCE	((byte)0x17, -2),
 	NO_HAZ			((byte)0x18, -2),
-	PEERINFO_REQUEST((byte)0x19,  0),
+	PEER_INFO_REQ   ((byte)0x19,  0),
 	HAZ_NAO         ((byte)0x1A, -2),
 	MORE_PEERS      ((byte)0x1B, -2);
 	

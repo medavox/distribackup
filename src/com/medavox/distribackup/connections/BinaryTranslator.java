@@ -17,7 +17,7 @@ import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
 import com.medavox.distribackup.filesystem.DirectoryInfo;
-import com.medavox.distribackup.filesystem.ArchiveInfo;
+import com.medavox.distribackup.filesystem.UpdateAnnouncement;
 
 /**Logic in this class only pertains to conversion of primitive types to and from binary.
  * Byte arrays constructed by this class do not contain an IDByte, as not all uses
@@ -338,7 +338,7 @@ public abstract class BinaryTranslator
 		return concat(len, bfWrapper, addrField, port, lastSpotted);
 	}
     
-    public static byte[] archiveInfoToBytes(ArchiveInfo ua) throws IOException
+    public static byte[] updateAnnouncementToBytes(UpdateAnnouncement ua) throws IOException
     {
         byte[] GRN = longToBytes(ua.getGlobalRevisionNumber());
         
@@ -678,12 +678,12 @@ public abstract class BinaryTranslator
         return rxAddress;
 	}
     
-    public static ArchiveInfo bytesToArchiveInfo(byte[] b) throws UnsupportedEncodingException, IOException
+    public static UpdateAnnouncement bytesToUpdateAnnouncement(byte[] b) throws UnsupportedEncodingException, IOException
     {/* 2. Global RevNum    | Long
         3. Files            | List:FileInfo*/
         long GRN = bytesToLong(Arrays.copyOfRange(b, 0, 8));
         FileInfo[] fileInfos = bytesToFileInfoList(Arrays.copyOfRange(b, 8, b.length));
-        ArchiveInfo ai = new ArchiveInfo(GRN, fileInfos);
+        UpdateAnnouncement ai = new UpdateAnnouncement(GRN, fileInfos);
         return ai;
     }
     
@@ -709,7 +709,6 @@ public abstract class BinaryTranslator
         Update Announcement
         "no haz" FileReq Reply
         "haz nao" announcement*/
-        Communicable vagueReturnType;
 
         switch(type)
         {
@@ -718,7 +717,7 @@ public abstract class BinaryTranslator
             
             case ARCHIVE_STATUS:
             case UPDATE_ANNOUNCE:
-                return bytesToArchiveInfo(b);
+                return bytesToUpdateAnnouncement(b);
             
             case FILE_DATA_CHUNK:
                 return bytesToFileDataChunk(b);

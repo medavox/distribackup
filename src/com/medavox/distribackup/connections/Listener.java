@@ -18,22 +18,42 @@ public class Listener extends Thread
 	}
 	public void run()
 	{
-		try
+		ServerSocket svr;
+		while(true)
 		{
-			ServerSocket svr = new ServerSocket(port, MAX_BACKLOG);
-			o.println("listening on port "+port);
-			while(true)
-			{//on a new socket connection:
-				Socket s = svr.accept();
-				owner.setupNewSocket(s);//callback: pass new Socket back to main thread
-				//o.println("connection "+connectionNumber+" established");
+			try
+			{
+				System.out.println("Opening listening port: "+port+"...");
+				svr = new ServerSocket(port, MAX_BACKLOG);
+				break;
+			}
+			catch(BindException be)
+			{
+				System.err.println(be.getMessage());
+				port++;
+				continue;
+			}
+			catch(IOException ioe)
+			{
+				ioe.printStackTrace();
+				System.exit(1);
 			}
 		}
-		catch(Exception e)
-		{
-			System.err.println("CRASHED on connection NODATA");
-			e.printStackTrace();
-			System.exit(1);
+		while(true)
+		{//on a new socket connection:
+			try
+			{
+				Socket s = svr.accept();
+				owner.setupNewSocket(s);//callback: pass new Socket back to main thread
+			}
+			catch(Exception e)
+			{
+				System.err.println("CRASHED on connection NODATA");
+				e.printStackTrace();
+				System.exit(1);
+			}
+			
+			//o.println("connection "+connectionNumber+" established");
 		}
 	}
 }

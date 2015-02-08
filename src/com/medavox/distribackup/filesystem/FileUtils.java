@@ -1,8 +1,8 @@
 package com.medavox.distribackup.filesystem;
 
 import java.security.*;
+import java.util.Random;
 import java.io.*;
-import java.io.IOException;
 import java.nio.file.Path;
 
 public abstract class FileUtils
@@ -30,6 +30,25 @@ public abstract class FileUtils
 			//the String which could cause this exception is invariate
 		}
 		return new byte[0];
+	}
+	/**Hands out randomly chosen names*/
+	public static String getRandomName()
+	{
+		String[] boyNames = fileToString(new File("boysnames.txt")).split("\n");
+		String[] girlNames = fileToString(new File("girlssnames.txt")).split("\n");
+		String[] allNames = new String[boyNames.length + girlNames.length];
+		for(int i = 0; i < boyNames.length; i++)
+		{
+			allNames[i] = boyNames[i];
+		}
+		for(int i = boyNames.length; i < boyNames.length+girlNames.length; i++)
+		{
+			allNames[i] = girlNames[i-boyNames.length];
+		}
+		
+		Random r = new Random();
+		int randomIndex = r.nextInt(allNames.length);
+		return allNames[randomIndex];
 	}
 
 	public static String fileToString(File f)

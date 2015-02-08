@@ -13,26 +13,39 @@ import com.medavox.distribackup.filesystem.*;
 /* There must be a local state object which records open sockets, and 
  * which peers they pertain to*/
 public abstract class Peer extends Thread
-{
-	private final int MAX_CHUNK_SIZE = 4194304;//4MB
-	private final int MIN_CHUNK_SIZE = 32768;//32KB
-	private int listenPort;
+{/* PeerInfo				EXISTS
+	Archive Status			EXISTS
+	Request For Peers		EXISTS
+	Request All Files		EXISTS
+	File Data Chunk			DOING
+	File Request			EXISTS
+	Greeting				DONE
+	Exit Announcement		EXISTS
+	Archive Status Request	EXISTS
+	Update Announcement		EXISTS
+	"no haz" FileReq Reply	EXISTS
+	PeerInfo Request		
+	"haz nao" announcement
+	Fresh Peers*/
+
+	public static final int MAX_CHUNK_SIZE = 4194304;//4MB
+	public static final int MIN_CHUNK_SIZE = 32768;//32KB
+	protected int listenPort;
 	//private String defaultRoot;//must be specified by subclass
 	public Path root;
-	private String cacheDir = ".distribackup-cache";
+	protected String cacheDir = ".distribackup-cache";
 	
 	PeerInfo publisherInfo;
-	UUID publisherUUID;
+	protected UUID publisherUUID;
 	public static UUID myUUID;
     
-	private ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
 	
-	private Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
+	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
     
-    private FileSet filesToDownload = new FileSet(-1, new FileInfo[0]);
+    protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
     
-    private FileSet globalArchiveState = new FileSet( -1, new FileInfo[0]);//initialise empty, then get state from network
-    private FileSet localArchiveState = new FileSet( -1, new FileInfo[0]);
+    protected ArchiveInfo globalArchiveState = new ArchiveInfo( -1, new FileInfo[0]);//initialise empty, then get state from network
 	
 	public static final short version = 2;//increment this manually on every release
 	
@@ -82,7 +95,7 @@ public abstract class Peer extends Thread
 				//ask for its PeerInfo object.
 				//It will be received by the Incoming Message Processing Thread,
 				//and added to the peers list
-				co.sendPeerInfoRequest();
+				co.requestPeerInfo();
 			}
 			else
 			{//we've already seen this Peer before
@@ -101,6 +114,35 @@ public abstract class Peer extends Thread
 		}
 	}
 
+	protected FileInfo pathToFileInfo(Path p, long revisionNumber)
+	{
+		Path relativePath = root.relativize(p);
+		System.out.println("passed path:   "+p);
+		System.out.println("relative path: "+relativePath);
+    	String name = relativePath.getFileName().toString();
+    	Path relPath = relativePath.getParent();//use an empty string if the path is null
+    	String path = (relPath == null ? "" : relPath.toString());
+    	
+    	File asFile = p.toFile();
+    	FileInfo newFile = new FileInfo(name, path);//if it's a directory
+		
+    	if(!asFile.isDirectory())
+    	{//is a file, so use the Filewise constructor for FileInfo
+			try
+			{
+				long fileSize = Files.size(p);
+		
+		    	byte[] checksum = FileUtils.checksum(asFile);
+		    	newFile = new FileInfo(name, path, fileSize, revisionNumber, checksum);
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				System.exit(1);
+			}
+    	}
+    	return newFile;
+	}
 	
 	/**TODO:
 	 store 1 bis-bos pair per socket entry
@@ -131,19 +173,20 @@ public abstract class Peer extends Thread
                 ReceivedMessage next = messageQueue.remove();
                 //TODO: probably a big old switch statement
                 switch(next.getType())
-                {/* PeerInfo
-					Archive Status
-					Request For Peers
-					Request All Files
-					File Data Chunk
-					File Request
-					Greeting
-					Exit Announcement
-					Archive Status Request
-					Update Announcement
-					"no haz" FileReq Reply
+                {/* PeerInfo				DONE
+					Archive Status			DONE
+					Request For Peers		DONE
+					Request All Files		DONE
+					File Data Chunk			DONE
+					File Request			DONE
+					Greeting				N/A
+					Exit Announcement		DONE
+					Archive Status Request	DONE
+					Update Announcement		DONE
+					"no haz" FileReq Reply	DONE
 					PeerInfo Request
-					"haz nao" announcement*/
+					"haz nao" announcement	DONE
+					More Peers*/
 					
 					case PEER_INFO:
 						receivePeerInfo(next);
@@ -152,10 +195,6 @@ public abstract class Peer extends Thread
 					case ARCHIVE_STATUS:
 						receiveArchiveStatus(next);
 					break;
-					
-					case TREE_STATUS_REQ:
-                        handleArchiveStatusRequest(next);
-                    break;
 					
 					case REQ_FOR_PEERS:
                         handleRequestForPeers(next);
@@ -174,7 +213,11 @@ public abstract class Peer extends Thread
                     break;
                     //greeting is implemented differently; not here
                     case EXIT_ANNOUNCE:
-                        handleExitAnnouncement(next);
+                        receiveExitAnnouncement(next);
+                    break;
+                    
+                    case TREE_STATUS_REQ:
+                        handleArchiveStatusRequest(next);
                     break;
                     
                     case UPDATE_ANNOUNCE:
@@ -185,21 +228,41 @@ public abstract class Peer extends Thread
 						receiveNoHaz(next);
 					break;
 					
+                    case PEER_INFO_REQ:
+                    	handlePeerInfoRequest(next);
+                    break;
+					
 					case HAZ_NAO:
 						receiveAcquisitionAnnouncement(next);
+					break;
+					
+					case MORE_PEERS:
+						receiveMorePeers(next);
 					break;
                 }
             }
         }
     }
-    /**Waits until we have the whole update before pushing files to the visible copy.
+    private void handlePeerInfoRequest(ReceivedMessage next)
+    {
+		// TODO Auto-generated method stub
+		
+	}
+	private void receiveMorePeers(ReceivedMessage next)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	/**Waits until we have the whole update before pushing files to the visible copy.
 	Updates should be relatively small anyway, and this prevents broken half-states from occurring*/
     public void receiveFileDataChunk(ReceivedMessage rxmsg)
     {
+    	
         //check file exists
         //if there are more files or pieces on the way before this update is finished,
         //store them in some kind of cache
         FileDataChunk fdc = (FileDataChunk)rxmsg.getCommunicable();
+        System.out.println("received file data for \""+fdc.getFileInfo().getName()+"\"");
         if(fdc.isWholeFile())
         {//we have the whole file,
 			//do we now have all pieces of the update?
@@ -265,7 +328,7 @@ public abstract class Peer extends Thread
         
     }
     
-    public void handleExitAnnouncement(ReceivedMessage ea)
+    public void receiveExitAnnouncement(ReceivedMessage ea)
     {
         
     }

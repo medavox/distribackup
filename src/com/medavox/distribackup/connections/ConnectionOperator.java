@@ -12,23 +12,24 @@ import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
+import com.medavox.distribackup.filesystem.UpdateAnnouncement;
 
 /**This class handles communication over an individual Socket connection, 
  * after its initialisation. */
 public class ConnectionOperator extends Thread
 {/* PeerInfo				EXISTS
 	Archive Status			EXISTS
-	Request For Peers		EXISTS
-	Request All Files		EXISTS
+	Request For Peers		DONE
+	Request All Files		DONE
 	File Data Chunk			EXISTS
 	File Request			EXISTS
 	Greeting				DONE
 	Exit Announcement		EXISTS
-	Archive Status Request	EXISTS
+	Archive Status Request	DONE
 	Update Announcement		EXISTS
 	"no haz" FileReq Reply	EXISTS
 	PeerInfo Request		EXISTS
-	"haz nao" announcement	
+	"haz nao" announcement	EXISTS
 	More Peers				EXISTS*/
 	
 	BufferedInputStream bis;
@@ -92,6 +93,10 @@ public class ConnectionOperator extends Thread
 	{
 		//package up data into a single byte[] before sending, 
 		//(as opposed to sending each part as we create it), to minimise packets
+		System.out.println("sending my UUID\n:"+
+		Peer.myUUID.getMostSignificantBits()+"\n"+
+		Peer.myUUID.getLeastSignificantBits());
+		
 		byte[] UUIDmsb = BinaryTranslator.longToBytes(Peer.myUUID.getMostSignificantBits());
 		byte[] UUIDlsb = BinaryTranslator.longToBytes(Peer.myUUID.getLeastSignificantBits());
 		byte[] greetingSend = BinaryTranslator.concat(Message.GREETING.IDByte, UUIDmsb, UUIDlsb);
@@ -99,11 +104,32 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 		
 		//wait for greeting back
-		byte[] theirGreeting = new byte[Message.GREETING.length-2];//minus header
-		bis.read(theirGreeting, 2, theirGreeting.length);//again, skip header
+		
+		byte[] theirIDByte = new byte[1];
+		
+		bis.read(theirIDByte, 0, 1);
+		
+		if(theirIDByte[0] == Message.GREETING.IDByte)
+		{
+			System.out.println("Their IDByte matches.");
+		}
+		else
+		{
+			System.out.println("Their IDByte DOESN'T MATCH!");
+		}
+		
+		byte[] msb = new byte[8];
+		byte[] lsb = new byte[8];
         
-		long theirUUIDmsb = BinaryTranslator.bytesToLong(Arrays.copyOfRange(theirGreeting, 0, 7));
-		long theirUUIDlsb = BinaryTranslator.bytesToLong(Arrays.copyOfRange(theirGreeting, 8, 15));
+		bis.read(msb, 0, 8);
+		bis.read(lsb, 0, 8);
+		
+		long theirUUIDmsb = BinaryTranslator.bytesToLong(msb);
+		long theirUUIDlsb = BinaryTranslator.bytesToLong(lsb);
+		
+		System.out.println("Received UUID\n:"+
+		theirUUIDmsb+"\n"+
+		theirUUIDlsb);
 		
 		UUID theirUUID = new UUID(theirUUIDmsb, theirUUIDlsb);
         connectedPeer = theirUUID;
@@ -117,7 +143,7 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	public void announceHaveNowGotFile(FileInfo newlyAcquiredFile)
+	public void announceHaveNowGotFile(FileInfo newlyAcquiredFile)//TODO
 	{
 		
 	}
@@ -129,27 +155,41 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	public void sendPeerInfo() throws IOException
+	public void sendPeerInfo() throws IOException//TODO
 	{
 		
 	}
 	
-	public void sendUpdateAnnouncement()//TODO
+	public void sendUpdateAnnouncement(UpdateAnnouncement ua)throws IOException
 	{
-		
+		byte IDByte = Message.UPDATE_ANNOUNCE.IDByte;
+		byte[] uaBytes = BinaryTranslator.updateAnnouncementToBytes(ua);
+		byte[] toSend = BinaryTranslator.concat(IDByte, uaBytes);
+		bos.write(toSend, 0, toSend.length);
+		bos.flush();
 	}
     
     public void requestPeerInfo() throws IOException
     {
-        byte[] peerInfoReq = {Message.PEERINFO_REQUEST.IDByte};
+        byte[] peerInfoReq = {Message.PEER_INFO_REQ.IDByte};
         bos.write(peerInfoReq, 0, 1);
 		bos.flush();
     }
 	
-	public void sendMorePeers(PeerInfo[] peers) // TODO
+	public void sendMorePeers(PeerInfo[] morePeers) throws IOException
 	{
 		byte IDByte = Message.MORE_PEERS.IDByte;
+		byte[][] peerBytes = new byte[morePeers.length][];
+        for(int i = 0; i < morePeers.length; i++)
+        {
+        	peerBytes[i] = BinaryTranslator.peerInfoToBytes(morePeers[i], false);
+        }
         
+        byte[] morePeersBytes = BinaryTranslator.listToBytes(peerBytes, Message.PEER_INFO.IDByte);
+        byte[] toSend = BinaryTranslator.concat(IDByte, morePeersBytes);
+        
+        bos.write(toSend, 0, toSend.length);
+		bos.flush();
 	}
 	
 	public void sendArchiveStatus() // TODO
@@ -159,6 +199,7 @@ public class ConnectionOperator extends Thread
 	
 	public void sendFileDataChunk(FileDataChunk fdc)
 	{
+		System.out.println("sending file data \""+fdc.getFileInfo().getName()+"\"");
         try
         {
             byte IDByte = Message.FILE_DATA_CHUNK.IDByte;
@@ -173,14 +214,16 @@ public class ConnectionOperator extends Thread
         }
 	}
 	
-	public void sendNoHazFile(FileInfo[] unavailable files)
+	public void sendNoHazFile(FileInfo[] unavailableFiles)//TODO
 	{
 		
 	}
 	
-	public void requestArchiveStatus()//TODO
+	public void requestArchiveStatus() throws IOException
 	{
-		
+        byte[] archiveStatusReq = {Message.TREE_STATUS_REQ.IDByte};
+        bos.write(archiveStatusReq, 0, 1);
+		bos.flush();
 	}
 		
 	public void requestFile(FileInfo fi) // TODO
@@ -203,9 +246,11 @@ public class ConnectionOperator extends Thread
         }
 	}
 	
-	public void requestAllFiles()//TODO
+	public void requestAllFiles() throws IOException
 	{
-		
+        byte[] allFilesReq = {Message.REQ_ALL_FILES.IDByte};
+        bos.write(allFilesReq, 0, 1);
+		bos.flush();
 	}
     
     private void reportException(Exception e)
@@ -219,7 +264,7 @@ public class ConnectionOperator extends Thread
      message, translates it back to java types, wraps it in a ReceivedMessage
      * which contains info about originating connection and Peer, then sends it
      * to the Peer's IncomingMessageProcessor*/
-	public void run() // TODO
+	public void run()
 	{/**a queue of enums which each represent incoming events 
     a single event handling thread deals with each event in order
     each event enum will need info about it attached, like WHICH peer announced 

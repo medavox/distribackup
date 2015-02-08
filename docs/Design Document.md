@@ -10,6 +10,11 @@ optimised for networks with low common uptime
 I've been working all along under the (unwritten) assumption that my network will be resistant to attack
 and takedown requests, ie there's no central "hub" (as defined below) without which the network fails.
 
+Changes will not be grouped into discrete updates which are pushed to files in one go;
+changes to files will appear as they are downloaded.
+
+This per-file updating as opposed to per-group updating would affect groups of structured files, such as a website or a collection of java source files, but it matters little to the files in our intended use case.
+
 However making an easy photo/video sharing ad backup solution doesn't require this robustness.
 
 How do we reconcile these two viewpoints acceptably -- ie without compromising the goals of either?
@@ -20,6 +25,12 @@ We are not currently catering to the security crowd - our primary goal is not to
 It's to provide an easy-to-understand service for lay users to share and backup files without investing in corporate storage or hardware (which requires a tech education)
 However if things end up going down that route in future, then so be it -- Perfect Forward Secrecy for all! etc
 
+how do peers know which peer to request a file from?
+====================================================
+
+The publisher is always the busiest
+others aren't guaranteed to yet have the file
+requesting from everyone would promote a lot of redundant traffic, network congestion
 
 #One-Way Sync: the Central Publisher
 Consider adopting 1-way synchronisation with a star topology, with one node in the middle pushing updates to interested subscribed mirrors
