@@ -28,7 +28,7 @@ public class ConnectionOperator extends Thread
 	Archive Status Request	DONE
 	Update Announcement		EXISTS
 	"no haz" FileReq Reply	EXISTS
-	PeerInfo Request		EXISTS
+	PeerInfo Request		DONE
 	"haz nao" announcement	EXISTS
 	More Peers				EXISTS*/
 	
@@ -226,7 +226,7 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 		
-	public void requestFile(FileInfo fi) // TODO
+	public void requestFile(FileInfo fi)
 	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
     //having two seperate length field for this seems unecessary, but is consistent with the current spec
     //maybe it can be changed later

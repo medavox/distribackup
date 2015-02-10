@@ -37,6 +37,31 @@ public class Publisher extends Peer
 	super(root, port);
     }*/
     
+    public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO
+    {
+        //WE are the publisher!
+    	//so there's an impostor in our midst...
+    	PeerInfo pi = peers.get(ua.getUUID());
+    	System.err.println("WARNING: Peer \""+pi+
+    			"\" is pretending to be the Publisher!");
+    }
+    
+    public void handleFileRequest(ReceivedMessage fr)//TODO
+    {
+    	//find out which file is being requested,
+
+        
+    	//we (nearly) always have the file and the right version,
+    	//(unless we are a new Publisher in an old network,
+    	//or a returning-from-long-absence Publisher that needs bringing up to date)
+	    	//construct a FileDataChunk for it
+	    	//then send it to the relevant peer
+    	FileInfo fi = (FileInfo)fr.getCommunicable();
+    	System.out.println("Received File Request for: "+fi.getName());
+    	
+    	//if(localfi.toString())
+    }
+    
     public void fileChanged(Path file, String eventType)
     {
 		switch(eventType)
@@ -49,32 +74,7 @@ public class Publisher extends Peer
 		    case "ENTRY_MODIFY":
 			    System.out.println("Sending file "+file);
 			    globalRevisionNumber++;//increment the actual Global Revision Number
-		    	//update/create entry in the archive state
-			    //make sure the path we pass is relative to archive root
-			    /*Path relativePath = root.relativize(file);
-		    	String name = relativePath.getFileName().toString();
-		    	String path = relativePath.getParent().toString();
 		    	
-		    	File asFile = file.toFile();
-		    	FileInfo newFile;
-	    		newFile = new FileInfo(name, path);//if it's a directory
-	    		
-		    	if(!asFile.isDirectory())
-		    	{//is a file, so use the Filewise constructor for FileInfo
-					try
-					{
-						long fileSize = Files.size(file);
-				
-				    	long revNum = 1;//this is a new file, so it's the first version!
-				    	byte[] checksum = FileUtils.checksum(file.toFile());
-				    	newFile = new FileInfo(name, path, fileSize, revNum, checksum);
-					} 
-					catch (IOException e)
-					{
-						e.printStackTrace();
-						System.exit(1);
-					}
-		    	}*/
 			    
 			    FileInfo newFile = pathToFileInfo(file, 1);
 		    	//add created FileInfo object to globalArchiveState

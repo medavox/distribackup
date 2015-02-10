@@ -4,6 +4,8 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.*;
 
 import com.medavox.distribackup.connections.*;
@@ -99,13 +101,9 @@ public abstract class Peer extends Thread
 			}
 			else
 			{//we've already seen this Peer before
-				//add this new Connection info to its of connections
+				//add this new Connection info to its connections pile
+				peers.get(newPeerUUID).addConnection(co);
 			}
-			//TODO:
-			//construct a new PeerInfo based on data requested and received
-			//check it with the local PeerInfo store
-			
-			
 		}
 		catch(IOException ioe)
 		{
@@ -243,21 +241,18 @@ public abstract class Peer extends Thread
             }
         }
     }
-    private void handlePeerInfoRequest(ReceivedMessage next)
+    public void handlePeerInfoRequest(ReceivedMessage next)//TODO
     {
-		// TODO Auto-generated method stub
 		
 	}
-	private void receiveMorePeers(ReceivedMessage next)
+	public void receiveMorePeers(ReceivedMessage next)//TODO
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	/**Waits until we have the whole update before pushing files to the visible copy.
 	Updates should be relatively small anyway, and this prevents broken half-states from occurring*/
-    public void receiveFileDataChunk(ReceivedMessage rxmsg)
+    public void receiveFileDataChunk(ReceivedMessage rxmsg)//TODO
     {
-    	
         //check file exists
         //if there are more files or pieces on the way before this update is finished,
         //store them in some kind of cache
@@ -296,77 +291,141 @@ public abstract class Peer extends Thread
         		e.printStackTrace();
         		System.exit(1);
         	}
-        	
         }
         else
         {//store this piece of the file in the cache until we have all the pieces of the update
-            
+            //TODO
         }
-        
+    }
+    /**Assumes:- 
+     * The requested file exists (we have the file and the right version),
+     * The requested file is appropriately a file,
+     * The requested file is the right version.
+     * It's the responsibility of the caller to make sure these are true.*/
+    public FileDataChunk[] createFileDataChunks(FileInfo fi)//TODO:loads entire file into memory!
+    {
+		File fsFile = new File(fi.toString());
+    		
+    	assert !fi.isDirectory() && !fsFile.isDirectory();
+		//if the file is small enough, send the whole thing
+		if(fsFile.length() <= MAX_CHUNK_SIZE)
+		{
+			try(FileInputStream fis = new FileInputStream(fsFile))
+			{
+				int lengthAsInt = (int)fsFile.length();
+				byte[] payload = new byte[lengthAsInt];
+				fis.read(payload, 0, lengthAsInt);
+				FileDataChunk fdc = new FileDataChunk(fi, payload, 0);
+				
+				FileDataChunk[] ret = {fdc};
+				return ret;
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		else
+		{//otherwise, send chunks of max size Peer.MAX_CHUNK_SIZE
+			int minChunks = (int)Math.ceil(fsFile.length() / MAX_CHUNK_SIZE);
+			FileDataChunk[] fdcs = new FileDataChunk[minChunks];
+			for(int i = 0; i < minChunks; i++)
+			{   //we need to address positions in a file past 2GB
+				//in order to read them,
+				//which is impossible with FileInputStream's offset:int.
+				//so we need a read method which has an offset:long
+				//thus, the use of ByteBuffer
+				
+				//if this is the last chunk, make the readLength only up to the last byte
+				long offset = (long)i*(long)MAX_CHUNK_SIZE;
+				int readLength = (i==minChunks-1 ? (int)(fsFile.length()-offset) : MAX_CHUNK_SIZE);
+				
+				Path path = fsFile.toPath();
+				try(FileChannel fc = FileChannel.open(path, StandardOpenOption.READ))
+				{
+					ByteBuffer bb = ByteBuffer.allocate(readLength);
+					fc.read(bb, offset);
+					
+					if(bb.hasArray())
+					{
+						byte[] payload = bb.array();
+						fdcs[i] = new FileDataChunk(fi, payload, offset);
+					}
+					else
+					{
+						System.err.println("There's no backing array for the byte buffer!");
+						System.exit(1);
+					}
+					
+				}
+				catch(IOException ioe)
+				{
+					ioe.printStackTrace();
+					System.exit(1);
+				}
+			}
+			return fdcs;
+		}
+		//should never reach here
+		System.err.println("Reached impossible state!");
+		System.exit(1);
+		return null;//stupid compiler
     }
     
-    public void handleRequestForPeers(ReceivedMessage pr)
+    public abstract void handleFileRequest(ReceivedMessage fr);
+    
+    public void handleRequestForPeers(ReceivedMessage pr)//TODO
     {
         
     }
     
-    public void receivePeerInfo(ReceivedMessage pi)
+    public void receivePeerInfo(ReceivedMessage pi)//TODO
     {
 		PeerInfo peerInfo = (PeerInfo)pi.getCommunicable();
 		UUID uuid = pi.getUUID();
 		
-		peers.containsKey(uuid);
-	}
-    
-    public void handleFileRequest(ReceivedMessage fr)
-    {
-        
-    }
-    
-    public void handleAllFilesRequest(ReceivedMessage afr)
-    {
-        
-    }
-    
-    public void receiveExitAnnouncement(ReceivedMessage ea)
-    {
-        
-    }
-    
-    public void handleArchiveStatusRequest(ReceivedMessage ftsr)
-    {
-        
-    }
-    
-    public void receiveArchiveStatus(ReceivedMessage as)
-    {
-		
-	}
-	
-	public void receiveNoHaz(ReceivedMessage nh)
-	{
-		
-	}
-	
-	public void receiveAcquisitionAnnouncement(ReceivedMessage aa)
-	{
-		
-	}
-    
-    public void receiveUpdateAnnouncement(ReceivedMessage ua)
-    {//do some basic validation to detect peers spoofing as publisher
-        if(publisherUUID.equals(myUUID) //if WE are the publisher
-        || !(publisherUUID.equals(ua.getUUID()) ))//or their UUID is not the Publisher's
-        {
-			//someone is pretending to be the Publisher!
+		if(peers.containsKey(uuid))
+		{
+			//TODO
 		}
 		else
-		{//everything is fine, no spoofing here
-			//get list of changed files
-			//get the ArchiveInfo from the Update Announcement
-			
+		{
+			peers.putIfAbsent(uuid, peerInfo);
 		}
+	}
+
+    public void handleAllFilesRequest(ReceivedMessage afr)//TODO
+    {
+        
     }
+    
+    public void receiveExitAnnouncement(ReceivedMessage ea)//TODO
+    {
+        
+    }
+    
+    public void handleArchiveStatusRequest(ReceivedMessage ftsr)//TODO
+    {
+        
+    }
+    
+    public void receiveArchiveStatus(ReceivedMessage as)//TODO
+    {
+		
+	}
+	
+	public void receiveNoHaz(ReceivedMessage nh)//TODO
+	{
+		
+	}
+	
+	public void receiveAcquisitionAnnouncement(ReceivedMessage aa)//TODO
+	{
+		
+	}
+    
+    public abstract void receiveUpdateAnnouncement(ReceivedMessage ua);
     
     public void addToQueue(ReceivedMessage rxmsg)
     {

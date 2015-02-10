@@ -58,6 +58,11 @@ public class PeerInfo implements Communicable
     	return openConnections.get(randomIndex);
     }
     
+    public void addConnection(ConnectionOperator co)
+    {
+    	openConnections.add(co);
+    }
+    
     /*
     //tries to start a new connection from the pool of Addresses;
     //throws an IOException if none of them work, or if there are none to try.

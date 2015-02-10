@@ -200,8 +200,8 @@ Other peers will help by sending requested files (or pieces of it), but can also
 all peers will announce when they have finished downloading a file, so other peers now know to request that file from it
 
 This means that a File Tree Status Requset isn't for asking another peer about its personal state, which is pointless 
-(it's the repsonsibility of each peer to manage its own mirror tree, and this sort of tree status request would only 
-benefit a system where peers try to be helpful by pushing to each other).
+(Each peer is responsible for managing its own archive copy, and this type of request would only 
+benefit a system where peers try to be helpful by pre-emptively pushing to each other).
 
 Instead, it's asking what a peer knows about the about the global archive tree
 (ie what the latest version out there are, whether the asked peer has the files or not).
@@ -219,6 +219,8 @@ TO DO?
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
 
 Subscriber announcement of the latest revision number when it becomes up to date
+
+need a way of closing/removing closed ConnectionOperators
 
 DONE
 =====

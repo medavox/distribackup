@@ -57,7 +57,7 @@ public class FileInfo extends FileSystemObjectInfo
 		return checksum;
 	}
 	
-	public String toString()
+	public String toString()//TODO : check up on correct separators, and that there is one between path and name
 	{
 		return path + name;
 	}
