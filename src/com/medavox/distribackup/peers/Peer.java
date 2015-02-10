@@ -79,6 +79,8 @@ public abstract class Peer extends Thread
 		try
 		{
 			ConnectionOperator co = new ConnectionOperator(s, this);
+			
+			
 			int handshook = co.checkVersions();
 			System.out.println("incoming connection from "+s.getInetAddress());
 			
@@ -91,17 +93,21 @@ public abstract class Peer extends Thread
 			}
 			
 			UUID newPeerUUID = co.exchangeUUIDs();
-			
+			//after boilerplate is done, start listening thread
+			co.start();
+			this.start();//start Incoming Message Processing Thread
 			if(!peers.containsKey(newPeerUUID))
 			{//if we've not seen this Peer before:
 				//ask for its PeerInfo object.
 				//It will be received by the Incoming Message Processing Thread,
 				//and added to the peers list
+				System.out.println("We've not seen this peer before!");
 				co.requestPeerInfo();
 			}
 			else
 			{//we've already seen this Peer before
 				//add this new Connection info to its connections pile
+				System.out.println("We already know this peer.");
 				peers.get(newPeerUUID).addConnection(co);
 			}
 		}
@@ -170,6 +176,7 @@ public abstract class Peer extends Thread
             {
                 ReceivedMessage next = messageQueue.remove();
                 //TODO: probably a big old switch statement
+                switcheroo:
                 switch(next.getType())
                 {/* PeerInfo				DONE
 					Archive Status			DONE
@@ -188,62 +195,67 @@ public abstract class Peer extends Thread
 					
 					case PEER_INFO:
 						receivePeerInfo(next);
-					break;
+					break switcheroo;
 					
 					case ARCHIVE_STATUS:
 						receiveArchiveStatus(next);
-					break;
+					break switcheroo;
 					
 					case REQ_FOR_PEERS:
                         handleRequestForPeers(next);
-                    break;
+                    break switcheroo;
                     
                     case REQ_ALL_FILES:
                         handleAllFilesRequest(next);
-                    break;
+                    break switcheroo;
 					
                     case FILE_DATA_CHUNK:
                         receiveFileDataChunk(next);
-                    break;
+                    break switcheroo;
                     
                     case FILE_REQUEST:
                         handleFileRequest(next);
-                    break;
+                    break switcheroo;
                     //greeting is implemented differently; not here
                     case EXIT_ANNOUNCE:
                         receiveExitAnnouncement(next);
-                    break;
+                    break switcheroo;
                     
                     case TREE_STATUS_REQ:
                         handleArchiveStatusRequest(next);
-                    break;
+                    break switcheroo;
                     
                     case UPDATE_ANNOUNCE:
                         receiveUpdateAnnouncement(next);
-                    break;
+                    break switcheroo;
                     
                     case NO_HAZ:
 						receiveNoHaz(next);
-					break;
+					break switcheroo;
 					
                     case PEER_INFO_REQ:
+                    	System.out.println("plip plop");
                     	handlePeerInfoRequest(next);
-                    break;
+                    break switcheroo;
 					
 					case HAZ_NAO:
 						receiveAcquisitionAnnouncement(next);
-					break;
+					break switcheroo;
 					
 					case MORE_PEERS:
 						receiveMorePeers(next);
-					break;
+					break switcheroo;
+					
+					default:
+						System.err.println("ERROR: Received unknown Message:"+next.getType());
+						System.exit(1);
                 }
             }
         }
     }
     public void handlePeerInfoRequest(ReceivedMessage next)//TODO
     {
-		
+    	System.out.println("Received PeerInfo Request");
 	}
 	public void receiveMorePeers(ReceivedMessage next)//TODO
 	{
@@ -297,12 +309,13 @@ public abstract class Peer extends Thread
             //TODO
         }
     }
+    
     /**Assumes:- 
      * The requested file exists (we have the file and the right version),
      * The requested file is appropriately a file,
      * The requested file is the right version.
      * It's the responsibility of the caller to make sure these are true.*/
-    public FileDataChunk[] createFileDataChunks(FileInfo fi)//TODO:loads entire file into memory!
+    public FileDataChunk getFileDataChunk(FileInfo fi, int pieceNum)//TODO:loads entire file into memory!
     {
 		File fsFile = new File(fi.toString());
     		
@@ -310,15 +323,17 @@ public abstract class Peer extends Thread
 		//if the file is small enough, send the whole thing
 		if(fsFile.length() <= MAX_CHUNK_SIZE)
 		{
+			if(pieceNum != 0)
+			{
+				throw new ArrayIndexOutOfBoundsException(
+						"this file doesn't have that many pieces!");
+			}
 			try(FileInputStream fis = new FileInputStream(fsFile))
 			{
 				int lengthAsInt = (int)fsFile.length();
 				byte[] payload = new byte[lengthAsInt];
 				fis.read(payload, 0, lengthAsInt);
-				FileDataChunk fdc = new FileDataChunk(fi, payload, 0);
-				
-				FileDataChunk[] ret = {fdc};
-				return ret;
+				return new FileDataChunk(fi, payload, 0);
 			}
 			catch(Exception e)
 			{
@@ -329,43 +344,43 @@ public abstract class Peer extends Thread
 		else
 		{//otherwise, send chunks of max size Peer.MAX_CHUNK_SIZE
 			int minChunks = (int)Math.ceil(fsFile.length() / MAX_CHUNK_SIZE);
-			FileDataChunk[] fdcs = new FileDataChunk[minChunks];
-			for(int i = 0; i < minChunks; i++)
-			{   //we need to address positions in a file past 2GB
-				//in order to read them,
-				//which is impossible with FileInputStream's offset:int.
-				//so we need a read method which has an offset:long
-				//thus, the use of ByteBuffer
+			if(pieceNum >= minChunks)
+			{
+				throw new ArrayIndexOutOfBoundsException(
+						"this file doesn't have that many pieces!");
+			}
+			//we need to address file positions past 2GB in order to read them,
+			//which is impossible with FileInputStream's offset:int.
+			//so we need a read method which has an offset:long
+			//thus, the use of ByteBuffer
+			
+			//if this is the last chunk, make the readLength only up to the last byte
+			long offset = (long)pieceNum*(long)MAX_CHUNK_SIZE;
+			int readLength = (pieceNum==minChunks-1 ? (int)(fsFile.length()-offset) : MAX_CHUNK_SIZE);
+			
+			Path path = fsFile.toPath();
+			try(FileChannel fc = FileChannel.open(path, StandardOpenOption.READ))
+			{
+				ByteBuffer bb = ByteBuffer.allocate(readLength);
+				fc.read(bb, offset);
 				
-				//if this is the last chunk, make the readLength only up to the last byte
-				long offset = (long)i*(long)MAX_CHUNK_SIZE;
-				int readLength = (i==minChunks-1 ? (int)(fsFile.length()-offset) : MAX_CHUNK_SIZE);
-				
-				Path path = fsFile.toPath();
-				try(FileChannel fc = FileChannel.open(path, StandardOpenOption.READ))
+				if(bb.hasArray())
 				{
-					ByteBuffer bb = ByteBuffer.allocate(readLength);
-					fc.read(bb, offset);
-					
-					if(bb.hasArray())
-					{
-						byte[] payload = bb.array();
-						fdcs[i] = new FileDataChunk(fi, payload, offset);
-					}
-					else
-					{
-						System.err.println("There's no backing array for the byte buffer!");
-						System.exit(1);
-					}
-					
+					byte[] payload = bb.array();
+					return new FileDataChunk(fi, payload, offset);
 				}
-				catch(IOException ioe)
+				else
 				{
-					ioe.printStackTrace();
+					System.err.println("There's no backing array for the byte buffer!");
 					System.exit(1);
 				}
+				
 			}
-			return fdcs;
+			catch(IOException ioe)
+			{
+				ioe.printStackTrace();
+				System.exit(1);
+			}
 		}
 		//should never reach here
 		System.err.println("Reached impossible state!");
@@ -375,6 +390,63 @@ public abstract class Peer extends Thread
     
     public abstract void handleFileRequest(ReceivedMessage fr);
     
+    protected void handleFileRequest(ReceivedMessage fr, boolean hasFile, boolean isRightVersion)
+    {
+    	FileInfo fi = (FileInfo)fr.getCommunicable();
+    	
+    	if(hasFile && isRightVersion)
+    	{//construct a FileDataChunk
+    		File fsFile = new File(fi.toString());
+    		
+    		//check the file exists and is what it's meant to be (file/directory)
+    		if(fsFile.exists())
+    		{
+    			if(fi.isDirectory()
+    			&& fsFile.isDirectory())
+    			{
+    				//nobody should request a directory
+    				//just create one with the right name!
+    				System.err.println("someone tried to request a directory!");
+    				//although this could be extended later to mean a
+    				//request of its CONTENTS...
+    			}
+    			else if(!fi.isDirectory()
+    			&& !fsFile.isDirectory())
+    			{
+					ConnectionOperator co = fr.getConnection();
+					//break file into 1 or more chunks to send
+					
+					if(fsFile.length() <= MAX_CHUNK_SIZE)
+					{
+						FileDataChunk fdc = getFileDataChunk(fi, 0);
+
+						co.sendFileDataChunk(fdc);
+					}
+					else
+					{
+						int minChunks = (int)Math.ceil(fsFile.length() / MAX_CHUNK_SIZE);
+						for(int i = 0; i < minChunks; i++)
+						{
+							FileDataChunk fdc = getFileDataChunk(fi, i);
+							co.sendFileDataChunk(fdc);
+						}	
+					}
+    			}
+    			else//either:  
+    			{//TODO:ERRORS
+    				//FileInfo == File, but filesystem == Dir
+    				//FileInfo == Dir, but filesystem == File
+    			}
+    		}
+    	}
+    	else//we don't have it
+    	{//send a NO_HAZ with the FileInfo they gave us attached
+    		ConnectionOperator co = fr.getConnection();
+    		FileInfo[] unavailableFiles = {fi};
+    		co.sendNoHazFile(unavailableFiles);
+    	}	
+    }
+    
     public void handleRequestForPeers(ReceivedMessage pr)//TODO
     {
         
@@ -382,15 +454,18 @@ public abstract class Peer extends Thread
     
     public void receivePeerInfo(ReceivedMessage pi)//TODO
     {
+    	System.out.println("Received new PeerInfo");
 		PeerInfo peerInfo = (PeerInfo)pi.getCommunicable();
 		UUID uuid = pi.getUUID();
 		
 		if(peers.containsKey(uuid))
 		{
+			System.out.println("TODO: known peer, update existing record");
 			//TODO
 		}
 		else
 		{
+			System.out.println("adding new PeerInfo to list of known peers...");
 			peers.putIfAbsent(uuid, peerInfo);
 		}
 	}

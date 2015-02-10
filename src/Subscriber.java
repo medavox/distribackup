@@ -94,49 +94,7 @@ public class Subscriber extends Peer
     	FileInfo extantFileInfo = localArchiveState.getFileInfoWithPath(fi.toString());
     	boolean isRightVersion = (fi.getRevisionNumber() == extantFileInfo.getRevisionNumber());
     	
-    	if(hasFile && isRightVersion)
-    	{//construct a FileDataChunk
-    		File fsFile = new File(fi.toString());
-    		
-    		//check the file exists and is what it's meant to be (file/directory)
-    		if(fsFile.exists())
-    		{
-    			if(fi.isDirectory()
-    			&& fsFile.isDirectory())
-    			{
-    				//nobody should request a directory
-    				//just create one with the right name!
-    				System.err.println("someone tried to request a directory!");
-    				//although this could be extended later to mean a
-    				//request of its CONTENTS...
-    			}
-    			else if(!fi.isDirectory()
-    			&& !fsFile.isDirectory())
-    			{
-					ConnectionOperator co = fr.getConnection();
-					//break file into 1 or more chunks to send
-					
-					//TODO: this loads the entire file into memory!
-					FileDataChunk[] fdcs = createFileDataChunks(fi);
-					
-					for(int i = 0; i < fdcs.length; i++)
-					{
-						co.sendFileDataChunk(fdcs[i]);
-					}
-    			}
-    			else//either:  
-    			{//TODO:ERRORS
-    				//FileInfo == File, but filesystem == Dir
-    				//FileInfo == Dir, but filesystem == File
-    			}
-    		}
-    	}
-    	else//we don't have it
-    	{//send a NO_HAZ with the FileInfo they gave us attached
-    		ConnectionOperator co = fr.getConnection();
-    		FileInfo[] unavailableFiles = {fi};
-    		co.sendNoHazFile(unavailableFiles);
-    	}
+    	handleFileRequest(fr, hasFile, isRightVersion);
     }
     
     public static void main (String args[])

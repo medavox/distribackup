@@ -77,8 +77,8 @@ public class ConnectionOperator extends Thread
 		//their version bytes -> short
 		short theirVer = (short) (theirVersion[theirVersion.length-1] | (theirVersion[theirVersion.length-2] << 8));
 
-		System.out.println("Our version:   "+version);
-		System.out.println("Their version: "+theirVer);
+		//System.out.println("Our version:   "+version);
+		//System.out.println("Their version: "+theirVer);
 		if(version != theirVer)
 		{
 			return -1;
@@ -93,9 +93,9 @@ public class ConnectionOperator extends Thread
 	{
 		//package up data into a single byte[] before sending, 
 		//(as opposed to sending each part as we create it), to minimise packets
-		System.out.println("sending my UUID\n:"+
+		System.out.println("sending my UUID"/*+
 		Peer.myUUID.getMostSignificantBits()+"\n"+
-		Peer.myUUID.getLeastSignificantBits());
+		Peer.myUUID.getLeastSignificantBits()*/);
 		
 		byte[] UUIDmsb = BinaryTranslator.longToBytes(Peer.myUUID.getMostSignificantBits());
 		byte[] UUIDlsb = BinaryTranslator.longToBytes(Peer.myUUID.getLeastSignificantBits());
@@ -109,15 +109,6 @@ public class ConnectionOperator extends Thread
 		
 		bis.read(theirIDByte, 0, 1);
 		
-		if(theirIDByte[0] == Message.GREETING.IDByte)
-		{
-			System.out.println("Their IDByte matches.");
-		}
-		else
-		{
-			System.out.println("Their IDByte DOESN'T MATCH!");
-		}
-		
 		byte[] msb = new byte[8];
 		byte[] lsb = new byte[8];
         
@@ -127,9 +118,9 @@ public class ConnectionOperator extends Thread
 		long theirUUIDmsb = BinaryTranslator.bytesToLong(msb);
 		long theirUUIDlsb = BinaryTranslator.bytesToLong(lsb);
 		
-		System.out.println("Received UUID\n:"+
+		System.out.println("Received a UUID."/*+
 		theirUUIDmsb+"\n"+
-		theirUUIDlsb);
+		theirUUIDlsb*/);
 		
 		UUID theirUUID = new UUID(theirUUIDmsb, theirUUIDlsb);
         connectedPeer = theirUUID;
@@ -157,11 +148,13 @@ public class ConnectionOperator extends Thread
 	
 	public void sendPeerInfo() throws IOException//TODO
 	{
-		
+		System.out.println("Sending my PeerInfo...");
+		PeerInfo me = new PeerInfo(myUUID, )
 	}
 	
 	public void sendUpdateAnnouncement(UpdateAnnouncement ua)throws IOException
 	{
+		System.out.println("Sending Update Annnouncement");
 		byte IDByte = Message.UPDATE_ANNOUNCE.IDByte;
 		byte[] uaBytes = BinaryTranslator.updateAnnouncementToBytes(ua);
 		byte[] toSend = BinaryTranslator.concat(IDByte, uaBytes);
@@ -171,8 +164,9 @@ public class ConnectionOperator extends Thread
     
     public void requestPeerInfo() throws IOException
     {
+    	System.out.println("Requesting PeerInfo...");
         byte[] peerInfoReq = {Message.PEER_INFO_REQ.IDByte};
-        bos.write(peerInfoReq, 0, 1);
+        bos.write(peerInfoReq, 0, peerInfoReq.length);
 		bos.flush();
     }
 	
@@ -272,6 +266,7 @@ public class ConnectionOperator extends Thread
     messages) will add to the queue*/
 		while(!socket.isClosed())
         {
+			//System.out.println("Start incoming socket scanning loop");
             try
             {
                 int nextID = bis.read();
@@ -284,18 +279,19 @@ public class ConnectionOperator extends Thread
                 if(nextMessage == null)//TODO
                 {//guard clause
                     //another error; no Message was found with that IDByte
-                }
-                
-                if(nextMessage.length == 0)//TODO
-                {//this is a no-payload message, so we're ready to send it off
-                    ReceivedMessage rxmsg = new 
-                        ReceivedMessage(nextMessage, connectedPeer, this);
-                    owner.addToQueue(rxmsg);
+                	System.err.println("No Message found with IDByte:"+nextID);
                 }
                 
                 int nextLength = -1;
                 
-                if(nextMessage.length < 0)
+                if(nextMessage.length == 0)
+                {//this is a no-payload message, so we're ready to send it off
+                    ReceivedMessage rxmsg = new 
+                        ReceivedMessage(nextMessage, connectedPeer, this);
+                    owner.addToQueue(rxmsg);
+                    continue;
+                }
+                else if(nextMessage.length < 0)
                 {//incoming message is variable-length
                 //read next 4 (or 8) bytes (the length field) to work out
                 //how many more bytes we need to read

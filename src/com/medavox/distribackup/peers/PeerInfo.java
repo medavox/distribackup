@@ -26,15 +26,15 @@ public class PeerInfo implements Communicable
 //ERROR?:also, we don't care so much what GRN other Peers are on
 //only if they can give us file (version)s we want
 	private UUID uuid;
-	private long globalRevisionNumber;
-	public List<Address> addresses;//ERROR: Lists aren't thread-safe!
+	//private long globalRevisionNumber;
+	public List<Address> addresses;/**A pool of known addresses from which to open new connections*///ERROR: Lists aren't thread-safe!
     private List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();//may need to become concurrent
     private String codeName;
 	
-	public PeerInfo(UUID uuid, long GRN, Address[] addresses)//TODO
+	public PeerInfo(UUID uuid, /*long GRN,*/ Address[] addresses)//TODO
 	{
         this.uuid = uuid;
-        this.globalRevisionNumber = GRN;
+        //this.globalRevisionNumber = GRN;
         codeName = FileUtils.getRandomName();
 		//this.socket = s;
 	}
@@ -62,46 +62,6 @@ public class PeerInfo implements Communicable
     {
     	openConnections.add(co);
     }
-    
-    /*
-    //tries to start a new connection from the pool of Addresses;
-    //throws an IOException if none of them work, or if there are none to try.
-    public ConnectionOperator createNewConnection() throws IOException//TODO
-    {
-    	
-    }*/
-	
-	public long getGlobalRevisionNumber()
-	{
-		return globalRevisionNumber;
-	}
-	
-	public long getGRN()//sometimes, short method names are worth it
-	{
-		return globalRevisionNumber;
-	}
-	
-	public void incrementGlobalRevisionNumber()
-	{
-		globalRevisionNumber++;
-	}
-	
-	/**Short-named method to speed typing up what is (likely) 
-	 * to be the most common operation on the GRN.*/
-	public void incrGRN()
-	{
-		globalRevisionNumber++;
-	}
-	
-	public void setGlobalRevisionNumber(long newGRN)
-	{
-		globalRevisionNumber = newGRN;
-	}
-	
-	public void setGRN(long newGRN)
-	{
-		globalRevisionNumber = newGRN;
-	}
 	
 	public String toString()//needed for debugging and error messages
 	{

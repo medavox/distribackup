@@ -58,8 +58,12 @@ public class Publisher extends Peer
 	    	//then send it to the relevant peer
     	FileInfo fi = (FileInfo)fr.getCommunicable();
     	System.out.println("Received File Request for: "+fi.getName());
+        	
+    	boolean hasFile = globalArchiveState.containsKey(fi.toString());
+    	FileInfo extantFileInfo = globalArchiveState.getFileInfoWithPath(fi.toString());
+    	boolean isRightVersion = (fi.getRevisionNumber() == extantFileInfo.getRevisionNumber());
     	
-    	//if(localfi.toString())
+    	handleFileRequest(fr, hasFile, isRightVersion);
     }
     
     public void fileChanged(Path file, String eventType)
@@ -72,7 +76,6 @@ public class Publisher extends Peer
 		    
 		    case "ENTRY_CREATE":
 		    case "ENTRY_MODIFY":
-			    System.out.println("Sending file "+file);
 			    globalRevisionNumber++;//increment the actual Global Revision Number
 		    	
 			    

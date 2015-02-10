@@ -276,22 +276,21 @@ public abstract class BinaryTranslator
 		0. (Length)            | Integer
 		1. UUID1               | Long
 		2. UUID2               | Long
-		3. GlobalRevisionNumber| Long
 		4. isPublisherOrPeer   | bitfield<0>
 		5. Addresses           | List:Address*/
 
 		byte[] UUID1 = longToBytes(p.getUUID().getMostSignificantBits());
 		byte[] UUID2 = longToBytes(p.getUUID().getLeastSignificantBits());
-		byte[] globalRevNum = longToBytes(p.getGRN());
+		//byte[] globalRevNum = longToBytes(p.getGRN());
 		
 		boolean[] bitfield = {true};
 		byte[] isPubByte = {bitfieldToByte(bitfield)};
 		byte[] addresses = {(byte)0x00};//TODO: implement lists and Addresses!
 		
 		byte[] msgLength = 
-		intToBytes(getTotalLength(UUID1, UUID2, globalRevNum, isPubByte, addresses));
+		intToBytes(getTotalLength(UUID1, UUID2, /*globalRevNum,*/ isPubByte, addresses));
 		
-		return concat(msgLength, UUID1, UUID2, globalRevNum, isPubByte, addresses);
+		return concat(msgLength, UUID1, UUID2, /*globalRevNum,*/ isPubByte, addresses);
 	}
 	/**Takes a holding array of pre-converted byte[]s and turns them into a 
 	distribackup:List.
@@ -540,20 +539,19 @@ public abstract class BinaryTranslator
 	public static PeerInfo bytesToPeerInfo(byte[] b)
 	{/*	1. UUID1               | Long
 		2. UUID2               | Long
-		3. GlobalRevisionNumber| Long
 		4. isPublisherOrPeer   | bitfield<0>
 		5. Addresses           | List:Address*/
 		try
 		{
 			long UUID1msb = bytesToLong(Arrays.copyOfRange(b, 0, 8));
 			long UUID2lsb = bytesToLong(Arrays.copyOfRange(b, 8, 16));
-			long globalRevNum = bytesToLong(Arrays.copyOfRange(b, 16, 24));
-			boolean[] isPublisher = byteToBitfield(b[24], 1);
+			//long globalRevNum = bytesToLong(Arrays.copyOfRange(b, 16, 24));
+			boolean[] isPublisher = byteToBitfield(b[16], 1);
 			
 			UUID uuid = new UUID(UUID1msb, UUID2lsb);
 			
             //get elements as byte[]s from initial byte[]
-            byte[][] addressesBinary = bytesToList(Arrays.copyOfRange(b, 25, b.length));
+            byte[][] addressesBinary = bytesToList(Arrays.copyOfRange(b, 17, b.length));
             Address[] addresses = new Address[addressesBinary.length-1];
             for(int i = 0; i < addressesBinary.length; i++)
             {
@@ -564,7 +562,7 @@ public abstract class BinaryTranslator
 			//TODO: do something with the isPublisher info we've received
             
 			//finally, reconstruct the PeerInfo object from the decoded data
-			PeerInfo rxPeerInfo = new PeerInfo(uuid, globalRevNum, addresses);
+			PeerInfo rxPeerInfo = new PeerInfo(uuid, /*globalRevNum,*/ addresses);
 			
 			return rxPeerInfo;
 		}
