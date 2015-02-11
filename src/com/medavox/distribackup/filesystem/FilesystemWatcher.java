@@ -80,7 +80,7 @@ public class FilesystemWatcher extends Thread
 	 */
 	public void run()
 	{
-		while(true)
+		while(owner.threadsEnabled)
 		{
 			//wait for key to be signalled
 			WatchKey key;
@@ -117,7 +117,7 @@ public class FilesystemWatcher extends Thread
 				System.out.format("%s: %s\n", event.kind().name(), child);
                 //System.out.println("name:"+name);
                 
-                //callback to main program thread, let it know about this
+                //callback to main program thread, letting it know about this
                 owner.fileChanged(child, event.kind().name());
                 
 				//if a directory is created, then register it recursively too
@@ -154,25 +154,4 @@ public class FilesystemWatcher extends Thread
 			}
 		}
 	}
-
-    /*public static void main (String[] arga)
-    {
-        Path dir = Paths.get("test");
-        try
-        {
-            FilesystemWatcher fsw = new FilesystemWatcher(dir);
-            fsw.start();
-        }
-        catch(IOException ioe)
-        {
-            ioe.printStackTrace();
-            System.err.println("SRGKSFJGKLJ");
-            System.exit(1);
-        }
-        System.out.println("main thread finished!");
-    }*/
-	//register directory and process its events
-	/*Path dir = Paths.get(dirString);
-	FilesystemWatcher fsw = new FilesystemWatcher(dir);
-    fsw.start();*/
 }

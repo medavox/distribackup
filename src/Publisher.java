@@ -3,7 +3,7 @@ import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.connections.*;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
-import com.medavox.distribackup.filesystem.UpdateAnnouncement;
+import com.medavox.distribackup.filesystem.FileInfoBunch;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,18 +24,8 @@ public class Publisher extends Peer
 		on a file change:
 		    send changed file to all subscribers*/
 		super(root, port);
+		publisherUUID = myUUID;
     }
-    /*whenever a file has changed or been added,
-     * limit concurrent connections to something sensible*/
-    /*public Publisher()
-    {
-	super(defaultRoot, port);
-    }
-    
-    public Publisher(Path root)
-    {
-	super(root, port);
-    }*/
     
     public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO
     {
@@ -87,16 +77,23 @@ public class Publisher extends Peer
 		    	//announce change to all known peers
 			    for(PeerInfo p : peers.values())
 			    {
-			    	ConnectionOperator co = p.getOpenConnection();
-			    	UpdateAnnouncement ua = new UpdateAnnouncement(globalRevisionNumber, update);
-
-			    	try
+			    	if(p.hasOpenConnection())
 			    	{
-			    		co.sendUpdateAnnouncement(ua);
+				    	ConnectionOperator co = p.getOpenConnection();
+				    	FileInfoBunch ua = new FileInfoBunch(globalRevisionNumber, update);
+				    	try
+				    	{
+				    		co.sendUpdateAnnouncement(ua);
+				    	}
+				    	catch(IOException ioe)
+				    	{
+				    		System.err.println("ERROR: Failed to send update to peer: "+p);
+				    	}
 			    	}
-			    	catch(IOException ioe)
+			    	else
 			    	{
-			    		System.err.println("ERROR: Failed to send update to peer: "+p);
+			    		System.err.println("ERROR: no known open connections to this peer!");
+			    		System.err.println("TODO create new ones from address pool");
 			    	}
 			    }
 		    break;

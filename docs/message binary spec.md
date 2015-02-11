@@ -54,14 +54,14 @@ TNV
 :   Type Number Value. An different field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
 
 Supporting Data Types
----------------------
+=====================
 
 The following Objects are not used as standalone Messages by Distribackup, but instead form part of compound Messages, and so are generally used without their ID Byte. Despite this, an ID Byte number is assigned for each in case this situation changes, or another program uses this library differently.
 
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
 00 | bitfield              | 1     | Contains up to 8 booleans. Knowing which bits are used is left to implementation, but start with the LSB
-01 | String                | TLV   | UTF16; but length is still in bytes |
+01 | String                | TLV   | UTF16; but length field is still in bytes. So chars = length * 2. |
 02 | UByteNum              | 1        |   |
 03 | UShort                | 2        |   |
 04 | UInteger              | 4        |   |
@@ -70,49 +70,54 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 07 | Short                 | 2        |   |
 08 | Integer               | 4        |   |
 09 | Long                  | 8        |   |
-0A | Address               | Compound | [Yes, see entry below](#Address) |
+0A | Address               | Compound | [Yes, see below](#Address) |
 0B | ByteArray             | TLV      |   |
-0F | FileInfo              | Compound | [Yes, see entry below](#FileInfo) |
-0E | List                  | TNV     | |
+0F | FileInfo              | Compound | [Yes, see below](#FileInfo) |
+0E | List                  | TNV      |   |
 
 Sendable (Communicable) Message Objects
----------------------------------------
+=======================================
 
 These objects can be sent directly to another Peer.
 
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
-0C | PeerInfo              | Compound | [Yes, see entry below](#PeerInfo) Can be sent in reply to a PeerInfo Request |
-0D | Archive Status        | Compound | Same type as update announcment, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). A reply to Archive Status Request
+0C | PeerInfo              | Compound | [Yes, see below](#PeerInfo) Can be sent in reply to a PeerInfo Request |
+0D | Archive Status        | Compound | Same type as update announcement, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). A reply to Archive Status Request
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11 | Request All Files     | 0        | Asks for latest known version of all files. Likely to be broadcast by a new subscriber, to all known peers.
-12 | File Data Chunk       | Compound | [Yes, see entry below](#FileDataChunk)
-13 | File Request          | TLV      | Contains FileInfo. FileInfo's RevNum can be for a specific version, or -1 for latest version
+12 | File Data Chunk       | Compound | [Yes, see below](#FileDataChunk)
+13 | File Request          | TLV      | Contains a single FileInfo. FileInfo's RevNum can be for a specific version, or -1 for latest version
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        | Usually sent to all known peers
 16 | Archive Status Request| 0        | Queries overall archive status, not any 1 peer's mirror
 17 | Update Announcement   | Compound | Same type as Archive Status, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). Sendable by Publisher only.|
 18 | "no haz" FileReq Reply| Compound | Used as a reply to a File Request when a peer doesn't have a (version of a?) file requested of it. Contains a list of FileInfos that the requesting peer asked for, which the replying peer doesn't have. 
 19 | PeerInfo Request      | 0        | A request for the connected Peer's PeerInfo
-1A | "haz nao" announcement| Compound | announces to network upon completion that this peer now has this FileID, so others can request it. Contains a list (usually of length 1) of FileInfos of file this peer now has
+1A | "haz nao" announcement| Compound | Announces to network upon completion that this peer now has this FileID, so others can request it. Contains a list (usually of length 1) of FileInfos of file this peer now has
 1B | More Peers            | Compound | Contains a List:PeerInfo. Is a reply to a request for more Peers.
 
-* Personal PeerInfo Request
-* Peer(s) Info List
-* Personal PeerInfo
-* File Tree Status ---- provided by DirectoryInfo
+
+List:FileInfo
+
+FileRequest (soon)
+no haz
+haz nao
+
+archive status
+update announcement
 
 Compound Object Constituents
-----------------------------
+============================
 
+<a name="FileInfo" />FileInfo 
+-----------------------------------
 Empty directories in a tree are also specified by this type.
 If isDirectory is true, the last 3 fields can be left out.
 
 NOTE: It's not necessary to specify all parent directories this way; any needed
 parent directories will be created when files in them are created.
 
-<a name="FileInfo" />FileInfo 
------------------------------------
 Element             | Type
 --------------------|--------
 0. (ID Byte)        | a byte
@@ -126,7 +131,6 @@ Element             | Type
 
 <a name="ArchiveInfo" />Archive Status
 -----------
-
 A "joint type": this structure represent two Communicables: Archive Status and Update Announcement.
 
 The information within is used differently depending on the label. 
@@ -140,6 +144,7 @@ Element             | Type
 1. (Length)         | Integer
 2. Global RevNum    | Long
 3. Files            | List:FileInfo
+
 
 List
 -----
@@ -157,7 +162,6 @@ Element                | Type
 
 <a name="PeerInfo" />PeerInfo
 --------
-
 Element                | Type
 -----------------------|--------
 0. (ID Byte)           | a byte
@@ -195,13 +199,13 @@ Element                | Type
 5. payload             | ByteArray
 
 
-Each peer has to request files it wants
-Other peers will help by sending requested files (or pieces of it), but can also reply with "I don't have it"
-all peers will announce when they have finished downloading a file, so other peers now know to request that file from it
+Each peer has to request files it wants.<br />
+Other peers will help by sending requested files (or pieces of it), but can also reply with "I don't have it"<br />
+All peers will announce when they have finished downloading a file, so other peers now know to request that file from it
 
-This means that a File Tree Status Requset isn't for asking another peer about its personal state, which is pointless 
-(Each peer is responsible for managing its own archive copy, and this type of request would only 
-benefit a system where peers try to be helpful by pre-emptively pushing to each other).
+This means that a File Tree Status Requset isn't for asking another peer about its personal state, which is pointless: 
+each peer is responsible for managing its own archive copy, and this type of request would only 
+benefit a system where peers try to be helpful by pre-emptively pushing to each other.
 
 Instead, it's asking what a peer knows about the about the global archive tree
 (ie what the latest version out there are, whether the asked peer has the files or not).
@@ -212,24 +216,26 @@ TO DO?
 * Change List from TLNV to just TNV, to avoid cases where the total number of bytes is > Integer.MAX_VALUE
 * Add the following message types:
     
-    - 'I now have this file version' announcement
-        - announces to network that this peer now has this FileID upon completion, so others can request it
-* Merge Update announcement with Archive Status, as they are functioanlly the same, without allowing peers other than the Publisher to push updates
-* add a bitfield hasBeenDeleted (or something) to FileInfos, so they can describe the deletion of a file in an Update Announcement
+* Merge Update Announcement with Archive Status, as they are functionally the same, without allowing non-Publisher peers  to push updates
+* add a bitfield hasBeenDeleted (or something) to FileInfos, so they can declare the deletion of a file in an Update Announcement
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
-
-Subscriber announcement of the latest revision number when it becomes up to date
 
 need a way of closing/removing closed ConnectionOperators
 
 DONE
 =====
 
+* Peer(s) Info List
+* Personal PeerInfo Request
+* Personal PeerInfo
 * Global Revision Number
     - a simple counter for the whole file tree, incremented on every revision
 * Request for all files: used by a new peer to ask for all the files in the archive, 
 without having to specifically request each one (also avoid querying for them)
 * File Request Reply: I don't have that version/file
+* 'I now have this file version' announcement
+    - announces to network that this peer now has this FileID upon completion, so others can request it
 * Differentiate between supporting data types (like int, bitfield, String) and 
 objects that can actually be sent down the Socket. 
+
 The latter are more likely to have a custom java class, and implement Communicable.

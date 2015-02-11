@@ -10,7 +10,7 @@ import com.medavox.distribackup.connections.*;
 
 /**Mutable extension of ArchiveInfo. Used for
 maintaining info about local archive state, global archive state, Files to download*/
-public class ArchiveInfo extends UpdateAnnouncement implements Communicable, Iterable<FileInfo>, Iterator<FileInfo>
+public class ArchiveInfo extends FileInfoBunch implements Communicable, Iterable<FileInfo>, Iterator<FileInfo>
 {
     ConcurrentMap<String, FileInfo> files = new ConcurrentHashMap<String, FileInfo>();
     private int currentIndex = 0;

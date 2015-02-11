@@ -40,13 +40,11 @@ public abstract class Peer extends Thread
 	PeerInfo publisherInfo;
 	protected UUID publisherUUID;
 	public static UUID myUUID;
+	public boolean threadsEnabled = true;
     
 	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
-	
 	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
-    
     protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
-    
     protected ArchiveInfo globalArchiveState = new ArchiveInfo( -1, new FileInfo[0]);//initialise empty, then get state from network
 	
 	public static final short version = 2;//increment this manually on every release
@@ -57,6 +55,7 @@ public abstract class Peer extends Thread
 		this.listenPort = port;
 		Peer.myUUID = UUID.randomUUID();//this uniquely IDs us on the network
 		Listener listenHook = new Listener(port, this);
+		Runtime.getRuntime().addShutdownHook(new CloseHook(this));
 		try
 		{
 			FilesystemWatcher fsw = new FilesystemWatcher(root, this);
@@ -68,6 +67,7 @@ public abstract class Peer extends Thread
 			System.exit(1);
 		}
 		listenHook.start();
+		this.start();//start Incoming Message Processing Thread
 	}
 	/**Called by FilesystemWatcher whenever a filesystem change is detected*/
 	public abstract void fileChanged(Path file, String eventType);
@@ -95,7 +95,6 @@ public abstract class Peer extends Thread
 			UUID newPeerUUID = co.exchangeUUIDs();
 			//after boilerplate is done, start listening thread
 			co.start();
-			this.start();//start Incoming Message Processing Thread
 			if(!peers.containsKey(newPeerUUID))
 			{//if we've not seen this Peer before:
 				//ask for its PeerInfo object.
@@ -176,7 +175,7 @@ public abstract class Peer extends Thread
 	/**The Incoming Message Processing Thread (IMPT).*/
     public void run()
     {
-        while(true)
+        while(threadsEnabled)
         {//spins until there is something in the queue
             if(!messageQueue.isEmpty())
             {
@@ -240,7 +239,6 @@ public abstract class Peer extends Thread
 					break switcheroo;
 					
                     case PEER_INFO_REQ:
-                    	System.out.println("plip plop");
                     	handlePeerInfoRequest(next);
                     break switcheroo;
 					
@@ -256,6 +254,18 @@ public abstract class Peer extends Thread
 						System.err.println("ERROR: Received unknown Message:"+next.getType());
 						System.exit(1);
                 }
+            }
+            else//wait some time before checking again
+            {
+            	try
+            	{
+            		sleep(200);
+            	}
+            	catch(InterruptedException ie)
+            	{
+            		System.err.println("Can't a thread catch a few ms sleep around here?!");
+            		ie.printStackTrace();
+            	}
             }
         }
     }
@@ -450,8 +460,8 @@ public abstract class Peer extends Thread
     			}
     			else//either:  
     			{//TODO:ERRORS
-    				//FileInfo == File, but filesystem == Dir
-    				//FileInfo == Dir, but filesystem == File
+    				//FileInfo is File, but filesystem is Dir; or
+    				//FileInfo is Dir, but filesystem is File
     			}
     		}
     	}
@@ -474,6 +484,15 @@ public abstract class Peer extends Thread
 		PeerInfo peerInfo = (PeerInfo)pi.getCommunicable();
 		UUID uuid = pi.getUUID();
 		
+		if(peerInfo.isPublisher())
+		{
+			if(publisherUUID == null)
+			{//we've just found the publisher
+				//add it in!
+				publisherUUID = uuid;
+			}
+		}
+		
 		if(peers.containsKey(uuid))
 		{
 			System.out.println("TODO: known peer, update existing record");
@@ -482,6 +501,12 @@ public abstract class Peer extends Thread
 		else
 		{
 			System.out.println("adding new PeerInfo to list of known peers...");
+			if(peers.isEmpty())
+			{
+				System.out.println("This is our first peer! requesting stuff...");
+				//send a allFileRequest, or maybe just an archiveStateRequest
+			}
+			peerInfo.addConnection(pi.getConnection());//add this connection 
 			peers.putIfAbsent(uuid, peerInfo);
 		}
 	}
@@ -493,7 +518,23 @@ public abstract class Peer extends Thread
     
     public void receiveExitAnnouncement(ReceivedMessage ea)//TODO
     {
-        
+    	System.out.println("Received Exit Announcement");
+        //close the connection we received this on,
+    	//and remove it from the PeerInfo's list of open connections
+    	ConnectionOperator co = ea.getConnection();
+    	PeerInfo p = peers.get(ea.getUUID()); 
+    	p.removeConnection(co);
+    	
+    	try
+    	{
+    		co.close();
+    	}
+    	catch(IOException ioe)
+    	{
+    		System.err.println("ERROR: Failed to closed Connection for peer "+p);
+    		ioe.printStackTrace();
+    	}
+    	
     }
     
     public void handleArchiveStatusRequest(ReceivedMessage ftsr)//TODO

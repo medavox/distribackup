@@ -2,11 +2,11 @@ package com.medavox.distribackup.filesystem;
 
 import com.medavox.distribackup.connections.*;
 
-public class UpdateAnnouncement implements Communicable
+public class FileInfoBunch implements Communicable
 {
     protected long globalRevNum;
     private FileInfo[] changedFiles;
-    public UpdateAnnouncement(long GRN, FileInfo[] files)
+    public FileInfoBunch(long GRN, FileInfo[] files)
     {
         globalRevNum = GRN;
         this.changedFiles = files;

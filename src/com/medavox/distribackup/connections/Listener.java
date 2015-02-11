@@ -19,6 +19,7 @@ public class Listener extends Thread
 	public void run()
 	{
 		ServerSocket svr;
+		//get open port to listen on
 		while(true)
 		{
 			try
@@ -39,7 +40,7 @@ public class Listener extends Thread
 				System.exit(1);
 			}
 		}
-		while(true)
+		while(owner.threadsEnabled)
 		{//on a new socket connection:
 			try
 			{

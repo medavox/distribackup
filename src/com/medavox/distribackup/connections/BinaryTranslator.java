@@ -19,7 +19,7 @@ import com.medavox.distribackup.peers.PeerInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
-import com.medavox.distribackup.filesystem.UpdateAnnouncement;
+import com.medavox.distribackup.filesystem.FileInfoBunch;
 
 /**Logic in this class only pertains to conversion of primitive types to and from binary.
  * Byte arrays constructed by this class do not contain an IDByte, as not all uses
@@ -292,10 +292,10 @@ public abstract class BinaryTranslator
 		2. ID byte of elements  | a byte
 		3. number of elements   | int
 		4. &lt;elements&gt;     | ?*/
-		o.println("pre  numElements:"+items.length);
+		//o.println("pre  numElements:"+items.length);
 		byte[] elIDByteWrapper = {elIDByte};
 		byte[] numElements = intToBytes(items.length);
-		o.println("as bytes:"+BinTest.bytesToHex(numElements));
+		//o.println("as bytes:"+BinTest.bytesToHex(numElements));
 		//o.println("list elements pre-encode:"+numElements);
 		//o.println("numElements pre-encode as bytes:"+BinTest.bytesToHex(numElements));
 		byte[] elements = concat(items);
@@ -332,7 +332,7 @@ public abstract class BinaryTranslator
 		return concat(len, bfWrapper, addrField, port, lastSpotted);
 	}
     
-    public static byte[] updateAnnouncementToBytes(UpdateAnnouncement ua) throws IOException
+    public static byte[] fileInfoBunchToBytes(FileInfoBunch ua) throws IOException
     {/* GRN		| Long
     	files	| fileInfolist*/
         byte[] GRN = longToBytes(ua.getGlobalRevisionNumber());
@@ -471,7 +471,7 @@ public abstract class BinaryTranslator
 		try
 		{
 			int ptr = 0;
-			o.println("b length:"+b.length);
+			//o.println("b length:"+b.length);
 			int nameLength = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
 			//System.out.println("post name length:"+nameLength);
 			ptr += 4;
@@ -567,8 +567,8 @@ public abstract class BinaryTranslator
 			long UUID2lsb = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
 			ptr += 8;
 			//long globalRevNum = bytesToLong(Arrays.copyOfRange(b, 16, 24));
-			boolean[] isPublisher = byteToBitfield(b[ptr], 1);
-			ptr++;
+			boolean isPublisher = byteToBitfield(b[ptr], 1)[0];
+			ptr++;//TODO: do something with the isPublisher info we've received
 			
 			UUID uuid = new UUID(UUID1msb, UUID2lsb);
 			
@@ -591,10 +591,8 @@ public abstract class BinaryTranslator
                 addresses[i] = bytesToAddress(addsBin[i+1]);
             }
             
-			//TODO: do something with the isPublisher info we've received
-            
 			//finally, reconstruct the PeerInfo object from the decoded data
-			PeerInfo rxPeerInfo = new PeerInfo(uuid, /*globalRevNum,*/ addresses);
+			PeerInfo rxPeerInfo = new PeerInfo(uuid, isPublisher, addresses);
 			
 			return rxPeerInfo;
 		}
@@ -619,8 +617,8 @@ public abstract class BinaryTranslator
 		ptr++;
 		
 		int numElements = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
-		o.println("post numElements:"+numElements);
-		o.println("as bytes:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr, ptr+4)));
+		//o.println("post numElements:"+numElements);
+		//o.println("as bytes:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr, ptr+4)));
 		ptr += 4;
 		
 		byte[][] output = new byte[numElements+1][];//save the first byte for the IDByte
@@ -631,7 +629,7 @@ public abstract class BinaryTranslator
 		if (type.length >= 0)//the elements are fixed- or zero-length
         {
 			int length = type.length;//get length from corresponding Message enum
-			o.println("element length: "+length);
+			//o.println("element length: "+length);
 			for(int i = 0; i+1 < numElements; i++)//split up the input byte[] into elements
 			{//I really hope Arrays.copyOfRange isn't expensive!
 				//o.println("i:"+i);
@@ -710,14 +708,14 @@ public abstract class BinaryTranslator
         return rxAddress;
 	}
     
-    public static UpdateAnnouncement bytesToUpdateAnnouncement(byte[] b) throws UnsupportedEncodingException, IOException
+    public static FileInfoBunch bytesToFileInfoBunch(byte[] b) throws UnsupportedEncodingException, IOException
     {/* 2. Global RevNum    | Long
         3. Files            | List:FileInfo*/
     	int ptr = 0;
         long GRN = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
         ptr += 8;
         FileInfo[] fileInfos = bytesToFileInfoList(Arrays.copyOfRange(b, ptr+4, b.length));//skip message length header
-        UpdateAnnouncement ai = new UpdateAnnouncement(GRN, fileInfos);
+        FileInfoBunch ai = new FileInfoBunch(GRN, fileInfos);
         return ai;
     }
     
@@ -735,24 +733,26 @@ public abstract class BinaryTranslator
 
     /**invokes the appropriate conversion method on a byteArray to convert any 
      * binary message into a Communicable, the interface which all Java class 
-     * versions of Distribackup message objects implement.*/
+     * versions of Distribackup message objects implement.
+     * Only works on Communicables with a non-zero payload.*/
     public static Communicable bytesToCommunicable(byte[] b, Message type) throws UnsupportedEncodingException, IOException
-    {/* PeerInfo
-        Archive Status
-        File Data Chunk
-        File Request
-        Update Announcement
-        "no haz" FileReq Reply
-        "haz nao" announcement*/
-
+    {
         switch(type)
-        {
+        {/* PeerInfo				DONE
+			Archive Status			DONE
+			Update Announcement		DONE
+			Request For Peers		
+			File Data Chunk			DONE
+			File Request
+			"no haz" FileReq Reply	DONE
+			"haz nao" announcement	DONE
+			More Peers				*/
             case PEER_INFO:
                 return bytesToPeerInfo(b);
             
             case ARCHIVE_STATUS:
             case UPDATE_ANNOUNCE:
-                return bytesToUpdateAnnouncement(b);
+                return bytesToFileInfoBunch(b);
             
             case FILE_DATA_CHUNK:
                 return bytesToFileDataChunk(b);
@@ -763,21 +763,19 @@ public abstract class BinaryTranslator
             //just send the FileInfo[]?
                 byte[] wneud = Arrays.copyOfRange(b, 8, b.length);
                 FileInfo[] fi = bytesToFileInfoList(wneud);
-                return new FileInfoListWrapper(fi);
+                return new FileInfoBunch(fi);
+                
+            case FILE_REQUEST://TODO
+            	FileInfo fileInfo = bytesToFileInfo(b);
+            	FileInfo[] fis = {fileInfo};
+            	return new FileInfoListWrapper(fis);
             
             default:
             	System.err.println("ERROR: bytesToCommunicable was given a Message Type it can't use!");
+            	System.err.println("Message type:"+type);
         }
         throw new UnsupportedEncodingException("supplied bytes did not form a Message that needs converting!");
     }
-	/**Returns the index of the first byte after the end of the first Message.
-	 * So for a message that spans from 0 to 35, is 32 bytes long (plus length bytes),
-	 * this method will return 36*/
-	public static int getNextMessageEndIndex(byte[] b, int offset) throws IOException
-	{
-		int len = bytesToInt(Arrays.copyOfRange(b, offset, offset+4));
-		return len+4+offset;
-	}
 		
 	public static int getTotalLength(byte[]... fields)
 	{

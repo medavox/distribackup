@@ -4,7 +4,7 @@ import com.medavox.distribackup.connections.*;
 import com.medavox.distribackup.filesystem.FileDataChunk;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
-import com.medavox.distribackup.filesystem.UpdateAnnouncement;
+import com.medavox.distribackup.filesystem.FileInfoBunch;
 import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
 
@@ -85,7 +85,7 @@ public class BinTest
 		
 		Address[] a = randomAddressList();
 		
-		return new PeerInfo(uuid, a);
+		return new PeerInfo(uuid, false, a);
 	}
 	
 	private static Address[] randomAddressList()
@@ -121,11 +121,11 @@ public class BinTest
 		return new FileDataChunk(fi, garbage, offset);
 	}
 	
-	private static UpdateAnnouncement randomUpdateAnnouncement()
+	private static FileInfoBunch randomUpdateAnnouncement()
 	{
 		long grn = r.nextLong();
 		FileInfo[] files = randomFileInfoList();
-		return new UpdateAnnouncement(grn, files);
+		return new FileInfoBunch(grn, files);
 	}
 	
 	public static void main(String[] args)
@@ -258,10 +258,10 @@ public class BinTest
 			test(fdcPre, fdcPost, "FileDataChunk");
 			*/
 			//UpdateAnnouncement Test
-			UpdateAnnouncement ua = randomUpdateAnnouncement();
+			FileInfoBunch ua = randomUpdateAnnouncement();
 			String uaPre = ua.toString();
-			byte[] uaConv = BinaryTranslator.updateAnnouncementToBytes(ua);
-			String uaPost = BinaryTranslator.bytesToUpdateAnnouncement(Arrays.copyOfRange(uaConv, 4, uaConv.length)).toString();
+			byte[] uaConv = BinaryTranslator.fileInfoBunchToBytes(ua);
+			String uaPost = BinaryTranslator.bytesToFileInfoBunch(Arrays.copyOfRange(uaConv, 4, uaConv.length)).toString();
 			test(uaPre, uaPost, "UpdateAnnouncement");
 		}
 		catch(Exception e)

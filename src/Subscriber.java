@@ -10,7 +10,7 @@ import com.medavox.distribackup.connections.ReceivedMessage;
 import com.medavox.distribackup.filesystem.ArchiveInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
 import com.medavox.distribackup.filesystem.FileInfo;
-import com.medavox.distribackup.filesystem.UpdateAnnouncement;
+import com.medavox.distribackup.filesystem.FileInfoBunch;
 import com.medavox.distribackup.peers.*;
 
 import java.nio.ByteBuffer;
@@ -50,7 +50,7 @@ public class Subscriber extends Peer
 		{//everything is fine, no spoofing here
 			//get list of changed files
 			//get the ArchiveInfo from the Update Announcement
-			UpdateAnnouncement update = (UpdateAnnouncement)ua.getCommunicable();
+			FileInfoBunch update = (FileInfoBunch)ua.getCommunicable();
 			//update local archive and list of files we need
 			globalArchiveState.update(update.getGRN(), update.getFiles());
 			filesToDownload.update(update.getGRN(), update.getFiles());

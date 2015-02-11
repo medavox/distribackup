@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.UUID;
 import java.util.Arrays;
 
@@ -12,7 +13,7 @@ import com.medavox.distribackup.peers.Peer;
 import com.medavox.distribackup.peers.PeerInfo;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
-import com.medavox.distribackup.filesystem.UpdateAnnouncement;
+import com.medavox.distribackup.filesystem.FileInfoBunch;
 
 /**This class handles communication over an individual Socket connection, 
  * after its initialisation. */
@@ -129,6 +130,7 @@ public class ConnectionOperator extends Thread
 		
 	public void announceExit() throws IOException
 	{
+		System.out.println("Announcing exit");
 		byte[] exitAnnounce = {Message.EXIT_ANNOUNCE.IDByte};
 		bos.write(exitAnnounce, 0, 1);
 		bos.flush();
@@ -150,7 +152,7 @@ public class ConnectionOperator extends Thread
 	{
 		System.out.println("Sending my PeerInfo...");
 		//how do we find out addresses we are known by?
-		PeerInfo me = new PeerInfo(Peer.myUUID, new Address[0]);
+		PeerInfo me = new PeerInfo(Peer.myUUID, owner.isPublisher(), new Address[0]);
 		
 		byte[] peerInfoBytes = BinaryTranslator.peerInfoToBytes(me, owner.isPublisher());
 		byte[] fullMsg = BinaryTranslator.concat(Message.PEER_INFO.IDByte, peerInfoBytes);
@@ -159,11 +161,11 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	public void sendUpdateAnnouncement(UpdateAnnouncement ua)throws IOException
+	public void sendUpdateAnnouncement(FileInfoBunch ua)throws IOException
 	{
 		System.out.println("Sending Update Annnouncement");
 		byte IDByte = Message.UPDATE_ANNOUNCE.IDByte;
-		byte[] uaBytes = BinaryTranslator.updateAnnouncementToBytes(ua);
+		byte[] uaBytes = BinaryTranslator.fileInfoBunchToBytes(ua);
 		byte[] toSend = BinaryTranslator.concat(IDByte, uaBytes);
 		bos.write(toSend, 0, toSend.length);
 		bos.flush();
@@ -271,15 +273,18 @@ public class ConnectionOperator extends Thread
     each event enum will need info about it attached, like WHICH peer announced 
     its exit. Connection operators receiving bytes (which they then decode into
     messages) will add to the queue*/
-		while(!socket.isClosed())
+		while(!socket.isClosed()
+		&& owner.threadsEnabled)
         {
 			//System.out.println("Start incoming socket scanning loop");
             try
             {
+            	//wait(100);//slow things down a bit
                 int nextID = bis.read();
                 if(nextID == -1)//TODO
                 {//stream has closed or "end has been reached"
-                    //guard clause
+                	this.close();
+                	break;
                 }
                 byte nextIDByte = (byte)nextID;
                 Message nextMessage = Message.getMessageTypeFromID(nextIDByte);
@@ -300,21 +305,10 @@ public class ConnectionOperator extends Thread
                 }
                 else if(nextMessage.length < 0)
                 {//incoming message is variable-length
-                //read next 4 (or 8) bytes (the length field) to work out
-                //how many more bytes we need to read
-                    int lengthLength;
-                    if(nextMessage == Message.LIST )
-                    {//currently, Lists use a long (not an int) for their length fields
-                        lengthLength = 8;
-                    }
-                    else
-                    {
-                        lengthLength = 4;
-                    }
-                    
-                    //get length of message from length field
-                    byte[] lengthBytes = new byte[lengthLength];
-                    bis.read(lengthBytes, 0, lengthLength);
+                //read next 4 bytes (length field) to work out how many more 
+                //bytes we need to read
+                    byte[] lengthBytes = new byte[4];
+                    bis.read(lengthBytes, 0, 4);
                     nextLength = BinaryTranslator.bytesToInt(lengthBytes);
                 }
                 else
@@ -335,6 +329,10 @@ public class ConnectionOperator extends Thread
                 
                 owner.addToQueue(rxmsg);
                 //convert this into ReceivedMessage
+            }
+            catch(SocketException sce)
+            {
+            	System.out.println("Socket Closed.");
             }
             catch(Exception e)
             {

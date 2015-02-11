@@ -5,10 +5,13 @@ import com.medavox.distribackup.connections.Communicable;
 import com.medavox.distribackup.connections.ConnectionOperator;
 import com.medavox.distribackup.filesystem.FileUtils;
 
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Random;
+//import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /*
 1. UUID
@@ -30,13 +33,14 @@ public class PeerInfo implements Communicable
 	//ERROR: Lists aren't thread-safe!
 	/**A pool of known addresses from which to open new connections*/
 	public List<Address> addresses = new ArrayList<Address>();
-    private List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();//may need to become concurrent
+    private CopyOnWriteArrayList<ConnectionOperator> openConnections = new CopyOnWriteArrayList<ConnectionOperator>();//may need to become concurrent
     private String codeName;
-	
-	public PeerInfo(UUID uuid, /*long GRN,*/ Address[] startingAddresses)//TODO
+	private boolean isPublisher;
+    
+	public PeerInfo(UUID uuid, boolean isPublisher, Address[] startingAddresses)//TODO
 	{
         this.uuid = uuid;
-        //this.globalRevisionNumber = GRN;
+        this.isPublisher = isPublisher;
         codeName = FileUtils.getCodeName(uuid);
 		//this.socket = s;
         for(Address a : startingAddresses)
@@ -52,22 +56,37 @@ public class PeerInfo implements Communicable
     
     public boolean hasOpenConnection()
     {
-        return (openConnections.size() == 0);
+        return !openConnections.isEmpty();
     }
     
     /**Returns an open connection. This method has room for later improvement,
      * choosing which open connection to return intelligently, based on which
      * open connection is the least used or fastest.*/
     public ConnectionOperator getOpenConnection()
-    {//return a (currently randomly chosen) open connection
-    	Random r = new Random();
-    	int randomIndex = r.nextInt(openConnections.size());
-    	return openConnections.get(randomIndex);
+    {//return an open connection
+    	try
+    	{
+    		return openConnections.get(0);
+    	}
+    	catch(IndexOutOfBoundsException nsee)
+    	{
+    		return null;
+    	}
+    }
+    
+    public boolean isPublisher()
+    {
+    	return isPublisher;
     }
     
     public void addConnection(ConnectionOperator co)
     {
     	openConnections.add(co);
+    }
+    
+    public void removeConnection(ConnectionOperator co)
+    {
+    	openConnections.remove(co);
     }
     
     public Address[] getAddresses()
@@ -79,8 +98,8 @@ public class PeerInfo implements Communicable
 	
 	public String toString()//needed for debugging and error messages
 	{
-		Random r = new Random();
-		int randomIndex = r.nextInt(addresses.size());
+		//Random r = new Random();
+		//int randomIndex = r.nextInt(addresses.size());
 		//Address a = addresses.get(randomIndex);
 		Address a = addresses.get(0);
 		return "codename \""+codeName+"\" at "+a.getHostName()+":"+(int)a.getPort();
