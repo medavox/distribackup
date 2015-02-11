@@ -27,4 +27,13 @@ public class UpdateAnnouncement implements Communicable
         return changedFiles;
     }
     //avoid implementing chunks for now
+    
+    public String toString()
+    {
+    	String s = "";
+    	s+="Update Announcement; GRN:"+globalRevNum;
+    	s+="Number of files:"+changedFiles.length;
+    	
+    	return s;
+    }
 }

@@ -55,7 +55,7 @@ public abstract class Peer extends Thread
 	{
 		this.root = root;
 		this.listenPort = port;
-		myUUID = UUID.randomUUID();//this uniquely IDs us on the network
+		Peer.myUUID = UUID.randomUUID();//this uniquely IDs us on the network
 		Listener listenHook = new Listener(port, this);
 		try
 		{
@@ -167,6 +167,12 @@ public abstract class Peer extends Thread
 			//TODO
 		}
 	}
+	
+	public boolean isPublisher()
+	{
+		return myUUID.equals(publisherUUID);
+	}
+	
 	/**The Incoming Message Processing Thread (IMPT).*/
     public void run()
     {
@@ -256,6 +262,16 @@ public abstract class Peer extends Thread
     public void handlePeerInfoRequest(ReceivedMessage next)//TODO
     {
     	System.out.println("Received PeerInfo Request");
+    	ConnectionOperator co = next.getConnection();
+    	try
+    	{
+    		co.sendPeerInfo();
+    	}
+    	catch(IOException ioe)
+    	{
+    		System.err.println("FAILED to send Peer Info!");
+    		ioe.printStackTrace();
+    	}
 	}
 	public void receiveMorePeers(ReceivedMessage next)//TODO
 	{

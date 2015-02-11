@@ -10,13 +10,15 @@ import java.io.DataOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.EOFException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+
+import testing.BinTest;
 
 import com.medavox.distribackup.peers.PeerInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
-import com.medavox.distribackup.filesystem.DirectoryInfo;
 import com.medavox.distribackup.filesystem.UpdateAnnouncement;
 
 /**Logic in this class only pertains to conversion of primitive types to and from binary.
@@ -64,8 +66,8 @@ public abstract class BinaryTranslator
 	FileInfo	-> bytes		DONE?
 	bytes		-> FileInfo		DONE?
 	
-	FileData	-> bytes        DONE
-	bytes 		-> FileData     DONE
+	FileDataChunk-> bytes       DONE
+	bytes 		-> FileDataChunkDONE
 	
 	Address		-> bytes        DONE
 	bytes		-> Address      DONE
@@ -73,13 +75,14 @@ public abstract class BinaryTranslator
 	List		-> bytes		DONE
 	bytes		-> List			DONE
     
-    UpdAnnounce -> bytes        
-    bytes       -> UpdAnnounce  */
+    UpdAnnounce -> bytes        DONE
+    bytes       -> UpdAnnounce  DONE*/
 	
 	/**Primitive types omit a header by default; 
 	add one manually or write wrapper methods to add one*/
 	static ByteArrayOutputStream ba = new ByteArrayOutputStream();
 	static DataOutputStream dos = new DataOutputStream(ba);
+	private static PrintStream o = System.out;
 	
 	public static byte ubyteToByte(short l) throws IOException, NumberFormatException
 	{
@@ -160,20 +163,22 @@ public abstract class BinaryTranslator
 		return out;
 	}
 		
-	public static byte[] stringToBytes(String s) throws UnsupportedEncodingException
+	public static byte[] stringToBytes(String s) throws UnsupportedEncodingException, IOException
 	{
-		return s.getBytes("UTF-16");
+		byte[] stringBytes = s.getBytes("UTF-16");
+		byte[] len = intToBytes(stringBytes.length); 
+		return concat(len, stringBytes);
 	}
 	
 	/**This path should be relative to the repo root*/
-	public static byte[] fileInfoToBytes(File f) throws IOException
-	{/* 0. (ID Byte)        | a byte
+	/*public static byte[] fileInfoToBytes(File f) throws IOException
+	{*//* 0. (ID Byte)        | a byte
 		0. (Length)         | Integer
 		1. Name             | String
 		2. Path             | String
 		3. file size        | Long
 		4. revision number  | Long
-		5. checksum         | SHA1*/
+		5. checksum         | SHA1*//*
 		
 		//make sure File object is an actual file (not a directory) before starting
 		if(!f.isFile())
@@ -198,12 +203,12 @@ public abstract class BinaryTranslator
 		intToBytes(getTotalLength(name, path, fileSize, revNum,	checksum));
 		
 		return concat(messageLength, name, path, fileSize, revNum, checksum);
-	}
+	}*/
     
     public static byte[] fileInfoToBytes(FileInfo fi) throws UnsupportedEncodingException, IOException
     {/* 1. Name             | String
         2. Path             | String
-        2. isDirectory      | bitfield<0>
+        2. isDirectory      | bitfield<0>HAHA FOUND YOU
         3. file size        | Long
         4. revision number  | Long
         5. checksum         | SHA1*/
@@ -220,55 +225,34 @@ public abstract class BinaryTranslator
         byte[] fileSize = longToBytes(fi.getFileSize());
         byte[] revNum = longToBytes(fi.getRevisionNumber());
         byte[] checksum = fi.getChecksum();//checksums are already byte[]s
-        byte[] length = intToBytes(getTotalLength(name, path, fileSize, revNum, checksum));
+        byte[] length = intToBytes(getTotalLength(name, path, isDirectory, fileSize, revNum, checksum));
         return concat(length, name, path, isDirectory, fileSize, revNum, checksum);
     }
     
-    public static byte[] fileDataChunkToBytes(FileDataChunk fd) throws UnsupportedEncodingException, IOException//TODO
-    {/*0. (ID Byte)         | a byte
-    1. (Length)             | Integer
-    2. FileInfo             | FileInfo
-    3. isWholeFile          | bitfield<0>
-    4. offset               | Long
-    5. payload              | ByteArray*/
+    public static byte[] fileDataChunkToBytes(FileDataChunk fd) throws UnsupportedEncodingException, IOException
+    {/* 1. (Length)             | Integer
+	    2. FileInfo             | FileInfo
+	    3. isWholeFile          | bitfield<0>
+	    4. offset               | Long
+	    5. payload              | ByteArray*/
         byte[] fileInfoBin = fileInfoToBytes(fd.getFileInfo());
+        //o.println("pre  fileInfo:"+BinTest.bytesToHex(Arrays.copyOfRange(fileInfoBin, 4, 16)));
         byte isWholeFileByte = bitfieldToByte(fd.isWholeFile());
         byte[] isWholeFile = {isWholeFileByte};
         byte[] offset = longToBytes(fd.getOffset());
-        
-        
-        //payload bojecty is a Distribackup 'Byte Array', a TLV object which hasn't got conversion methods here
-        
+        //o.println("pre  offset start:"+BinTest.bytesToHex(offset));
+        //payload object is a Distribackup 'Byte Array', a TLV object which hasn't got conversion methods here
         byte[] payloadLength = intToBytes(fd.getPayload().length);
+        
         byte[] data = fd.getPayload();
         
-        byte[] payload = concat(payloadLength, data);
+        byte[] payload = concat(payloadLength, data);//WARNING:
         
-        byte[] messageLength = intToBytes(getTotalLength(fileInfoBin, isWholeFile, offset, payload));
-        return concat(messageLength, fileInfoBin, isWholeFile, offset, payload);//WARNING:
         //payload length could be long enough to make enclosing FileData length overrun!
-    }
-	
-	/**DirInfo objects are going to massive, due to their tree nature.
-	 Converting a directory into byte-form will involve converting all files and
-	 directories inside it, which can also contain their own files. WHOA*/
-	public static byte[] directoryInfoToBytes(File f) throws IOException// TODO
-	{
-		//make sure File object is a directory (not a file) before starting
-		if(f.isFile())
-		{
-			throw new IOException("ERROR: supplied File Object is not a Directory!");
-		}
-		return new byte[0];//TODO
-	}
-    
-    public static byte[] directoryInfoToBytes(DirectoryInfo di)//TODO
-    {/* 0. (ID Byte)        | a byte
-        0. (Length)         | Integer
-        2. Name             | String
-        3. Path             | String
-        4. Contents         | HList:FileInfo,DirectoryID*/
-        return new byte[0];//TODO
+        byte[] messageLength = intToBytes(getTotalLength(fileInfoBin, isWholeFile, offset, payload));
+        
+        //o.println("FDC raw:"+BinTest.bytesToHex(concat(messageLength, fileInfoBin, isWholeFile, offset)));
+        return concat(messageLength, fileInfoBin, isWholeFile, offset, payload);
     }
 	
 	public static byte[] peerInfoToBytes(PeerInfo p, boolean isPublisher) throws IOException, NumberFormatException
@@ -285,7 +269,14 @@ public abstract class BinaryTranslator
 		
 		boolean[] bitfield = {true};
 		byte[] isPubByte = {bitfieldToByte(bitfield)};
-		byte[] addresses = {(byte)0x00};//TODO: implement lists and Addresses!
+		
+		Address[] adds = p.getAddresses();
+		byte[][] addsBytes = new byte[adds.length][];
+		for(int i = 0; i < adds.length; i++)
+		{
+			addsBytes[i] = addressToBytes(adds[i]);
+		}
+		byte[] addresses = listToBytes(addsBytes, Message.ADDRESS.IDByte);
 		
 		byte[] msgLength = 
 		intToBytes(getTotalLength(UUID1, UUID2, /*globalRevNum,*/ isPubByte, addresses));
@@ -297,16 +288,20 @@ public abstract class BinaryTranslator
 	The Message byte[] elements must be pre-sorted, contain no IDByte, 
 	and only their length fields if the list is made of variable-length elements.*/
 	public static byte[] listToBytes(byte[][] items, byte elIDByte) throws IOException
-	{/* 1. (Length)             | Long
+	{/* 1. (Length)             | Int
 		2. ID byte of elements  | a byte
 		3. number of elements   | int
 		4. &lt;elements&gt;     | ?*/
-		
+		o.println("pre  numElements:"+items.length);
 		byte[] elIDByteWrapper = {elIDByte};
 		byte[] numElements = intToBytes(items.length);
-		
+		o.println("as bytes:"+BinTest.bytesToHex(numElements));
+		//o.println("list elements pre-encode:"+numElements);
+		//o.println("numElements pre-encode as bytes:"+BinTest.bytesToHex(numElements));
 		byte[] elements = concat(items);
 		byte[] messageLength = intToBytes(getTotalLength(numElements, elements)+1);//+1 for elements' IDByte
+		//o.println("list elements pre-encode:"+getTotalLength(numElements, elements)+1);
+		//o.println("as bytes:"+BinTest.bytesToHex(messageLength));
 		return concat(messageLength, elIDByteWrapper, numElements, elements);
 	}
 	
@@ -338,7 +333,8 @@ public abstract class BinaryTranslator
 	}
     
     public static byte[] updateAnnouncementToBytes(UpdateAnnouncement ua) throws IOException
-    {
+    {/* GRN		| Long
+    	files	| fileInfolist*/
         byte[] GRN = longToBytes(ua.getGlobalRevisionNumber());
         
         byte[] fileInfoList = fileInfoListToBytes(ua.getFiles());
@@ -474,14 +470,22 @@ public abstract class BinaryTranslator
         5. checksum         | SHA1*/
 		try
 		{
-			int nameEndIndex = getNextMessageEndIndex(b, 0);
-			String name = bytesToString(Arrays.copyOfRange(b, 4, nameEndIndex));
-			int pathEndIndex = getNextMessageEndIndex(b, nameEndIndex);
-			String path = bytesToString(Arrays.copyOfRange(b, nameEndIndex+4, pathEndIndex));
+			int ptr = 0;
+			o.println("b length:"+b.length);
+			int nameLength = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
+			//System.out.println("post name length:"+nameLength);
+			ptr += 4;
+			String name = bytesToString(Arrays.copyOfRange(b, ptr, ptr+nameLength));
+			ptr += nameLength;
 			
-            pathEndIndex++;//move along one so as not to disrupt later addresses
-            
-            boolean[] isDirectory = byteToBitfield(b[pathEndIndex], 1);
+			int pathLength = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
+			//System.out.println("post path length:"+nameLength);
+			ptr += 4;
+			String path = bytesToString(Arrays.copyOfRange(b, ptr, ptr+pathLength));
+			ptr += pathLength;
+			
+            boolean[] isDirectory = byteToBitfield(b[ptr], 1);
+            ptr++;
             
             FileInfo rxFileInfo;
             
@@ -491,13 +495,15 @@ public abstract class BinaryTranslator
             }
             else
             {
-                long fileSize = bytesToLong(Arrays.copyOfRange(b, pathEndIndex, pathEndIndex+8));
-                long revisionNumber = bytesToLong(Arrays.copyOfRange(b, pathEndIndex+8, pathEndIndex+16));
+                long fileSize = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
+                ptr += 8;
+                long revisionNumber = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
+                ptr += 8;
                 
                 //there should be 20 bytes left, and they should all be the checksum
-                int checksumBegin = pathEndIndex+16;
-                byte[] checksum = Arrays.copyOfRange(b, checksumBegin, b.length);
+                byte[] checksum = Arrays.copyOfRange(b, ptr, b.length);
                 
+                //System.out.println("checksum length: "+checksum.length);
                 assert checksum.length == 20;
                 
                 //finally, reconstruct the FileInfo object from the decoded data
@@ -513,7 +519,7 @@ public abstract class BinaryTranslator
 		{
 			e.printStackTrace();
 		}
-		return null;
+		return null;//stupid compiler
 	}
     
     public static FileDataChunk bytesToFileDataChunk(byte[] b) throws IOException
@@ -523,11 +529,23 @@ public abstract class BinaryTranslator
     5. payload              | ByteArray*/
         /*The FileDataChunk length field has been removed,
          * so the first bit of data is the enclosed FileInfo length field*/
-        int fileInfoLength = bytesToInt(Arrays.copyOfRange(b, 0, 4));
-        FileInfo fi = bytesToFileInfo(Arrays.copyOfRange(b, 4, 4+fileInfoLength));
-        boolean isWholeFile = byteToBitfield(b[4+fileInfoLength], 1)[0];
-        long offset = bytesToLong(Arrays.copyOfRange(b, 5+fileInfoLength, 13+fileInfoLength));
-        byte[] payload = Arrays.copyOfRange(b, 13+fileInfoLength, b.length);
+    	//o.println("message post length: "+b.length);
+    	int ptr = 0;
+        int fileInfoLength = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
+        ptr += 4;
+        //o.println("fileInfo post length: "+fileInfoLength);
+        
+        FileInfo fi = bytesToFileInfo(Arrays.copyOfRange(b, ptr, ptr+fileInfoLength));
+        //o.println("post fileInfo:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr, ptr+12)));
+        ptr += fileInfoLength;
+        boolean isWholeFile = byteToBitfield(b[ptr], 1)[0];
+        
+        ptr++;
+        long offset = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
+        //o.println("post offset start:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr, ptr+8)));
+        ptr += 8;
+        //o.println("post payload start:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr+4, ptr+16)));
+        byte[] payload = Arrays.copyOfRange(b, ptr+4, b.length);//ignore byteArray's length field, for now
         
         //WARNING: do we even need the isWholeFile bitfield, if we're not passing it to the constructor
         
@@ -543,21 +561,35 @@ public abstract class BinaryTranslator
 		5. Addresses           | List:Address*/
 		try
 		{
-			long UUID1msb = bytesToLong(Arrays.copyOfRange(b, 0, 8));
-			long UUID2lsb = bytesToLong(Arrays.copyOfRange(b, 8, 16));
+			int ptr = 0;
+			long UUID1msb = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
+			ptr += 8;
+			long UUID2lsb = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
+			ptr += 8;
 			//long globalRevNum = bytesToLong(Arrays.copyOfRange(b, 16, 24));
-			boolean[] isPublisher = byteToBitfield(b[16], 1);
+			boolean[] isPublisher = byteToBitfield(b[ptr], 1);
+			ptr++;
 			
 			UUID uuid = new UUID(UUID1msb, UUID2lsb);
 			
-            //get elements as byte[]s from initial byte[]
-            byte[][] addressesBinary = bytesToList(Arrays.copyOfRange(b, 17, b.length));
-            Address[] addresses = new Address[addressesBinary.length-1];
-            for(int i = 0; i < addressesBinary.length; i++)
+			byte[] addsPre = Arrays.copyOfRange(b, ptr+4, b.length);
+			//o.println("addsPre length:"+addsPre.length);
+            byte[][] addsBin = bytesToList(addsPre);
+            //o.println("addressesBinary length:"+addsBin.length);
+            /*for(int i = 0; i < addsBin.length; i++)
             {
-                addresses[i] = bytesToAddress(addressesBinary[i+1]);
-            }
+            	String len = (addsBin[i] == null ? "nope" : ""+addsBin[i].length);
+            	o.println("addressesBinary["+i+"]:"+addsBin[i]+"\nlength:"+len);
+            	
+            }*/
+            Address[] addresses = new Address[addsBin.length-1];
             
+            assert addsBin[0][0] == Message.ADDRESS.IDByte;
+            for(int i = 0; i+1 < addsBin.length; i++)
+            {//why is [2] == null?
+            	//o.println("addressesBinary["+(i+1)+"] length:"+addsBin[i+1].length);
+                addresses[i] = bytesToAddress(addsBin[i+1]);
+            }
             
 			//TODO: do something with the isPublisher info we've received
             
@@ -568,7 +600,7 @@ public abstract class BinaryTranslator
 		}
 		catch(UnsupportedEncodingException uee)
 		{
-			//do nothing, the encoding name is static, so this should never execute
+			//do nothing, the encoding name is static, this should never execute
 		}
 		catch(Exception e)//TODO proper exception handling, it's all bubbled here
 		{
@@ -582,39 +614,44 @@ public abstract class BinaryTranslator
 	{/* 2. ID byte of elements  | a byte
 		3. number of elements   | int
 		4. &lt;elements&gt;     | ?*/
+		int ptr = 0;
 		Message type = Message.getMessageTypeFromID(b[0]);
-		int numElements = bytesToInt(Arrays.copyOfRange(b, 1, 5));
+		ptr++;
+		
+		int numElements = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
+		o.println("post numElements:"+numElements);
+		o.println("as bytes:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr, ptr+4)));
+		ptr += 4;
+		
 		byte[][] output = new byte[numElements+1][];//save the first byte for the IDByte
 		byte[] IDByteWrapper = {b[0]};
 		output[0] = IDByteWrapper;
+		//System.out.println("output length: "+output.length);
+		
 		if (type.length >= 0)//the elements are fixed- or zero-length
         {
-			int length = type.length;
-			for(int i = 0; i < numElements; i++)//split up the input byte[] into elements
+			int length = type.length;//get length from corresponding Message enum
+			o.println("element length: "+length);
+			for(int i = 0; i+1 < numElements; i++)//split up the input byte[] into elements
 			{//I really hope Arrays.copyOfRange isn't expensive!
-				output[i+1] = Arrays.copyOfRange(b, (i*length)+5, (i*length)+5+length);
+				//o.println("i:"+i);
+				int offset = (i*length)+5;
+				//o.println("offset:"+offset);
+				output[i+1] = Arrays.copyOfRange(b, offset, offset+length);
 			}
 		}
         else//the elements are variable-length or compound
-		{
-			int lengthLength;
-			if(type == Message.LIST)
-			{//the length field of lists is a long: 8, not 4, bytes wide
-				lengthLength = 8;
-			}
-			else
-			{
-				lengthLength = 4;
-			}
-			
-			int i = 5;
+		{//don't forget to remove length header for every element
+			int i = ptr;
 			int elementCount = 1;
-			while(i < numElements)
+			
+			while(elementCount <= numElements)
 			{
+				//o.println("elementCount:"+elementCount);
 				int currentElementLength = 
-					bytesToInt(Arrays.copyOfRange(b, i, i+lengthLength));
-				int elementEnd = i+currentElementLength+lengthLength;
-				output[elementCount] = Arrays.copyOfRange(b, i+lengthLength, elementEnd);
+					bytesToInt(Arrays.copyOfRange(b, i, i+4));
+				int elementEnd = i+currentElementLength+4;
+				output[elementCount] = Arrays.copyOfRange(b, i+4, elementEnd);
 				elementCount++;
 				i = elementEnd;
 			}
@@ -630,34 +667,31 @@ public abstract class BinaryTranslator
 		6. listenPort          | UShort
 		7. lastKnownTimeOnline | Long (ms since epoch)*/
         Address rxAddress = null;
+        
+        //o.println("b length:"+b.length);//if this causes a NullPointerException,
+        //then that means we're being passed null...
+        
 		try
 		{
-			boolean[] bools = byteToBitfield(b[0], 3);
+			int ptr = 0;
+			boolean[] bools = byteToBitfield(b[ptr], 3);
 			boolean isOnline = bools[0];
 			boolean usingHostName = bools[1];
 			boolean isIPv6 = bools[2];
 			String hostName = "";//initialise to empty values to prevent java complaining about the unused one
 			byte[] rawIP;
-			int addressEnd;
-			if(usingHostName)
-			{
-				addressEnd = getNextMessageEndIndex(b, 1);
-				hostName = bytesToString(Arrays.copyOfRange(b, 1, addressEnd));
-				
-			}
-			else if(isIPv6)
-			{
-				addressEnd = 17;
-			}
-			else
-			{//plain old IPv4
-				addressEnd = 5;
-			}
-			rawIP = Arrays.copyOfRange(b, 1, addressEnd);
+			ptr++;
+			int hostLength = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
+			ptr += 4;
+
+			//initialise both forms of address to prevent constructors complaining
+			hostName = bytesToString(Arrays.copyOfRange(b, ptr, ptr+hostLength));
+			rawIP = Arrays.copyOfRange(b, ptr, ptr+hostLength);
 			
-			char port = bytesToUShort(Arrays.copyOfRange(b, addressEnd, addressEnd+2));
-			
-			long lastSpotted = bytesToLong(Arrays.copyOfRange(b, addressEnd+2, addressEnd+10));
+			ptr += hostLength;
+			char port = bytesToUShort(Arrays.copyOfRange(b, ptr, ptr+2));
+			ptr += 2;
+			long lastSpotted = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
 			
 			if(usingHostName)
 			{
@@ -679,19 +713,22 @@ public abstract class BinaryTranslator
     public static UpdateAnnouncement bytesToUpdateAnnouncement(byte[] b) throws UnsupportedEncodingException, IOException
     {/* 2. Global RevNum    | Long
         3. Files            | List:FileInfo*/
-        long GRN = bytesToLong(Arrays.copyOfRange(b, 0, 8));
-        FileInfo[] fileInfos = bytesToFileInfoList(Arrays.copyOfRange(b, 8, b.length));
+    	int ptr = 0;
+        long GRN = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
+        ptr += 8;
+        FileInfo[] fileInfos = bytesToFileInfoList(Arrays.copyOfRange(b, ptr+4, b.length));//skip message length header
         UpdateAnnouncement ai = new UpdateAnnouncement(GRN, fileInfos);
         return ai;
     }
     
     public static FileInfo[] bytesToFileInfoList(byte[] b) throws UnsupportedEncodingException, IOException
     {
+    	//int numElements = bytesToInt(Arrays.copyOfRange(b, 0, 4));
         byte[][] lb = bytesToList(Arrays.copyOfRange(b, 0, b.length));
-        FileInfo[] fileInfos = new FileInfo[lb.length];
-        for(int i = 0; i < lb.length; i++)
+        FileInfo[] fileInfos = new FileInfo[lb.length-1];
+        for(int i = 1; i < lb.length; i++)
         {
-            fileInfos[i] = bytesToFileInfo(lb[i]);
+            fileInfos[i-1] = bytesToFileInfo(lb[i]);
         }
         return fileInfos;
     }
@@ -699,7 +736,7 @@ public abstract class BinaryTranslator
     /**invokes the appropriate conversion method on a byteArray to convert any 
      * binary message into a Communicable, the interface which all Java class 
      * versions of Distribackup message objects implement.*/
-    public static Communicable bytesToCommunicable(byte[] b, Message type) throws UnsupportedEncodingException, IOException//TODO
+    public static Communicable bytesToCommunicable(byte[] b, Message type) throws UnsupportedEncodingException, IOException
     {/* PeerInfo
         Archive Status
         File Data Chunk
@@ -727,6 +764,9 @@ public abstract class BinaryTranslator
                 byte[] wneud = Arrays.copyOfRange(b, 8, b.length);
                 FileInfo[] fi = bytesToFileInfoList(wneud);
                 return new FileInfoListWrapper(fi);
+            
+            default:
+            	System.err.println("ERROR: bytesToCommunicable was given a Message Type it can't use!");
         }
         throw new UnsupportedEncodingException("supplied bytes did not form a Message that needs converting!");
     }
@@ -736,7 +776,7 @@ public abstract class BinaryTranslator
 	public static int getNextMessageEndIndex(byte[] b, int offset) throws IOException
 	{
 		int len = bytesToInt(Arrays.copyOfRange(b, offset, offset+4));
-		return len;
+		return len+4+offset;
 	}
 		
 	public static int getTotalLength(byte[]... fields)

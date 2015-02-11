@@ -59,6 +59,12 @@ public class FileInfo extends FileSystemObjectInfo
 	
 	public String toString()//TODO : check up on correct separators, and that there is one between path and name
 	{
-		return path + name;
+		String s = "";
+		s+= "FileInfo path: \""+path+
+		"\" name: \""+name+
+		"\" is Directory:"+isDirectory;
+		s += (isDirectory ? "" : "\" revision number: "+revisionNumber+" file size: "+fileSize);
+		//return path + name;
+		return s;
 	}
 }

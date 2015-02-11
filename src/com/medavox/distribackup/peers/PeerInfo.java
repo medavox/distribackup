@@ -27,16 +27,22 @@ public class PeerInfo implements Communicable
 //only if they can give us file (version)s we want
 	private UUID uuid;
 	//private long globalRevisionNumber;
-	public List<Address> addresses;/**A pool of known addresses from which to open new connections*///ERROR: Lists aren't thread-safe!
+	//ERROR: Lists aren't thread-safe!
+	/**A pool of known addresses from which to open new connections*/
+	public List<Address> addresses = new ArrayList<Address>();
     private List<ConnectionOperator> openConnections = new ArrayList<ConnectionOperator>();//may need to become concurrent
     private String codeName;
 	
-	public PeerInfo(UUID uuid, /*long GRN,*/ Address[] addresses)//TODO
+	public PeerInfo(UUID uuid, /*long GRN,*/ Address[] startingAddresses)//TODO
 	{
         this.uuid = uuid;
         //this.globalRevisionNumber = GRN;
-        codeName = FileUtils.getRandomName();
+        codeName = FileUtils.getCodeName(uuid);
 		//this.socket = s;
+        for(Address a : startingAddresses)
+        {
+        	addresses.add(a);
+        }
 	}
 	
 	public UUID getUUID()
@@ -48,6 +54,7 @@ public class PeerInfo implements Communicable
     {
         return (openConnections.size() == 0);
     }
+    
     /**Returns an open connection. This method has room for later improvement,
      * choosing which open connection to return intelligently, based on which
      * open connection is the least used or fastest.*/
@@ -62,12 +69,20 @@ public class PeerInfo implements Communicable
     {
     	openConnections.add(co);
     }
+    
+    public Address[] getAddresses()
+    {
+    	Address[] adds = new Address[addresses.size()];
+    	addresses.toArray(adds);
+    	return adds;
+    }
 	
 	public String toString()//needed for debugging and error messages
 	{
 		Random r = new Random();
 		int randomIndex = r.nextInt(addresses.size());
-		Address a = addresses.get(randomIndex);
+		//Address a = addresses.get(randomIndex);
+		Address a = addresses.get(0);
 		return "codename \""+codeName+"\" at "+a.getHostName()+":"+(int)a.getPort();
 	}
 }

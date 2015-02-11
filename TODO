@@ -40,3 +40,4 @@ or just keep thwem as ints
 * publisher maintain list of subscribers
 * make exception catching consistent: have a consistent policy
 * redo package structure
+* actually use the checksums to do some error-checking

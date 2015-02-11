@@ -2,6 +2,7 @@ package com.medavox.distribackup.filesystem;
 
 import java.security.*;
 import java.util.Random;
+import java.util.UUID;
 import java.io.*;
 import java.nio.file.Path;
 
@@ -34,8 +35,8 @@ public abstract class FileUtils
 	/**Hands out randomly chosen names*/
 	public static String getRandomName()
 	{
-		String[] boyNames = fileToString(new File("boysnames.txt")).split("\n");
-		String[] girlNames = fileToString(new File("girlssnames.txt")).split("\n");
+		String[] boyNames = fileToString(new File("/home/scc/distribackup/res/boysnames.txt")).split("\n");
+		String[] girlNames = fileToString(new File("/home/scc/distribackup/res/girlsnames.txt")).split("\n");
 		String[] allNames = new String[boyNames.length + girlNames.length];
 		for(int i = 0; i < boyNames.length; i++)
 		{
@@ -49,6 +50,32 @@ public abstract class FileUtils
 		Random r = new Random();
 		int randomIndex = r.nextInt(allNames.length);
 		return allNames[randomIndex];
+	}
+	/**Chooses a code name based on the supplied UUID. idempotent; 
+	 * gives the same name for the same uuid every time.*/
+	public static String getCodeName(UUID uuid)
+	{
+		String[] boyNames = fileToString(new File("/home/scc/distribackup/res/boysnames.txt")).split("\n");
+		String[] girlNames = fileToString(new File("/home/scc/distribackup/res/girlsnames.txt")).split("\n");
+		String[] allNames = new String[boyNames.length + girlNames.length];
+		
+		for(int i = 0; i < boyNames.length; i++)
+		{
+			allNames[i] = boyNames[i];
+		}
+		for(int i = boyNames.length; i < boyNames.length+girlNames.length; i++)
+		{
+			allNames[i] = girlNames[i-boyNames.length];
+		}
+		
+		long msb = uuid.getMostSignificantBits();
+		long lsb = uuid.getLeastSignificantBits();
+		
+		long xored = msb ^ lsb;
+		int index = (int)(Math.abs(xored) % allNames.length);
+		//System.out.println("index chosen:"+index);
+		
+		return allNames[index];
 	}
 
 	public static String fileToString(File f)

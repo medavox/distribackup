@@ -149,7 +149,14 @@ public class ConnectionOperator extends Thread
 	public void sendPeerInfo() throws IOException//TODO
 	{
 		System.out.println("Sending my PeerInfo...");
-		PeerInfo me = new PeerInfo(myUUID, )
+		//how do we find out addresses we are known by?
+		PeerInfo me = new PeerInfo(Peer.myUUID, new Address[0]);
+		
+		byte[] peerInfoBytes = BinaryTranslator.peerInfoToBytes(me, owner.isPublisher());
+		byte[] fullMsg = BinaryTranslator.concat(Message.PEER_INFO.IDByte, peerInfoBytes);
+		//write out
+		bos.write(fullMsg, 0, fullMsg.length);
+		bos.flush();
 	}
 	
 	public void sendUpdateAnnouncement(UpdateAnnouncement ua)throws IOException

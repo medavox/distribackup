@@ -50,8 +50,8 @@ Variable-length homogenous types (String, ByteArray) are TLV; see below.
 TLV
 :   Type Length Value, a simple way of defining variable-length types such as Strings. Length is a Int: 32-bits, 0 to 2^31 -1. Changed from unisgned int due to Java array addressing limitations.
 
-TLNV
-:   Type Length Number Value. An extra field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
+TNV
+:   Type Number Value. An different field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
 
 Supporting Data Types
 ---------------------
@@ -73,7 +73,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 0A | Address               | Compound | [Yes, see entry below](#Address) |
 0B | ByteArray             | TLV      |   |
 0F | FileInfo              | Compound | [Yes, see entry below](#FileInfo) |
-0E | List                  | TLNV     | |
+0E | List                  | TNV     | |
 
 Sendable (Communicable) Message Objects
 ---------------------------------------
@@ -151,7 +151,7 @@ Element                | Type
 0. (ID Byte)           | a byte
 1. (Length)            | Long
 2. ID byte of elements | a byte
-3. number of elements  | int
+3. number of elements  | Integer
 4. &lt;elements&gt;    | ?
 
 

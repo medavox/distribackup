@@ -13,11 +13,13 @@ public class FileDataChunk implements Communicable
     {
         if(offset < 0)
         {
-            throw new NumberFormatException("Offset must not be negative!");
+            throw new NumberFormatException("Offset must not be negative!"+
+            		"\nSupplied number:"+offset);
         }
         else if(offset >= fi.getFileSize())
         {
-            throw new NumberFormatException("Offset must not be larger than file!");
+            throw new NumberFormatException("Offset must not be larger than file!"+
+            		"\nSupplied number:"+offset);
         }
         this.offset = offset;
         this.payload = payload;
@@ -52,5 +54,14 @@ public class FileDataChunk implements Communicable
     public long getOffset()
     {
         return offset;
+    }
+    
+    public String toString()
+    {
+    	String s = "";
+    	s+="FileDataChunk for file \""+fileInfo.getName();
+    	s+="\": Payload length:"+payload.length;
+    	s+=" Offset:"+offset;
+    	return s;
     }
 }

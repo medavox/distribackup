@@ -1,15 +1,26 @@
 package testing;
 
 import com.medavox.distribackup.connections.*;
+import com.medavox.distribackup.filesystem.FileDataChunk;
+import com.medavox.distribackup.filesystem.FileInfo;
+import com.medavox.distribackup.filesystem.FileUtils;
+import com.medavox.distribackup.filesystem.UpdateAnnouncement;
+import com.medavox.distribackup.peers.Peer;
+import com.medavox.distribackup.peers.PeerInfo;
+
 import java.io.*;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.UUID;
 /**Performs tests for conversions between binary and Distribackup Message types,
  to make sure they are encoded and decoded correctly*/
 public class BinTest
 {
 	static PrintStream o = System.out;
 	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	public static String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !\"$%^&*()_+-=\'@#~;:[{}]/\\|?<>,.";
+	//public static String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !\"$%^&*()_+-=\'@#~;:[{}]/\\|?<>,.";
+	public static String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !,.";
 /*  Tests:
 	byte		N/A
 	ubyte		PASSED
@@ -20,13 +31,108 @@ public class BinTest
 	long		PASSED
 	ulong		notimpl
 	bitfield	PASSED
-	String*/
+	String		PASSED
+	PeerInfo	
+	FileInfo	
+	FileDataCh	
+	Address		
+	List		
+	UpdAnnounce	*/
+	
+	private static Random r = new Random();
+	
+	private static Address randomAddress()
+	{
+		String[] urls = FileUtils.fileToString(new File("/home/scc/distribackup/res/popurls.txt")).split("\n");
+		
+		String hostName = urls[r.nextInt(urls.length)];
+		boolean isOnline = r.nextBoolean();
+		char port = (char)((r.nextInt() % 64512) +1024);
+		long timeSinceOnline = r.nextLong();
+		
+		try
+		{
+			return new Address(hostName, port, isOnline, timeSinceOnline);
+		}
+		catch(UnknownHostException uhe)
+		{
+			uhe.printStackTrace();
+			System.exit(1);
+		}
+		return null;
+	}
+	
+	private static FileInfo randomFileInfo()
+	{
+		/*String name, String path, long fileSize, long revisionNumber, byte[] checksum*/
+		String name = genGib(r.nextInt(70));
+		//o.println("name length:"+name.length());
+		String path = genGib(r.nextInt(200));
+		//o.println("path length:"+path.length());
+		long fileSize = Math.abs(r.nextLong()) % (1048576l * 1048576l);//1TB
+		long revNum = r.nextLong();
+		byte[] bytes = new byte[20];
+		r.nextBytes(bytes);
+		return new FileInfo(name, path, fileSize, revNum, bytes);
+	}
+	
+	private static PeerInfo randomPeerInfo()
+	{
+		/*UUID uuid, Address[] startingAddresses*/
+		long topLong = r.nextLong();
+		long botLong = r.nextLong();
+		UUID uuid = new UUID(topLong, botLong);
+		
+		Address[] a = randomAddressList();
+		
+		return new PeerInfo(uuid, a);
+	}
+	
+	private static Address[] randomAddressList()
+	{
+		int number = r.nextInt(50);
+		Address[] a = new Address[number];
+		for(int i = 0; i < number; i++)
+		{
+			a[i] = randomAddress();
+		}
+		return a;
+	}
+	
+	private static FileInfo[] randomFileInfoList()
+	{
+		int number = r.nextInt(80);
+		FileInfo[] f = new FileInfo[number];
+		for(int i = 0; i < number; i++)
+		{
+			f[i] = randomFileInfo();
+		}
+		return f;
+	}
+	
+	private static FileDataChunk randomFileDataChunk()
+	{
+		FileInfo fi = randomFileInfo();
+		int chunkSize = r.nextInt(Peer.MAX_CHUNK_SIZE);
+		byte[] garbage = new byte[chunkSize]; 
+		r.nextBytes(garbage);
+		long offset = Math.abs(r.nextLong()) % fi.getFileSize();//make the offset < fileSize
+		//o.println("pre-encode offset:"+offset);
+		return new FileDataChunk(fi, garbage, offset);
+	}
+	
+	private static UpdateAnnouncement randomUpdateAnnouncement()
+	{
+		long grn = r.nextLong();
+		FileInfo[] files = randomFileInfoList();
+		return new UpdateAnnouncement(grn, files);
+	}
+	
 	public static void main(String[] args)
 	{
 		//o.println((int)char);//cast chars to int to see them as a number
 		//o.println(-53873 % 50 );//modulo'd minus numbers remain negative
 		byte b2 = (byte)0xffff;//Result: 0xff aka -1
-		Random r = new Random();
 		/*for(int i = 0; i < 20; i++)
 		{o.println(r.nextInt());}*/
 		try
@@ -44,7 +150,7 @@ public class BinTest
 			int m = Integer.MAX_VALUE;
 			
 			//create random-value variables for testing
-			
+			/*
 			//byte b = (byte)r.next(8);							//byte
 			short ub = (short)(r.nextInt(256));					//ubyte
 			short s  = (short)(r.nextInt(65536) - 32767);		//short
@@ -92,7 +198,6 @@ public class BinTest
 			test(intPre, intPost, "int");
 			
 			//unsigned integer test
-			
 			String uintPre = new Long(uit).toString();
 			byte[] uiconv = BinaryTranslator.uintToBytes(uit);
 			String uintPost = new Long(BinaryTranslator.bytesToUInt(uiconv)).toString();
@@ -104,7 +209,7 @@ public class BinTest
 			String lPost = new Long(BinaryTranslator.bytesToLong(lconv)).toString();
 			test(lPre, lPost, "long");
 			
-			//bitfield test
+			//bitfield Test
 			String bfPre = "";
 			for(int i = 0; i < bf.length; i++)
 			{
@@ -115,16 +220,49 @@ public class BinTest
 			String bfPost = "";
 			for(int i = 0; i < bfBack.length; i++)
 			{
-				bfPost += new Boolean(bfBack[i]).toString()+"\t"		;
+				bfPost += new Boolean(bfBack[i]).toString()+"\t";
 			}
 			test(bfPre, bfPost, "bitfield");
 			
-			//String test
+			//String Test
 			String strPre = testString;
 			byte[] strconv = BinaryTranslator.stringToBytes(testString);
-			String strPost = BinaryTranslator.bytesToString(strconv);
+			String strPost = BinaryTranslator.bytesToString(Arrays.copyOfRange(strconv, 4, strconv.length));
 			test(strPre, strPost, "String");
 			//o.println((int)byteToUShort(cb));
+			
+			//FileInfo Test
+			FileInfo FI = randomFileInfo();
+			String FIpre = FI.toString();
+			byte[] FIconv = BinaryTranslator.fileInfoToBytes(FI);
+			String FIpost = BinaryTranslator.bytesToFileInfo(Arrays.copyOfRange(FIconv, 4, FIconv.length)).toString();
+			test(FIpre, FIpost, "FileInfo");
+			byte[] failFiPre =  BinaryTranslator.stringToBytes(FIpre.toString());
+			byte[] failFiPos =  BinaryTranslator.stringToBytes(FIpost.toString());
+			
+			//System.out.println("pre :"+space(bytesToHex(failFiPre)));
+			//System.out.println("post:"+space(bytesToHex(failFiPos)));
+			
+			//PeerInfo Test
+			PeerInfo PI = randomPeerInfo();
+			String PIpre = PI.toString();
+			byte[] PIconv = BinaryTranslator.peerInfoToBytes(PI, false);
+			String PIpost = BinaryTranslator.bytesToPeerInfo(Arrays.copyOfRange(PIconv, 4, PIconv.length)).toString();
+			test(PIpre, PIpost, "PeerInfo");
+			
+			//FileDataChunk Test
+			FileDataChunk fdc = randomFileDataChunk();
+			String fdcPre = fdc.toString();
+			byte[] fdcConv = BinaryTranslator.fileDataChunkToBytes(fdc);
+			String fdcPost = BinaryTranslator.bytesToFileDataChunk(Arrays.copyOfRange(fdcConv, 4, fdcConv.length)).toString();
+			test(fdcPre, fdcPost, "FileDataChunk");
+			*/
+			//UpdateAnnouncement Test
+			UpdateAnnouncement ua = randomUpdateAnnouncement();
+			String uaPre = ua.toString();
+			byte[] uaConv = BinaryTranslator.updateAnnouncementToBytes(ua);
+			String uaPost = BinaryTranslator.bytesToUpdateAnnouncement(Arrays.copyOfRange(uaConv, 4, uaConv.length)).toString();
+			test(uaPre, uaPost, "UpdateAnnouncement");
 		}
 		catch(Exception e)
 		{
@@ -138,18 +276,32 @@ public class BinTest
 		if(pre.equals(post))
 		{
 			o.println(name+" PASSED!");
-			if(name.equals("uint"))
+			/*if(name.equals("FileInfo"))
 			{
 				o.println("pre  value: "+pre+"\npost value: "+post);
-			}
+			}*/
 		}
 		else
 		{
 			o.println(name+" FAILED!\npre  value: "+
 			pre+"\npost value: "+post);
+			
+			//o.println("pre  bytes: "+)
 		}
 	}
 
+	public static String space(String pre)
+	{
+		String s = "";
+		int i = 0;
+		while(i < pre.length())
+		{
+			s += pre.substring(i, i+2)+" ";
+			i+=2;
+		}
+		return s;
+	}
+	
 	public static String bytesToHex(byte[] bytes)
 	{
 		char[] hexChars = new char[bytes.length * 2];
