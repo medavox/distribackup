@@ -12,6 +12,25 @@ public class FileInfoBunch implements Communicable
         this.changedFiles = files;
     }
     
+    public FileInfoBunch(FileInfo[] files)
+    {
+    	globalRevNum = -1;
+    	this.changedFiles = files;
+    }
+    
+    public FileInfoBunch(FileInfo fi)
+    {
+    	globalRevNum = -1;
+    	FileInfo[] wrapper = {fi};
+    	changedFiles = wrapper;
+    }
+    
+    public FileInfoBunch()
+    {
+    	globalRevNum = -1;
+    	changedFiles = new FileInfo[0];
+    }
+    
     public long getGRN()
     {
         return globalRevNum;
@@ -27,6 +46,11 @@ public class FileInfoBunch implements Communicable
         return changedFiles;
     }
     //avoid implementing chunks for now
+    
+    public ArchiveInfo toArchiveInfo()
+    {
+    	return new ArchiveInfo(globalRevNum, changedFiles);
+    }
     
     public String toString()
     {

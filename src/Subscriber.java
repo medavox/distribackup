@@ -3,7 +3,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.*;
 
 import com.medavox.distribackup.connections.ConnectionOperator;
 import com.medavox.distribackup.connections.ReceivedMessage;
@@ -13,8 +12,6 @@ import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileInfoBunch;
 import com.medavox.distribackup.peers.*;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.util.Random;
 import java.util.Set;
@@ -27,7 +24,6 @@ public class Subscriber extends Peer
     private static Path defaultRoot = Paths.get("/home/scc/distribackup/subscriber-root");
     
     private ArchiveInfo localArchiveState = new ArchiveInfo( -1, new FileInfo[0]);
-    private ArchiveInfo toDownload = new ArchiveInfo(-1, new FileInfo[0]);
     
     //private String defaultRoot = "subscriber-root";
     public Subscriber(Path root, String host, int port)
@@ -61,21 +57,39 @@ public class Subscriber extends Peer
 			//ask a different random peer for each file
 			for(FileInfo fi : filesToDownload)
 			{
-				//get a random peer who has an open connection with us
-				//TODO: try to open a connection rather than move on
-				PeerInfo randomPeer;
-				do
+				System.out.println("toDownload:"+filesToDownload.printAllFiles());
+				if(!fi.isDirectory())
 				{
+					//get a random peer who has an open connection with us
+					//TODO: try to open a connection rather than move on
+					PeerInfo randomPeer;
+					do
+					{
+						
+						Random r = new Random();
+						Set<UUID> keys = peers.keySet();
+						UUID[] uuids = new UUID[keys.size()];
+						keys.toArray(uuids);
+						UUID randomID = uuids[r.nextInt(uuids.length)];
+						randomPeer = peers.get(randomID);
+					}while(!randomPeer.hasOpenConnection());
+					//request the file
+					randomPeer.getOpenConnection().requestFile(fi);
+				}
+				else//it's a directory
+				{//just make an empty directory
+					String fsFile = root.toString()+sep+fi.getPath()+sep+fi.getName();
+					try
+					{
+						Files.createDirectories(Paths.get(fsFile));
+					}
+					catch(IOException ioe)
+					{
+						ioe.printStackTrace();
+					}
+					//then remove this entry from filesToDownload
 					
-					Random r = new Random();
-					Set<UUID> keys = peers.keySet();
-					UUID[] uuids = new UUID[keys.size()];
-					keys.toArray(uuids);
-					UUID randomID = uuids[r.nextInt(uuids.length)];
-					randomPeer = peers.get(randomID);
-				}while(!randomPeer.hasOpenConnection());
-				//request the file
-				randomPeer.getOpenConnection().requestFile(fi);
+				}
 			}
 		}
     }
@@ -87,7 +101,7 @@ public class Subscriber extends Peer
     	//if we don't,
     		//send a NO_HAZ containing the FileInfo we were sent
     	
-    	FileInfo fi = (FileInfo)fr.getCommunicable();
+    	FileInfo fi = ((FileInfoBunch)fr.getCommunicable()).getFiles()[0];
     	System.out.println("Received File Request:"+fi);
     	
     	boolean hasFile = localArchiveState.containsKey(fi.toString());
@@ -97,49 +111,62 @@ public class Subscriber extends Peer
     	handleFileRequest(fr, hasFile, isRightVersion);
     }
     
+    public void finishedDownloadingFile(FileInfo cfi)
+    {
+    	//fsw.ignoreList.update(cfi);
+    	localArchiveState.update(cfi);
+    	System.out.println("successfully removed "+cfi+" from toDownload:"+filesToDownload.remove(cfi));
+    	System.out.println("toDownload:"+filesToDownload.printAllFiles());
+    }
+    
     public static void main (String args[])
     {//local listening port
-		int port = 0;
-		String host = "";
-		if(args.length == 2)
+		int port = defaultConnectPort;
+		String host = defaultHost;
+		Path initRoot = defaultRoot;
+		switch(args.length)
 		{
-		    try
-		    {
-		    	port = Integer.parseInt(args[1]);
-		    }
-		    catch(NumberFormatException nfe)
-		    {
-				System.err.println("incorrect arguments. \""+args[1]+"\" is not a valid port number");
-				usage();
-		    }
+			case 3:
+			    try
+			    {
+			    	port = Integer.parseInt(args[1]);
+			    }
+			    catch(NumberFormatException nfe)
+			    {
+					System.err.println("incorrect arguments. \""+args[1]+"\" is not a valid port number");
+					usage();
+			    }
+			case 2:
+			    port = defaultConnectPort;
+			    host = args[1];
+			
+			case 1:
+				initRoot = Paths.get(args[0]);
 		}
-		else if(args.length == 1)
-		{
-		    port = defaultConnectPort;
-		    host = args[0];
-		}
-		else if(args.length == 0)
-		{
-		    port = defaultConnectPort;
-		    host = defaultHost;
-		}
-		Subscriber p = new Subscriber(defaultRoot, host, port);
+		Subscriber p = new Subscriber(initRoot, host, port);
     }
     
     public static void usage()
     {
-		System.out.println("Usage: TODO");
+		System.out.println("Usage: java Subscriber <archive root> [Publisher Address] [port]");
 		System.exit(1);
     }
     /**Subscriber user has edited files in error */
     public void fileChanged(Path file, String eventType)
     {
-		System.err.println("WARNING: Don't edit these files!");
+    	//System.err.println("ERROR: failed to ignore "+file);
+    	//System.exit(0);
+    	System.err.println("WARNING: Don't edit these files!");
 		System.err.println("They are merely copies, your changes will be overwritten!");
 		//replace inappropriately changed copies with fresh copies from the Publisher
 		//request replacement copy from Publisher
 		ConnectionOperator co = peers.get(publisherUUID).getOpenConnection();
-		FileInfo fi = globalArchiveState.getFileInfoWithPath(file);
+		System.out.println("file:"+file+" event:"+eventType);
+		Path relativePath = root.relativize(file);
+		System.out.println("illegally changed file:"+relativePath.toString());
+		FileInfo fi = localArchiveState.getFileInfo(relativePath.toString());//returns null?
+		System.out.println("GAS files:"+globalArchiveState.printAllFiles());
+		System.out.println("fi:"+fi);
 		co.requestFile(fi);
     }
 }

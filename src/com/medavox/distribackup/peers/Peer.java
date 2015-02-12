@@ -30,18 +30,23 @@ public abstract class Peer extends Thread
 	"haz nao" announcement
 	Fresh Peers*/
 
+	
+	
 	public static final int MAX_CHUNK_SIZE = 4194304;//4MB
 	public static final int MIN_CHUNK_SIZE = 32768;//32KB
 	protected int listenPort;
 	//private String defaultRoot;//must be specified by subclass
 	public Path root;
 	protected String cacheDir = ".distribackup-cache";
+	protected String sep = FileSystems.getDefault().getSeparator();
 	
 	PeerInfo publisherInfo;
 	protected UUID publisherUUID;
 	public static UUID myUUID;
 	public boolean threadsEnabled = true;
     
+	protected FileSystemWatcher fsw;
+	
 	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
 	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
     protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
@@ -58,7 +63,7 @@ public abstract class Peer extends Thread
 		Runtime.getRuntime().addShutdownHook(new CloseHook(this));
 		try
 		{
-			FilesystemWatcher fsw = new FilesystemWatcher(root, this);
+			fsw = new FileSystemWatcher(root, this);
 			fsw.start();
 		}
 		catch(IOException ioe)
@@ -120,8 +125,8 @@ public abstract class Peer extends Thread
 	protected FileInfo pathToFileInfo(Path p, long revisionNumber)
 	{
 		Path relativePath = root.relativize(p);
-		System.out.println("passed path:   "+p);
-		System.out.println("relative path: "+relativePath);
+		//System.out.println("passed path:   "+p);
+		//System.out.println("relative path: "+relativePath);
     	String name = relativePath.getFileName().toString();
     	Path relPath = relativePath.getParent();//use an empty string if the path is null
     	String path = (relPath == null ? "" : relPath.toString());
@@ -255,7 +260,7 @@ public abstract class Peer extends Thread
 						System.exit(1);
                 }
             }
-            else//wait some time before checking again
+            else//wait before checking again, so as not to waste CPU cycles
             {
             	try
             	{
@@ -287,6 +292,9 @@ public abstract class Peer extends Thread
 	{
 		
 	}
+	
+	public abstract void finishedDownloadingFile(FileInfo cfi);
+	
 	/**Waits until we have the whole update before pushing files to the visible copy.
 	Updates should be relatively small anyway, and this prevents broken half-states from occurring*/
     public void receiveFileDataChunk(ReceivedMessage rxmsg)//TODO
@@ -309,13 +317,21 @@ public abstract class Peer extends Thread
         	//push the file into the archive
         	FileInfo fi = fdc.getFileInfo();
         	String sep = FileSystems.getDefault().getSeparator();
-        	Path newPath = root.resolve(fi.getPath()+sep+fi.getName());//create path to file
-        	File newFile = newPath.toFile();
-        	System.out.println("created path: "+newFile);
+        	//Path fsRoot = Paths.get("/");
+        	//Path newPath = fsRoot.resolve(fi.getPath()+sep+fi.getName());//create path to file
+        	//System.out.println("Path object:"+newPath);
+        	//File newFile = newPath.toFile();
+        	File newFile = new File(root+sep+fi.getPath()+sep+fi.getName());
+        	System.out.println("created entry: "+newFile);
         	try
         	{
+        		//ignore changes to this file while we create/update it
+        		//System.out.println("adding "+fi+" to ignore list");
+        		fsw.ignoreList.add("ENTRY_CREATE:"+fi.toString());
+        		fsw.ignoreList.add("ENTRY_MODIFY:"+fi.toString());
         		if(newFile.exists())
         		{
+        			fsw.ignoreList.add("ENTRY_DELETE:"+fi.toString());
         			newFile.delete();
         		}
         		newFile.createNewFile();
@@ -323,6 +339,7 @@ public abstract class Peer extends Thread
         		fos.write(fdc.getPayload());
         		fos.flush();
         		fos.close();
+        		finishedDownloadingFile(fi);//subclass callback to deal with download
         	}
         	catch(Exception e)
         	{
@@ -343,7 +360,7 @@ public abstract class Peer extends Thread
      * It's the responsibility of the caller to make sure these are true.*/
     public FileDataChunk getFileDataChunk(FileInfo fi, int pieceNum)//TODO:loads entire file into memory!
     {
-		File fsFile = new File(fi.toString());
+    	File fsFile = new File(root.toString()+sep+fi.getPath()+sep+fi.getName());
     		
     	assert !fi.isDirectory() && !fsFile.isDirectory();
 		//if the file is small enough, send the whole thing
@@ -418,15 +435,18 @@ public abstract class Peer extends Thread
     
     protected void handleFileRequest(ReceivedMessage fr, boolean hasFile, boolean isRightVersion)
     {
-    	FileInfo fi = (FileInfo)fr.getCommunicable();
-    	
+    	FileInfo fi = ((FileInfoBunch)fr.getCommunicable()).getFiles()[0];
+    	//System.out.println("requested file: "+fi);
     	if(hasFile && isRightVersion)
     	{//construct a FileDataChunk
-    		File fsFile = new File(fi.toString());
     		
+    		File fsFile = new File(root.toString()+sep+fi.getPath()+sep+fi.getName());
+    		System.out.println("as File:"+fsFile);
+    		System.out.println("we have version "+fi.getRevisionNumber()+" of \""+fi.getName()+"\"!");
     		//check the file exists and is what it's meant to be (file/directory)
     		if(fsFile.exists())
     		{
+    			//System.out.println("\""+fi.getName()+"\" exists!");
     			if(fi.isDirectory()
     			&& fsFile.isDirectory())
     			{
@@ -441,18 +461,24 @@ public abstract class Peer extends Thread
     			{
 					ConnectionOperator co = fr.getConnection();
 					//break file into 1 or more chunks to send
-					
+					//System.out.println("It's a file when it should be");
+					if(fsFile.length() ==0)
+					{
+						System.out.println("\""+fi.getName()+"\" is zero-length");
+					}
 					if(fsFile.length() <= MAX_CHUNK_SIZE)
 					{
 						FileDataChunk fdc = getFileDataChunk(fi, 0);
-
+						System.out.println("Sending whole file as one chunk...");
 						co.sendFileDataChunk(fdc);
 					}
 					else
 					{
 						int minChunks = (int)Math.ceil(fsFile.length() / MAX_CHUNK_SIZE);
+						System.out.println("File will be sent in "+minChunks+" chunks");
 						for(int i = 0; i < minChunks; i++)
 						{
+							System.out.println("Sending chunk "+i+"...");
 							FileDataChunk fdc = getFileDataChunk(fi, i);
 							co.sendFileDataChunk(fdc);
 						}	
@@ -460,13 +486,21 @@ public abstract class Peer extends Thread
     			}
     			else//either:  
     			{//TODO:ERRORS
+    				System.err.println("ERROR: either:-\n"+
+    			"FileInfo is File, but filesystem is Dir; or"+
+    				"FileInfo is Dir, but filesystem is File");
     				//FileInfo is File, but filesystem is Dir; or
     				//FileInfo is Dir, but filesystem is File
     			}
     		}
+    		else
+    		{
+    			System.err.println("file doesn't exist, apparently");
+    		}
     	}
     	else//we don't have it
     	{//send a NO_HAZ with the FileInfo they gave us attached
+    		System.out.println("we don't have version "+fi.getRevisionNumber()+" of \""+fi.getName()+"\"!");
     		ConnectionOperator co = fr.getConnection();
     		FileInfo[] unavailableFiles = {fi};
     		co.sendNoHazFile(unavailableFiles);
@@ -503,7 +537,7 @@ public abstract class Peer extends Thread
 			System.out.println("adding new PeerInfo to list of known peers...");
 			if(peers.isEmpty())
 			{
-				System.out.println("This is our first peer! requesting stuff...");
+				System.out.println("This is our first peer!");
 				//send a allFileRequest, or maybe just an archiveStateRequest
 			}
 			peerInfo.addConnection(pi.getConnection());//add this connection 

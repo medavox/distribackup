@@ -16,7 +16,8 @@ public class FileDataChunk implements Communicable
             throw new NumberFormatException("Offset must not be negative!"+
             		"\nSupplied number:"+offset);
         }
-        else if(offset >= fi.getFileSize())
+        else if(offset > fi.getFileSize()
+        || (offset != 0 && offset == fi.getFileSize()))
         {
             throw new NumberFormatException("Offset must not be larger than file!"+
             		"\nSupplied number:"+offset);

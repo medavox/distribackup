@@ -94,9 +94,7 @@ public class ConnectionOperator extends Thread
 	{
 		//package up data into a single byte[] before sending, 
 		//(as opposed to sending each part as we create it), to minimise packets
-		System.out.println("sending my UUID"/*+
-		Peer.myUUID.getMostSignificantBits()+"\n"+
-		Peer.myUUID.getLeastSignificantBits()*/);
+		System.out.println("sending my UUID");
 		
 		byte[] UUIDmsb = BinaryTranslator.longToBytes(Peer.myUUID.getMostSignificantBits());
 		byte[] UUIDlsb = BinaryTranslator.longToBytes(Peer.myUUID.getLeastSignificantBits());
@@ -119,9 +117,7 @@ public class ConnectionOperator extends Thread
 		long theirUUIDmsb = BinaryTranslator.bytesToLong(msb);
 		long theirUUIDlsb = BinaryTranslator.bytesToLong(lsb);
 		
-		System.out.println("Received a UUID."/*+
-		theirUUIDmsb+"\n"+
-		theirUUIDlsb*/);
+		System.out.println("Received a UUID.");
 		
 		UUID theirUUID = new UUID(theirUUIDmsb, theirUUIDlsb);
         connectedPeer = theirUUID;
@@ -233,13 +229,15 @@ public class ConnectionOperator extends Thread
 	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
     //having two seperate length field for this seems unecessary, but is consistent with the current spec
     //maybe it can be changed later
+		System.out.println("Requesting file:"+fi.getName());
         try
         {
             byte IDByte = Message.FILE_REQUEST.IDByte;
-            byte[] fileInfoBin = BinaryTranslator.fileInfoToBytes(fi);
-            byte[] messageLength = BinaryTranslator.intToBytes(fileInfoBin.length);
+            FileInfo[] fiWrapper = {fi};
+            FileInfoBunch fib = new FileInfoBunch(fiWrapper);
+            byte[] fileInfoBin = BinaryTranslator.fileInfoBunchToBytes(fib);
             
-            byte[] message = BinaryTranslator.concat(IDByte, messageLength, fileInfoBin);
+            byte[] message = BinaryTranslator.concat(IDByte, fileInfoBin);
             bos.write(message, 0, message.length);
             bos.flush();
         }
@@ -291,7 +289,8 @@ public class ConnectionOperator extends Thread
                 if(nextMessage == null)//TODO
                 {//guard clause
                     //another error; no Message was found with that IDByte
-                	System.err.println("No Message found with IDByte:"+nextID);
+                	System.err.println("ERROR:No Message found with IDByte:"+nextID);
+                	System.exit(1);
                 }
                 
                 int nextLength = -1;

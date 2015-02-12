@@ -36,24 +36,30 @@ public class Publisher extends Peer
     			"\" is pretending to be the Publisher!");
     }
     
-    public void handleFileRequest(ReceivedMessage fr)//TODO
+    public void handleFileRequest(ReceivedMessage fr)
     {
-    	//find out which file is being requested,
-
-        
-    	//we (nearly) always have the file and the right version,
+    	//we (nearly) always have the file and the right version
     	//(unless we are a new Publisher in an old network,
     	//or a returning-from-long-absence Publisher that needs bringing up to date)
 	    	//construct a FileDataChunk for it
 	    	//then send it to the relevant peer
-    	FileInfo fi = (FileInfo)fr.getCommunicable();
+    	
+    	//find out which file is being requested
+    	FileInfo fi = ((FileInfoBunch)fr.getCommunicable()).getFiles()[0];
     	System.out.println("Received File Request for: "+fi.getName());
         	
     	boolean hasFile = globalArchiveState.containsKey(fi.toString());
     	FileInfo extantFileInfo = globalArchiveState.getFileInfoWithPath(fi.toString());
     	boolean isRightVersion = (fi.getRevisionNumber() == extantFileInfo.getRevisionNumber());
     	
+    	//call common code for both versions of this method
     	handleFileRequest(fr, hasFile, isRightVersion);
+    }
+    
+    /**Callback for when a file is finished*/
+    public void finishedDownloadingFile(FileInfo cfi)
+    {
+    	//we're the publisher
     }
     
     public void fileChanged(Path file, String eventType)
@@ -61,13 +67,13 @@ public class Publisher extends Peer
 		switch(eventType)
 		{
 		    case "ENTRY_DELETE":
-		    //don't send anything
+		    	//TODO
 		    break;
 		    
-		    case "ENTRY_CREATE":
+		    case "ENTRY_CREATE"://a MODIFY is triggered straight after anyway
 		    case "ENTRY_MODIFY":
 			    globalRevisionNumber++;//increment the actual Global Revision Number
-		    	
+		    	//TODO: roll consecutive create and modifies into one
 			    
 			    FileInfo newFile = pathToFileInfo(file, 1);
 		    	//add created FileInfo object to globalArchiveState
@@ -102,7 +108,7 @@ public class Publisher extends Peer
     
     private static void usage()
     {
-		System.out.println("Usage: TODO");
+		System.out.println("Usage: java Publisher <archive root>");
 		System.exit(1);
     }
     
@@ -111,7 +117,20 @@ public class Publisher extends Peer
 		//get the folder we need to watch 
 		try
 		{
-		    Publisher p = new Publisher(defaultRoot, port);
+			if(args.length == 1)
+			{
+				Path root = Paths.get(args[0]);
+				Publisher p = new Publisher(root, port);
+			}
+			else if (args.length == 0)
+			{
+				Publisher p = new Publisher(defaultRoot, port);
+			}
+			else
+			{
+				usage();
+			}
+		    
 		}
 		catch(InvalidPathException ipe)
 		{

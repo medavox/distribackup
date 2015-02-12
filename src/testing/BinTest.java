@@ -150,7 +150,7 @@ public class BinTest
 			int m = Integer.MAX_VALUE;
 			
 			//create random-value variables for testing
-			/*
+			
 			//byte b = (byte)r.next(8);							//byte
 			short ub = (short)(r.nextInt(256));					//ubyte
 			short s  = (short)(r.nextInt(65536) - 32767);		//short
@@ -256,7 +256,7 @@ public class BinTest
 			byte[] fdcConv = BinaryTranslator.fileDataChunkToBytes(fdc);
 			String fdcPost = BinaryTranslator.bytesToFileDataChunk(Arrays.copyOfRange(fdcConv, 4, fdcConv.length)).toString();
 			test(fdcPre, fdcPost, "FileDataChunk");
-			*/
+			
 			//UpdateAnnouncement Test
 			FileInfoBunch ua = randomUpdateAnnouncement();
 			String uaPre = ua.toString();

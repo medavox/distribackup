@@ -296,8 +296,6 @@ public abstract class BinaryTranslator
 		byte[] elIDByteWrapper = {elIDByte};
 		byte[] numElements = intToBytes(items.length);
 		//o.println("as bytes:"+BinTest.bytesToHex(numElements));
-		//o.println("list elements pre-encode:"+numElements);
-		//o.println("numElements pre-encode as bytes:"+BinTest.bytesToHex(numElements));
 		byte[] elements = concat(items);
 		byte[] messageLength = intToBytes(getTotalLength(numElements, elements)+1);//+1 for elements' IDByte
 		//o.println("list elements pre-encode:"+getTotalLength(numElements, elements)+1);
@@ -335,21 +333,17 @@ public abstract class BinaryTranslator
     public static byte[] fileInfoBunchToBytes(FileInfoBunch ua) throws IOException
     {/* GRN		| Long
     	files	| fileInfolist*/
-        byte[] GRN = longToBytes(ua.getGlobalRevisionNumber());
+        byte[] GRN = longToBytes(ua.getGRN());
         
-        byte[] fileInfoList = fileInfoListToBytes(ua.getFiles());
+        byte[][] fileInfoBytes = new byte[ua.getFiles().length][];
+        for(int i = 0; i < fileInfoBytes.length; i++)
+        {
+        	fileInfoBytes[i] = fileInfoToBytes(ua.getFiles()[i]);
+        }
+        byte[] fileInfoList = listToBytes(fileInfoBytes, Message.FILE_INFO.IDByte);
+        
         byte[] length = intToBytes(GRN.length + fileInfoList.length);
         return concat(length, GRN, fileInfoList);
-    }
-    
-    public static byte[] fileInfoListToBytes(FileInfo[] cf) throws UnsupportedEncodingException, IOException
-    {
-        byte[][] fileInfos = new byte[cf.length][];
-        for(int i = 0; i < cf.length; i++)
-        {
-            fileInfos[i] = fileInfoToBytes(cf[i]);
-        }
-        return listToBytes(fileInfos, Message.FILE_INFO.IDByte);
     }
 	
 	public static short byteToUByte(byte b) throws IOException, EOFException
@@ -617,6 +611,7 @@ public abstract class BinaryTranslator
 		ptr++;
 		
 		int numElements = bytesToInt(Arrays.copyOfRange(b, ptr, ptr+4));
+		
 		//o.println("post numElements:"+numElements);
 		//o.println("as bytes:"+BinTest.bytesToHex(Arrays.copyOfRange(b, ptr, ptr+4)));
 		ptr += 4;
@@ -631,11 +626,24 @@ public abstract class BinaryTranslator
 			int length = type.length;//get length from corresponding Message enum
 			//o.println("element length: "+length);
 			for(int i = 0; i+1 < numElements; i++)//split up the input byte[] into elements
-			{//I really hope Arrays.copyOfRange isn't expensive!
+			{
 				//o.println("i:"+i);
 				int offset = (i*length)+5;
 				//o.println("offset:"+offset);
-				output[i+1] = Arrays.copyOfRange(b, offset, offset+length);
+				try
+				{
+					output[i+1] = Arrays.copyOfRange(b, offset, offset+length);
+				}
+				catch(ArrayIndexOutOfBoundsException aioobe)
+				{
+					o.println("i:"+i);
+					o.println("offset:"+offset);
+					o.println("numElements:"+numElements);
+					o.println("element length:"+length);
+					o.println("b.length:"+b.length);
+					aioobe.printStackTrace();
+					System.exit(1);
+				}
 			}
 		}
         else//the elements are variable-length or compound
@@ -714,12 +722,20 @@ public abstract class BinaryTranslator
     	int ptr = 0;
         long GRN = bytesToLong(Arrays.copyOfRange(b, ptr, ptr+8));
         ptr += 8;
-        FileInfo[] fileInfos = bytesToFileInfoList(Arrays.copyOfRange(b, ptr+4, b.length));//skip message length header
+        
+      //int numElements = bytesToInt(Arrays.copyOfRange(b, 0, 4));
+        byte[][] lb = bytesToList(Arrays.copyOfRange(b, ptr+4, b.length));
+        FileInfo[] fileInfos = new FileInfo[lb.length-1];
+        for(int i = 1; i < lb.length; i++)
+        {
+            fileInfos[i-1] = bytesToFileInfo(lb[i]);
+        }
+        
         FileInfoBunch ai = new FileInfoBunch(GRN, fileInfos);
         return ai;
     }
     
-    public static FileInfo[] bytesToFileInfoList(byte[] b) throws UnsupportedEncodingException, IOException
+    /*public static FileInfo[] bytesToFileInfoList(byte[] b) throws UnsupportedEncodingException, IOException
     {
     	//int numElements = bytesToInt(Arrays.copyOfRange(b, 0, 4));
         byte[][] lb = bytesToList(Arrays.copyOfRange(b, 0, b.length));
@@ -729,7 +745,7 @@ public abstract class BinaryTranslator
             fileInfos[i-1] = bytesToFileInfo(lb[i]);
         }
         return fileInfos;
-    }
+    }*/
 
     /**invokes the appropriate conversion method on a byteArray to convert any 
      * binary message into a Communicable, the interface which all Java class 
@@ -752,11 +768,14 @@ public abstract class BinaryTranslator
             
             case ARCHIVE_STATUS:
             case UPDATE_ANNOUNCE:
+            case NO_HAZ:
+            case HAZ_NAO:
+            case FILE_REQUEST:
                 return bytesToFileInfoBunch(b);
             
             case FILE_DATA_CHUNK:
                 return bytesToFileDataChunk(b);
-            
+            /*
             case NO_HAZ:
             case HAZ_NAO:
             //there is no encapsulating class, java or distribackup, for these
@@ -766,9 +785,9 @@ public abstract class BinaryTranslator
                 return new FileInfoBunch(fi);
                 
             case FILE_REQUEST://TODO
-            	FileInfo fileInfo = bytesToFileInfo(b);
+            	FileInfo fileInfo = bytesToFileInfoBunch(b);
             	FileInfo[] fis = {fileInfo};
-            	return new FileInfoListWrapper(fis);
+            	return new FileInfoBunch(fis);*/
             
             default:
             	System.err.println("ERROR: bytesToCommunicable was given a Message Type it can't use!");

@@ -1,5 +1,7 @@
 package com.medavox.distribackup.filesystem;
 
+import java.nio.file.FileSystems;
+
 /**An immutable object whose purpose is to 
  * 1) uniquely identify a file, and
  * 2) provide Distribackup-specific information about it (checksum, revision number). 
@@ -57,7 +59,14 @@ public class FileInfo extends FileSystemObjectInfo
 		return checksum;
 	}
 	
-	public String toString()//TODO : check up on correct separators, and that there is one between path and name
+	public String toString()
+	{
+		String sep = FileSystems.getDefault().getSeparator();
+		return (path.length() == 0 ? "" : path+sep)+name;
+	}
+	
+	/**debug version*/
+	/*public String toString()//TODO : check up on correct separators, and that there is one between path and name
 	{
 		String s = "";
 		s+= "FileInfo path: \""+path+
@@ -66,5 +75,5 @@ public class FileInfo extends FileSystemObjectInfo
 		s += (isDirectory ? "" : "\" revision number: "+revisionNumber+" file size: "+fileSize);
 		//return path + name;
 		return s;
-	}
+	}*/
 }

@@ -1,5 +1,6 @@
 package com.medavox.distribackup.filesystem;
 
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
@@ -23,7 +24,26 @@ public class ArchiveInfo extends FileInfoBunch implements Communicable, Iterable
     		files.putIfAbsent(fi.toString(), fi);
     	}
     }
-    /**Add or update a FileInfo in the ArchiveInfo object. If this path/name is 
+    
+    public ArchiveInfo(FileInfo[] fileInfos)
+    {
+    	for(FileInfo fi : fileInfos)
+    	{
+    		files.putIfAbsent(fi.toString(), fi);
+    	}
+    }
+    
+    public ArchiveInfo(FileInfo fi)
+    {
+    	files.putIfAbsent(fi.toString(), fi);
+    }
+    
+    public ArchiveInfo()
+    {
+    	//we don't need the GRN, and the files collection can start empty
+    }
+    
+    /**Add or update FileInfo(s) in the ArchiveInfo object. If this path/name is 
      *already in use, then the previous value is replaced with the supplied one.
      * If the archive already contains a corresponding FileInfo whose revision number 
      * is the same or greater than the update, then the new FileInfo is not added.
@@ -31,6 +51,30 @@ public class ArchiveInfo extends FileInfoBunch implements Communicable, Iterable
     public int update(long newGRN, FileInfo[] newFiles)
     {//replace any obsolete FileInfos, such as lower revision numbers than these new entries
     	globalRevNum = newGRN;
+    	return update(newFiles);
+    }
+    
+    public boolean update(FileInfo fi)
+    {
+    	if(files.containsKey(fi.toString()))
+		{
+			FileInfo oldEntry = files.get(fi.toString());
+			if(oldEntry.getRevisionNumber() < fi.getRevisionNumber())
+			{
+				files.replace(fi.toString(), fi);
+				return true;
+			}
+		}
+		else
+		{
+			files.putIfAbsent(fi.toString(), fi);
+			return true;
+		}
+    	return false;
+    }
+    
+    public int update(FileInfo[] newFiles)
+    {//replace any obsolete FileInfos, such as lower revision numbers than these new entries
     	int numberOfUpdatesAdded = 0;
     	for(FileInfo fi : newFiles)
     	{
@@ -51,15 +95,44 @@ public class ArchiveInfo extends FileInfoBunch implements Communicable, Iterable
     	}
     	return numberOfUpdatesAdded;
     }
+    
     /**Retrieves the FileInfo with the same path/name as 
      * the supplied Path object. If there isn't any such FileInfo in this
      * ArchiveInfo object, then return null*/
     public FileInfo getFileInfoWithPath(Path p)
     {//we're reverse-engineering a toString() of our desired FileInfo 
     	String name = p.getFileName().toString();
-    	String path = p.getParent().toString();
+    	Path q = p.getParent();
+    	String path = (p == null ? "" : q.toString());
     	
-    	return files.get(name+path);
+    	String sep = FileSystems.getDefault().getSeparator();
+    	
+    	return files.get(path+sep+name);
+    }
+    
+    public boolean contains(String file)
+    {
+    	return files.containsKey(file);
+    }
+    
+    public boolean contains(FileInfo fi)
+    {
+    	return files.containsKey(fi.toString());
+    }
+    
+    public String printAllFiles()
+    {
+    	String s = "";
+    	for(FileInfo fi : files.values())
+    	{
+    		s+="\n"+fi.toString();
+    	}
+    	return s+"\n";
+    }
+    
+    public FileInfo getFileInfo(String s)
+    {
+    	return files.get(s);
     }
     
     public FileInfo getFileInfoWithPath(String s)
@@ -114,9 +187,14 @@ public class ArchiveInfo extends FileInfoBunch implements Communicable, Iterable
     	return sum;
     }
     
-    public void remove(String filePath)
+    public boolean remove(String filePath)
     {
-        files.remove(filePath);
+    	return (files.remove(filePath) != null);
+    }
+    
+    public boolean remove(FileInfo fi)
+    {
+    	return (files.remove(fi.toString()) != null);
     }
     
 }
