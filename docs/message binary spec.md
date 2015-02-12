@@ -83,7 +83,7 @@ These objects can be sent directly to another Peer.
 ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
 0C | PeerInfo              | Compound | [Yes, see below](#PeerInfo) Can be sent in reply to a PeerInfo Request |
-0D | Archive Status        | Compound | Same type as update announcement, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). A reply to Archive Status Request
+0D | Archive Status        | Compound | Same type as update announcement, but with a different IDByte: [FileInfoBunch](#FileInfoBunch). A reply to Archive Status Request
 10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
 11 | Request All Files     | 0        | Asks for latest known version of all files. Likely to be broadcast by a new subscriber, to all known peers.
 12 | File Data Chunk       | Compound | [Yes, see below](#FileDataChunk)
@@ -91,7 +91,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 14 | Greeting              | 16       | Contains UUID(long msb,long lsb). If UUID is unknown to receiver, it may request the sender's PeerInfo
 15 | Exit Announcement     | 0        | Usually sent to all known peers
 16 | Archive Status Request| 0        | Queries overall archive status, not any 1 peer's mirror
-17 | Update Announcement   | Compound | Same type as Archive Status, but with a different IDByte: [ArchiveInfo](#ArchiveInfo). Sendable by Publisher only.|
+17 | Update Announcement   | Compound | Same type as Archive Status, but with a different IDByte: [FileInfoBunch](#FileInfoBunch). Sendable by Publisher only.|
 18 | "no haz" FileReq Reply| Compound | Used as a reply to a File Request when a peer doesn't have a (version of a?) file requested of it. Contains a list of FileInfos that the requesting peer asked for, which the replying peer doesn't have. 
 19 | PeerInfo Request      | 0        | A request for the connected Peer's PeerInfo
 1A | "haz nao" announcement| Compound | Announces to network upon completion that this peer now has this FileID, so others can request it. Contains a list (usually of length 1) of FileInfos of file this peer now has
@@ -129,9 +129,15 @@ Element             | Type
 4. revision number  | Long
 5. checksum         | SHA1
 
-<a name="ArchiveInfo" />Archive Status
+<a name="FileInfoBunch" />FileInfoBunch
 -----------
-A "joint type": this structure represent two Communicables: Archive Status and Update Announcement.
+This structure is the payload for several Communicables: 
+
+* File Request (soon)
+* "No Haz" File Request Reply
+* "Haz Nao" File Acquisition Announcement
+* Archive Status
+* Update Announcement
 
 The information within is used differently depending on the label. 
 Only the Publisher can send an Update Announcement.
@@ -215,12 +221,11 @@ TO DO?
 
 * Change List from TLNV to just TNV, to avoid cases where the total number of bytes is > Integer.MAX_VALUE
 * Add the following message types:
-    
-* Merge Update Announcement with Archive Status, as they are functionally the same, without allowing non-Publisher peers  to push updates
+    - File Request Cancel? nope. receiver won't get message until they've dealt with the original request, due to queue
 * add a bitfield hasBeenDeleted (or something) to FileInfos, so they can declare the deletion of a file in an Update Announcement
 Number of downloaders, to allow load balancing between Publisher and finished-updating Subscribers
 
-need a way of closing/removing closed ConnectionOperators
+better handling of closing/removing closed ConnectionOperators
 
 DONE
 =====

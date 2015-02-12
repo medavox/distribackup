@@ -16,14 +16,7 @@ callback to send file
     * List
     * HList
 
-2. Write the actual methods which do the transferring
-write the action of the doing of transferring; likely lots of consecutive actions/boilerplate
-
-* connect to the publisher
-* wait for update announcement, then
-* wait for incoming files
-* whenever one's finished, announce you have it and wait for requests
-* if someone else announces they have it while you're waiting, request it from them
+* if someone else (not the publisher) announces they have a file you want while you're waiting, request it from them
 
 Structure/Design:
 ----------------
@@ -36,8 +29,12 @@ or just keep thwem as ints
 
 * create an evaluation framework
 * finish file transfer
-* create own serialisation format		DONE...?
-* publisher maintain list of subscribers
 * make exception catching consistent: have a consistent policy
 * redo package structure
 * actually use the checksums to do some error-checking
+* Call requestArchiveState() during Peer.receivePeerInfo()
+    - implement ConnectionOperator.requestArchiveStatus()
+    - implement ConnectionOperator.sendArchiveStatus()
+    - implement Peer.receiveArchiveStatus()
+    - implement Peer.handleArchiveStatusRequest()
+    
