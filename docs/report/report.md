@@ -515,7 +515,8 @@ Main Data Structures
 
 
 
-#The system in operation/Process description
+The system in operation/Process description
+===========================================
 
 ##Definitions
 
@@ -526,9 +527,9 @@ S
 :	a new subscriber
 
 Common Scenarios
-================
+----------------
 
-##Peer Starts Program Up (Not First Time) AKA Old Subscriber Joins Network
+###Peer Starts Program Up (Not First Time) AKA Old Subscriber Joins Network
 
 1. Peer checks integrity of file tree by checking against stored values of size, name, checksum for every file
 2.      If there are discrepancies:
@@ -542,7 +543,7 @@ Common Scenarios
             Or if we're the Publisher:
                 check if any new Peers have joined via DHT or otherwise
 
-##New Subscriber Joins Network
+###New Subscriber Joins Network
 
 1. New subscriber S connects to publisher P on P's listening port
 2. P and S exchange version numbers; if they don't match, disconnect and warn users at P and S
@@ -555,7 +556,7 @@ Common Scenarios
 6. S chooses best peer to download each file or piece from, based on speed or other metrics
 8. Some kind of sanity check is performed to make sure everything went OK
 
-##Publisher Has Updates to Push to All Subscribers / Publisher Adds Files
+###Publisher Has Updates to Push to All Subscribers / Publisher Adds Files
 
 1. P announces to all known peers the changed file revision numbers (partial fileTree state info)
 1. If P has any data about bandwidths of various subscribers, the files are sent to the fastest first, to mazimise the number of peers that can supply the file. If not, a random subscriber is chosen
@@ -563,38 +564,38 @@ Common Scenarios
 3. For every subscriber still downloading the file, requests are made for that file to those who have it.
 3. Data is gathered by every peer about speeds during the transfer
 
-##Subscriber Leaves Network Gracefully
+###Subscriber Leaves Network Gracefully
 
 1. Exit announcement is made to all known peers
 2. Any transfers this subscriber has in progress are finished, or if they'll take too long (which is how long?), cancelled
 3. Sockets etc are closed
 4. Peers set their record for this Peer as 'offline'
 
-##Subscriber is in the Middle of Downloading a FileID, When a New Version is Announced
+###Subscriber is in the Middle of Downloading a FileID, When a New Version is Announced
 
-##Publisher Leaves Network Gracefully
+###Publisher Leaves Network Gracefully
 
 the publisher may intend for the files to remain static, so a new publisher won't be elected unless (good_reason).
 any new peer which joins by contacting a peer will be brought up to date by the network
 (version check, file list exchange, sync files with p2p)
 once (if) it's implemented, peers may also find the network by DHT.
 
-##Subscriber Disappears Without Saying Goodbye
+###Subscriber Disappears Without Saying Goodbye
 
 1. Subscriber fails heartbeats on each peer individually; each per individually marks it as offline in its local peer list.
 
-##Publisher Disappears Without Saying Goodbye
+###Publisher Disappears Without Saying Goodbye
 
-##Subscriber loses some or all of local copy, subscriber erroneously edits local copy
+###Subscriber loses some or all of local copy, subscriber erroneously edits local copy
 
 1. The user is warned that this is a bad idea: any changes will be overwritten. If they want to edit the files, then they should make a copy
 2. Procedure for 1 out-of-date peer is followed
 3. Request more peers and files from all known peers
 1. Subscriber announces its loss 
 
-##publisher loses its files
+###publisher loses its files
 
-###publisher loses its files while network has differing versions unresolved
+####publisher loses its files while network has differing versions unresolved
 
 situation is resolved by using file revision numbers (every update or transaction if given a number, so with conflicting updates, the later number will take priority) to bring all peers, including the Publisher, up-to-date
 
@@ -603,7 +604,7 @@ situation is resolved by using file revision numbers (every update or transactio
 3. Peers which have part or all of this update send what they have to everyone else
 
 Complex states with no intuitive solution
-=========================================
+-----------------------------------------
 
 ##a token, key or password is used by a peer to become the new publisher (P2)
 
@@ -646,10 +647,11 @@ For example:
 
 ~~How you evaluated the system, how you designed the evaluation.~~
 
-##Results of the evaluation
+Results of the evaluation
+-------------------------
 
-##A critical review of the evaluation itself
-how well it yielded the info you wanted. 
+* ~~A critical review of the evaluation itself~~
+* ~~how well it yielded the info you wanted.~~
 
 ~~There may be a need to have two chapters, one on testing and one on evaluation. 
 Testing is intended to establish that the system functions correctly. 
@@ -657,8 +659,10 @@ Evaluation examines how well the system achieves its aim.~~
 
 ~~For a system that features a user interface, some kind of user interface evaluation is very important. For testing and evaluation, you must include descriptions of the methodology and metrics used. Tables of results may be included (main results can be summarised if a large amount of test data was accumulated). Make sure you discuss interesting and important results indicated by the data. Make sure you summarise your overall findings, including statistical evaluation, and describing methods.~~
 
-#Conclusions
+Conclusions
+===========
 
 ~~VERY important chapter. Revisit your objectives from chapter 1, for each, analyse whether the project met that objective, and if not, discuss this, and suggest a solution. Discuss the project as a whole, if you did it again would you do it differently? What did you have to learn to do the project, what did you learn from doing it? What features would you add to your system if you had more time etc? Some suggested subsections for your concluding chapter are: Review of aims; Suggested revisions to design/implementation; Future work (possible developments of existing system); Lessons learned. Finish the concluding chapter with a brief, fairly upbeat overall conclusion on the project as a whole. Even projects that are not an overall success usually achieve something, and you acquire skills and knowledge from doing the project. End on a positive note.~~
 
-#References
+References
+===========
