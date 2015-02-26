@@ -1,11 +1,22 @@
 package com.medavox.distribackup.filesystem;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.medavox.distribackup.connections.*;
 
 public class FileInfoBunch implements Communicable
 {
     protected long globalRevNum;
     private FileInfo[] changedFiles;
+    
+    /*public static FileInfoBunch merge(FileInfoBunch a, FileInfoBunch b)
+    {
+    	List<FileInfo> joined = new LinkedList<FileInfo>();
+    	long mergedGRN = Math.max(a.globalRevNum, b.globalRevNum);
+    	
+    	
+    }*/
     public FileInfoBunch(long GRN, FileInfo[] files)
     {
         globalRevNum = GRN;

@@ -100,12 +100,12 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 
 List:FileInfo
 
-FileRequest (soon)
-no haz
-haz nao
+- FileRequest (soon)
+- no haz
+- haz nao
 
-archive status
-update announcement
+- archive status
+- update announcement
 
 Compound Object Constituents
 ============================

@@ -1,6 +1,12 @@
 package com.medavox.distribackup.filesystem;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import com.medavox.distribackup.peers.Peer;
 
 /**An immutable object whose purpose is to 
  * 1) uniquely identify a file, and
@@ -38,6 +44,45 @@ public class FileInfo extends FileSystemObjectInfo
         fileSize = -1;
         checksum = new byte[0];
     }
+    
+    public FileInfo(File f)
+    {
+    	
+    }
+    
+    public FileInfo(File f, long revisionNumber)
+    {
+    	
+    }
+    
+	public FileInfo(Path p, long revisionNumber)
+	{
+		Path relativePath = Peer.root.relativize(p);
+		//System.out.println("passed path:   "+p);
+		//System.out.println("relative path: "+relativePath);
+    	this.name = relativePath.getFileName().toString();
+    	Path relPath = relativePath.getParent();//use an empty string if the path is null
+    	this.path = (relPath == null ? "" : relPath.toString());
+    	
+    	File asFile = p.toFile();
+    	this.isDirectory = asFile.isDirectory();
+		
+    	if(!isDirectory)
+    	{//is a file, so use the Filewise constructor for FileInfo
+			try
+			{
+				this.fileSize = Files.size(p);
+		
+		    	this.checksum = FileUtils.checksum(asFile);
+		    	this.revisionNumber = revisionNumber;
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				System.exit(1);
+			}
+    	}
+	}
     
     public boolean isDirectory()
     {

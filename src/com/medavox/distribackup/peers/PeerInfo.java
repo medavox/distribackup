@@ -5,8 +5,11 @@ import com.medavox.distribackup.connections.Communicable;
 import com.medavox.distribackup.connections.ConnectionOperator;
 import com.medavox.distribackup.filesystem.FileUtils;
 
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
@@ -72,6 +75,37 @@ public class PeerInfo implements Communicable
     	{
     		return null;
     	}
+    }
+    
+    public ConnectionOperator newConnection() throws ConnectException
+    {
+    	for(Address a : addresses)
+    	{//try to establish a new connection until either one is made
+    		//or we run out of known connections to this peer
+    		String host = a.getHostName();
+    		int port = (int)(a.getPort());
+			try
+			{
+				Socket s = new Socket(host, port);
+				ConnectionOperator co = new ConnectionOperator(s);
+				openConnections.add(co);
+				return co;
+			}
+			catch(UnknownHostException uhe)
+			{
+				System.err.println("Unknown Host occurred: \""+uhe.getMessage()+
+						"\" while trying to connect at "+host+":"+port);
+				uhe.printStackTrace();
+			}
+			catch(IOException ioe)
+			{
+				System.err.println("IOException occurred: \""+ioe.getMessage()+
+						"\" while trying to connect at "+host+":"+port);
+				//ioe.printStackTrace();
+			}
+    	}
+    	throw new ConnectException("a connection to "+codeName+
+    			" couldn't be made at any known address!");
     }
     
     public boolean isPublisher()

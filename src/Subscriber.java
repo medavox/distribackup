@@ -1,35 +1,37 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+//import java.io.File;
+//import java.io.FileInputStream;
+//import java.io.FileNotFoundException;
+//import java.io.FileOutputStream;
 import java.io.IOException;
 
 import com.medavox.distribackup.connections.ConnectionOperator;
 import com.medavox.distribackup.connections.ReceivedMessage;
 import com.medavox.distribackup.filesystem.ArchiveInfo;
-import com.medavox.distribackup.filesystem.FileDataChunk;
+//import com.medavox.distribackup.filesystem.FileDataChunk;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileInfoBunch;
 import com.medavox.distribackup.peers.*;
 
+import java.net.ConnectException;
 import java.nio.file.*;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 public class Subscriber extends Peer
 {
     private static String defaultHost = "127.0.0.1";
     private static int defaultConnectPort = 1210;
     private static int defaultListeningPort = 1211;
     private static Path defaultRoot = Paths.get("/home/scc/distribackup/subscriber-root");
-    
+    private ConcurrentMap<FileInfo, UUID> requestedFiles = new ConcurrentHashMap<FileInfo, UUID>();
     private ArchiveInfo localArchiveState = new ArchiveInfo( -1, new FileInfo[0]);
     
     //private String defaultRoot = "subscriber-root";
     public Subscriber(Path root, String host, int port)
     {
     	super(root, 1211);
-	
         connect(host, port);
     }
     
@@ -168,5 +170,83 @@ public class Subscriber extends Peer
 		System.out.println("GAS files:"+globalArchiveState.printAllFiles());
 		System.out.println("fi:"+fi);
 		co.requestFile(fi);
+    }
+    private class FileBeggar implements Runnable
+    {
+    	//private internal classes can access parent class's variables anyway 
+    	//private Subscriber owner;
+    	
+    	/*public FileBeggar(Subscriber owner)
+    	{
+    		this.owner = owner;
+    	}*/
+
+    	@Override
+    	public void run()
+    	{
+    		while(true)
+    		{
+    			try
+    			{
+    				wait(2000);
+    			}
+    			catch(InterruptedException ie)
+    			{
+    				ie.printStackTrace();
+    			}
+    			for(FileInfo fi : globalArchiveState.getFiles())
+    	    	{
+    	    		//if this file isn't in the localArchiveState, then we don't have it
+    	    		if(!localArchiveState.contains(fi))
+    	    		{
+    	    			//request this file from a random peer
+    	    			
+    	    			//select random peer from known peers
+    	    			PeerInfo[] peerArray = new PeerInfo[peers.size()];
+    	    			peers.values().toArray(peerArray);
+    	    			Random r = new Random();
+    	    			PeerInfo pi = peerArray[r.nextInt()];
+    	    			
+    	    			ConnectionOperator co = null;
+    	    			int peersTried = 0;
+    	    			while(peersTried < peerArray.length)//keep looking for a connected or connectable 
+    	    			{//peer who we can request the file from
+	    	    			if(pi.hasOpenConnection())
+	    	    			{
+	    	    				co = pi.getOpenConnection();
+	    	    				break;
+	    	    			}
+	    	    			else
+	    	    			{//we have no open ConnectionOperators with this PeerInfo 
+	    	    				try
+	    	    				{
+	    	    					co = pi.newConnection();
+	    	    					break;
+	    	    				}
+	    	    				catch(ConnectException ce)
+	    	    				{//can't connect connect to this peer
+	    	    					System.err.println("Could't connect to "+pi);
+	    	    					System.err.println("Trying another peer...");
+	    	    					peersTried++;
+	    	    					continue;
+	    	    				}
+	    	    			}
+    	    			}
+    	    			if(co == null)
+    	    			{
+    	    				System.err.println("ERROR: couldn't connect to any other peers!");
+    	    				System.err.println("Either this archive is empty, or your network connection is down.");
+    	    				System.err.println("Fix the problem/ask someone to help fix the problem, and try again.");
+    	    				System.exit(1);
+    	    				
+    	    			}
+    	    			else
+    	    			{
+    	    				co.requestFile(fi);
+    	    			}
+    	    		}
+    	    	}
+    		}
+    	}
     }
 }

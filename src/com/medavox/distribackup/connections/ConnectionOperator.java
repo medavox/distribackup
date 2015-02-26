@@ -2,6 +2,7 @@ package com.medavox.distribackup.connections;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.net.Socket;
@@ -39,12 +40,24 @@ public class ConnectionOperator extends Thread
     private UUID connectedPeer;
     private Peer owner;
     //if/when we add connection speed measuring, this is where it will go
-	public ConnectionOperator(Socket s, Peer owner) throws IOException
+	public ConnectionOperator(Socket s/*, Peer owner*/) throws IOException
 	{
 		this.socket = s;
 		bis = new BufferedInputStream(s.getInputStream());
 		bos = new BufferedOutputStream(s.getOutputStream());
-        this.owner = owner;
+        //this.owner = owner;
+        
+
+    	int handshook = checkVersions();
+    	if(handshook == -1)
+		{
+    		close();
+			throw new IOException("Connecting Peer "+s.getInetAddress()+
+					" has wrong version!");
+		}
+		System.out.println("new connection to "+s.getInetAddress());
+		
+		
 	}
     /*
     public ConnectionOperator(Address a, Peer owner)//TODO
@@ -191,10 +204,38 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	public void sendArchiveStatus() // TODO
+	public void sendArchiveStatus() throws IOException
 	{
+		//File f = Peer.root.toFile();
+		//pull existing data from globalArchiveState
+		byte idByte = Message.ARCHIVE_STATUS.IDByte;
+		byte[] b = BinaryTranslator.fileInfoBunchToBytes(owner.globalArchiveState);
+		byte[] msg = BinaryTranslator.concat(idByte, b);
 		
+		bos.write(msg, 0, msg.length);
+		bos.flush();
 	}
+	/*
+	private void listFile(File f)
+	{
+		if(f.isDirectory())
+		{
+			String[] subFiles = f.list();
+			if(subFiles.length ==0)
+			{//directory is empty: add it as an entry,
+				//as there aren't any contained files to imply its existence
+				
+			}
+			for(String subFile :subFiles)
+			{
+				listFile(new File(subFile));
+			}
+		}
+		else//is a file
+		{//add an entry for it
+			
+		}
+	}*/
 	
 	public void sendFileDataChunk(FileDataChunk fdc)
 	{

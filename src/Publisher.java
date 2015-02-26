@@ -75,7 +75,7 @@ public class Publisher extends Peer
 			    globalRevisionNumber++;//increment the actual Global Revision Number
 		    	//TODO: roll consecutive create and modifies into one
 			    
-			    FileInfo newFile = pathToFileInfo(file, 1);
+			    FileInfo newFile = new FileInfo(file, 1);
 		    	//add created FileInfo object to globalArchiveState
 		    	FileInfo[] update = {newFile};
 		    	globalArchiveState.update(globalRevisionNumber, update);

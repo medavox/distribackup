@@ -36,7 +36,7 @@ public abstract class Peer extends Thread
 	public static final int MIN_CHUNK_SIZE = 32768;//32KB
 	protected int listenPort;
 	//private String defaultRoot;//must be specified by subclass
-	public Path root;
+	public static Path root;
 	protected String cacheDir = ".distribackup-cache";
 	protected String sep = FileSystems.getDefault().getSeparator();
 	
@@ -50,13 +50,13 @@ public abstract class Peer extends Thread
 	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
 	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
     protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
-    protected ArchiveInfo globalArchiveState = new ArchiveInfo( -1, new FileInfo[0]);//initialise empty, then get state from network
+    public ArchiveInfo globalArchiveState = new ArchiveInfo( -1, new FileInfo[0]);//initialise empty, then get state from network
 	
 	public static final short version = 2;//increment this manually on every release
 	
 	public Peer(Path root, int port)
 	{
-		this.root = root;
+		Peer.root = root;
 		this.listenPort = port;
 		Peer.myUUID = UUID.randomUUID();//this uniquely IDs us on the network
 		Listener listenHook = new Listener(port, this);
@@ -83,19 +83,7 @@ public abstract class Peer extends Thread
 	{
 		try
 		{
-			ConnectionOperator co = new ConnectionOperator(s, this);
-			
-			
-			int handshook = co.checkVersions();
-			System.out.println("incoming connection from "+s.getInetAddress());
-			
-			if(handshook == -1)
-			{
-				System.err.println("Error! Connecting Peer "+s.getInetAddress()+
-                    " has wrong version!");
-				co.close();
-				return;
-			}
+			ConnectionOperator co = new ConnectionOperator(s);
 			
 			UUID newPeerUUID = co.exchangeUUIDs();
 			//after boilerplate is done, start listening thread
@@ -121,36 +109,6 @@ public abstract class Peer extends Thread
 			System.exit(1);
 		}
 	}
-
-	protected FileInfo pathToFileInfo(Path p, long revisionNumber)
-	{
-		Path relativePath = root.relativize(p);
-		//System.out.println("passed path:   "+p);
-		//System.out.println("relative path: "+relativePath);
-    	String name = relativePath.getFileName().toString();
-    	Path relPath = relativePath.getParent();//use an empty string if the path is null
-    	String path = (relPath == null ? "" : relPath.toString());
-    	
-    	File asFile = p.toFile();
-    	FileInfo newFile = new FileInfo(name, path);//if it's a directory
-		
-    	if(!asFile.isDirectory())
-    	{//is a file, so use the Filewise constructor for FileInfo
-			try
-			{
-				long fileSize = Files.size(p);
-		
-		    	byte[] checksum = FileUtils.checksum(asFile);
-		    	newFile = new FileInfo(name, path, fileSize, revisionNumber, checksum);
-			} 
-			catch (IOException e)
-			{
-				e.printStackTrace();
-				System.exit(1);
-			}
-    	}
-    	return newFile;
-	}
 	
 	/**TODO:
 	 store 1 bis-bos pair per socket entry
@@ -164,10 +122,12 @@ public abstract class Peer extends Thread
 		}
 		catch(UnknownHostException uhe)
 		{
+			uhe.printStackTrace();
 			//TODO
 		}
 		catch(IOException ioe)
 		{
+			ioe.printStackTrace();
 			//TODO
 		}
 	}
@@ -307,7 +267,7 @@ public abstract class Peer extends Thread
         if(fdc.isWholeFile())
         {//we have the whole file,
 			//do we now have all pieces of the update?
-        	//we're not doing per-revision pushes anymore
+        	//we're not doing per-revision fs pushes anymore
             /*FileInfo fi = fdc.getFileInfo();
             filesToDownload.remove(fi.toString());
             if(filesToDownload.getSize() == 0)//if 
@@ -507,9 +467,20 @@ public abstract class Peer extends Thread
     	}	
     }
     
-    public void handleRequestForPeers(ReceivedMessage pr)//TODO
+    public void handleRequestForPeers(ReceivedMessage pr)
     {
-        
+        ConnectionOperator co = pr.getConnection();
+        PeerInfo[] knownPeers = new PeerInfo[peers.size()];
+        peers.values().toArray(knownPeers);
+        try
+        {
+        	co.sendMorePeers(knownPeers);
+        }
+        catch(IOException ioe)
+        {
+        	ioe.printStackTrace();
+        	System.err.println("flippin' donkey bashers");
+        }
     }
     
     public void receivePeerInfo(ReceivedMessage pi)//TODO
@@ -571,18 +542,41 @@ public abstract class Peer extends Thread
     	
     }
     
-    public void handleArchiveStatusRequest(ReceivedMessage ftsr)//TODO
+    public void handleArchiveStatusRequest(ReceivedMessage ftsr)
     {
-        
+        ConnectionOperator co = ftsr.getConnection();
+        try
+        {
+        	co.sendArchiveStatus();
+        }
+        catch(IOException ioe)
+        {
+        	ioe.printStackTrace();
+        	//System.err.println("JAAAAAAAAAMES ABAAAAAAAAAAAAAAAAAXTER RIDES AGAAAAAAAAAIN");
+        }
     }
     
     public void receiveArchiveStatus(ReceivedMessage as)//TODO
-    {
-		
+    {//for any files we don't have (or don't have the latest version of),
+    	//request them from any peer
+    	//expect 1 or more of these requests to be replied with NO HAZ
+    	FileInfoBunch fib = (FileInfoBunch)as.getCommunicable();
+    	if(fib.getGRN() > globalArchiveState.getGRN())
+    	{//replace our outdated globalArchiveInfo
+    		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
+    	}
+    	else
+    	{
+    		System.err.println("WARNING: got out-of-date global archive info "
+    				+"(older than ours) from "+peers.get(as.getUUID()));
+    		System.err.println("Our Global Revision number: "+globalArchiveState.getGRN());
+    		System.err.println("Their Global Revision num : "+fib.getGRN());
+    	}
 	}
 	
-	public void receiveNoHaz(ReceivedMessage nh)//TODO
-	{
+	public void receiveNoHaz(ReceivedMessage nh)//TODO: implement
+	{//TODO: what to do when NO-ONE has a file you need
+    	//(reconsider your life choices)
 		
 	}
 	

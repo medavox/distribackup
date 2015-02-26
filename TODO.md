@@ -33,8 +33,6 @@ or just keep thwem as ints
 * redo package structure
 * actually use the checksums to do some error-checking
 * Call requestArchiveState() during Peer.receivePeerInfo()
-    - implement ConnectionOperator.requestArchiveStatus()
-    - implement ConnectionOperator.sendArchiveStatus()
     - implement Peer.receiveArchiveStatus()
     - implement Peer.handleArchiveStatusRequest()
-    
+* Implement file deletion notifications    
