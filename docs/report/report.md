@@ -32,7 +32,7 @@ brief chapter-by-chapter overview of the rest of the report
 
 Unique data collections such as photos are often stored on a physical medium which is vulnerable to damage or corruption. CDs are damaged by heat, light and wear and tear. When this storage fails (mobile phones are lost, old PCs break down or are replaced due to age, without sufficiently diligent data transferral), often the user unwittingly throws away or loses many years of irreplaceable data.
 
-Lost laptops and pen drives cause frequent important data loss. Old PCs being replaced cause families to throw away accumulated personal data, without realising what is stored locally rather than on the Internet -- lack of understanding causes further personal data loss upon hardware failure.
+Lost laptops and pen drives cause frequent loss of important data. Old PCs being replaced cause families to throw away accumulated personal data, without realising what is stored locally rather than on the Internet -- lack of understanding causes further personal data loss upon hardware failure.
 
 The backup strategy often lauded as the most prudent follows the 3-2-1 strategy: 3 copies, on 2 different storage media, 1 offsite backup.[^backup321] This is an ideal, but is extremely difficult for a home user to set up and maintain, without corporate resrouces at their disposal. For instance:
 
@@ -41,7 +41,8 @@ The backup strategy often lauded as the most prudent follows the 3-2-1 strategy:
 
 This project aims to answer these questions with a software solution, reducing the risk of data loss for families (and other groups with an interest in long-term data preservation) due to lack of sufficient knowledge and/or funds for more thorough backup solutions, without relying on a third party service that has ulterior motives.
 
-<!-- Describe the main features of the project -->
+Main Project Features
+---------------------
 
 Distribackup will watch the contents of a directory, and keep its contents synced with identical directories on other computers. Because there is no authoritative server broadcasting updates to parties, syncing will use a distributed model to propagate changes. In order to expedite large file transfers (which are likely in the primary use case), a differencing algorithm will be used to only send pieces of files that have changed with an update.
 
@@ -57,8 +58,6 @@ Background
 
 Summary of technical problems and approaches
 -------------------------------------------
-
-
 
 More than ever before there is a need for long-term backup software which is accessible for everyone. There are now years' worth of data stored digitally which record milestones in peoples' lives, all stored on machines they don't fully understand. This lack of understanding will eventually lead to data loss, but not everyone should be a computer scientist, or even technically capable. But everyone should be able to preserve their family's history.
 
@@ -171,13 +170,14 @@ The storage is run by a company, whose primary motivation is to make a profit; t
 Design
 ======
 
+~~Major design decisions and justifications. System architecture, etc. Use supporting figures where appropriate and helpful. A diagram of the overall architecture is essential. Each component in the architectural diagram should be briefly discussed. Other designs that may be important are class hierarchies and initial user interface designs. Take care to describe any design work in reasonably high level terms, and do not stray into implementation details. Make sure that you explain to the reader how to interpret any design notation that you use (e.g. a key in the relevant figures), unless you are using a standard notation (such as UML).~~
+
 Features and General Design Intentions
 --------------------------------------
 
-Remember this is NOT a Source Code Management solution
+While specifying planned features, it was necessary to keep in mind that the aim was not to create a source code management system. Plenty of such software already exists, which in the author's opinion is perfectly adequate  -- making such a task unecessary. Furthermore, if this project was implemented properly, it would be possible to use existing source-code management solutions on top of the archive system (byt including the SCM's repo metadata in Distribackup's archive), creating a mirrored, versioned backup.
 
-main use case is large, rarely-changing binary files such as images and videos
-optimised for networks with low common uptime
+Distribackup's intended primary use case is for syncrhonising backup copies of large, rarely-changing binary files such as images and videos. This means that design decision have been chosen in order to optimise for networks with low common uptime, such as a collection of commodity computing hardwar: a family's PCs, laptops, tablets, and phones.
 
 Changes will not be grouped into discrete updates which are pushed to files in one go;
 changes to files will appear as they are downloaded.
@@ -404,42 +404,33 @@ Next design phase: go through each component and specify external methods  (use 
     - then hash the peer's UUID to choose a name from a list specific for that country
 
 
-~~Major design decisions and justifications. System architecture, etc. Use supporting figures where appropriate and helpful. A diagram of the overall architecture is essential. Each component in the architectural diagram should be briefly discussed. Other designs that may be important are class hierarchies and initial user interface designs. Take care to describe any design work in reasonably high level terms, and do not stray into implementation details. Make sure that you explain to the reader how to interpret any design notation that you use (e.g. a key in the relevant figures), unless you are using a standard notation (such as UML).~~
+
 
 Implementation
 ==============
 
-Protocol Binary Spec 
-====================
+Binary Messages
+---------------
 
-Current Issues
---------------
+In order to provide for efficiency of communication between nodes, it was necessary to create a custom communications protocol.
 
-###Length Fields In Containing Objects
+Before crating this protocol, several existing alternatives were looked at.
 
-Using int as the length field type could allow a string of Messages, when still strung together as a byte[] (ie a compound Message), to overflow an integer's max value.
+###JSON
 
-PeerInfo's length field is an int; however, one of its containing types is a List, whose length field is a long.
-This means we could have an enclosed List whose length was longer than the enclosing object, whose length is supposed to be the sum of all of its elements.
+###Bencoding
 
-There is an inherent tension here between number of bytes from a stream (which is potentially infinite) and number of elements in an array.
+####BSON
 
-Any situation where an object encloses another object, and their length fields are the same size, could cause this to happen.
+###Java's In-Built Serialisation API
 
+###Type Length Value
 
-###Possible Solutions:
+Less of an explicity and more of a structural design pattern, TLV is the simple idea that each message 
 
-1. Just disallow Lists inside PeerInfo objects from being so big that they overflow PeerInfo's length field.
-    - Clunky, as the length measures total bytes, not number of elements, and this would be annoying to count all the time to make sure we're not going over, especially in HLists
+###Named Binary Tag
 
-2. Make it so that PeerInfo (and any other Message types which contain a List or HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the length of the rest of the message
-
-    - downside: 2 locations must be checked to find the total Message length (including List)
-    
-3. Lists and HLists could become TNV, dropping the length field. Variable-length elements would need their own length fields (as before), and fixed-length elements' length would be known. 
-
-    - Downside: it would be slow to iterate through Lists of variable-length messages. Each element would need its own own length field querying, and it would be difficult to know how far through the List we are.
-    The total byte-length would not be known - but would also not need to be known by Java, which is an advantage for supporting large arrays. Can't have an overflow of a value you don't explicitly store!
+An application of the 
 
 ID Bytes
 --------
