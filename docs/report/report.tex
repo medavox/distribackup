@@ -1,8 +1,9 @@
-\documentclass[12pt,a4paper,]{book}
+\documentclass[12pt,a4paper,]{adreport}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
+\usepackage{lscape}
 \usepackage{fixltx2e} % provides \textsubscript
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -70,12 +71,19 @@
 
 \begin{document}
 
-\section{Introduction}\label{introduction}
+{
+\hypersetup{linkcolor=black}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\chapter{Introduction}\label{introduction}
 
-\subsection{Overall Aim of the
-Project}\label{overall-aim-of-the-project}
+Note: In this draft version, crossed-out text represent notes and
+guidance from the intranet site which have not yet been removed.
 
-\subsection{Problem Description}\label{problem-description}
+\section{Overall Aim of the Project}\label{overall-aim-of-the-project}
+
+\section{Problem Description}\label{problem-description}
 
 Data storage has increasingly become the responsibility of
 special-interest corporations, who leverage their existing massive
@@ -121,7 +129,7 @@ where or how their data is stored (on their computer or on the
 Internet), whether it is safe and whether their rights to it have been
 compromised by a Terms Of Service agreement (TOS).
 
-\subsection{Aspects of the Background}\label{aspects-of-the-background}
+\section{Aspects of the Background}\label{aspects-of-the-background}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -131,7 +139,7 @@ compromised by a Terms Of Service agreement (TOS).
   how the project may be useful or helpful for others
 \end{itemize}
 
-\subsection{Project Goals}\label{project-goals}
+\section{Project Goals}\label{project-goals}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -189,7 +197,7 @@ interest in long-term data preservation) due to lack of sufficient
 knowledge and/or funds for more thorough backup solutions, without
 relying on a third party service that has ulterior motives.
 
-\subsection{Main Project Features}\label{main-project-features}
+\section{Main Project Features}\label{main-project-features}
 
 Distribackup will watch the contents of a directory, and keep its
 contents synced with identical directories on other computers. Because
@@ -214,9 +222,9 @@ accompanied by a Gantt chart showing this visually. The report will then
 finish by listing the resources required in order for it to be
 completed, and a list of references used.
 
-\section{Background}\label{background}
+\chapter{Background}\label{background}
 
-\subsection{Summary of technical problems and
+\section{Summary of technical problems and
 approaches}\label{summary-of-technical-problems-and-approaches}
 
 More than ever before there is a need for long-term backup software
@@ -227,14 +235,14 @@ eventually lead to data loss, but not everyone should be a computer
 scientist, or even technically capable. But everyone should be able to
 preserve their family's history.
 
-\subsection{Relevant work and/or existing related
+\section{Relevant work and/or existing related
 systems}\label{relevant-work-andor-existing-related-systems}
 
 This is by no means an exhaustive list, but discusses the most relevant
 existing solutions (at time of writing), and describes how Distribackup
 differs or extends from them.
 
-\subsubsection{Bit-Torrent}\label{bit-torrent}
+\subsection{Bit-Torrent}\label{bit-torrent}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -248,7 +256,7 @@ differs or extends from them.
   (copyright theft) in public consciousness
 \end{itemize}
 
-\subsubsection{Bit-Torrent Sync (BTSync)}\label{bit-torrent-sync-btsync}
+\subsection{Bit-Torrent Sync (BTSync)}\label{bit-torrent-sync-btsync}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -265,7 +273,7 @@ differs or extends from them.
   \end{itemize}
 \end{itemize}
 
-\subsubsection{Syncthing}\label{syncthing}
+\subsection{Syncthing}\label{syncthing}
 
 http://syncthing.net/
 
@@ -275,7 +283,7 @@ http://syncthing.net/
   No longer part of ind.ie
 \end{itemize}
 
-\subsubsection{Git}\label{git}
+\subsection{Git}\label{git}
 
 \begin{itemize}
 \item
@@ -308,7 +316,7 @@ http://syncthing.net/
   Git is much more complex than is necessary for our task
 \end{itemize}
 
-\subsubsection{Git-Annex}\label{git-annex}
+\subsection{Git-Annex}\label{git-annex}
 
 Git-Annex, and its GUI front-end Git-Annex Assistant allow the user to
 manage collections of large files using git, without checking the file
@@ -318,12 +326,12 @@ Git-annex is aimed towards a more technically literate user. Also, as
 with Sparkleshare, a central server is needed to manage and distribute
 changes between different storage nodes.
 
-\subsubsection{Ceph}\label{ceph}
+\subsection{Ceph}\label{ceph}
 
 Ceph is a distributed file system. Ceph is aimed more at technically
 proficient users and industry professionals.
 
-\subsubsection{Tahoe-LAFS}\label{tahoe-lafs}
+\subsection{Tahoe-LAFS}\label{tahoe-lafs}
 
 Tahoes-LAFS (Least Authority File system) is an open source distributed
 file system, focused on providing self-hosted cloud storage that is
@@ -331,7 +339,7 @@ resistant to attack.{[}\^{}tahoe1page{]} This, again, is aimed much more
 at system administrators and other professionals with an understanding
 of the area.
 
-\subsubsection{Sparkleshare}\label{sparkleshare}
+\subsection{Sparkleshare}\label{sparkleshare}
 
 Sparkleshare{[}sparkleshare{]} is also an open-source cloud syncing
 solution with the intention of providing an alternative to DropBox.
@@ -346,11 +354,11 @@ Sparkleshare also relies on a centralised server to manage backups,
 which introduces an infrastructure overhead (including setup time and
 maintenance) which this project aims to avoid.
 
-\subsubsection{MogileFS}\label{mogilefs}
+\subsection{MogileFS}\label{mogilefs}
 
 Complex conceptual structure Multiple types of mirror nodes
 
-\subsubsection{Dropbox}\label{dropbox}
+\subsection{Dropbox}\label{dropbox}
 
 Dropbox is an extremely popular solution for accessing data across
 multiple machines, and sharing files easily with small groups of people.
@@ -391,7 +399,7 @@ by using their service, Dropbox can stake a claim to your data.
   insufficient{[}\^{}dropbox-privacy{]}
 \end{itemize}
 
-\subsubsection{Other Commercial
+\subsection{Other Commercial
 Solutions}\label{other-commercial-solutions}
 
 Dropbox has been examined individually due to its popularity; however
@@ -442,19 +450,19 @@ profit; the agreement you sign may allow them to mine your data for
 information useful to them (eg. using your photos as marketing
 material).
 
-\subsection{related work and systems : implications for this
+\section{related work and systems : implications for this
 project}\label{related-work-and-systems-implications-for-this-project}
 
-\subsubsection{Any improvements that your system
+\subsection{Any improvements that your system
 offers}\label{any-improvements-that-your-system-offers}
 
-\subsubsection{shortcomings that your work addresses, and so
+\subsection{shortcomings that your work addresses, and so
 on}\label{shortcomings-that-your-work-addresses-and-so-on}
 
-\subsection{Justify your choice of platform, software, solution
+\section{Justify your choice of platform, software, solution
 etc}\label{justify-your-choice-of-platform-software-solution-etc}
 
-\section{Design}\label{design}
+\chapter{Design}\label{design}
 
 \sout{Major design decisions and justifications. System architecture,
 etc. Use supporting figures where appropriate and helpful. A diagram of
@@ -467,7 +475,7 @@ explain to the reader how to interpret any design notation that you use
 (e.g.~a key in the relevant figures), unless you are using a standard
 notation (such as UML).}
 
-\subsection{Features and General Design
+\section{Features and General Design
 Intentions}\label{features-and-general-design-intentions}
 
 While specifying planned features, it was necessary to keep in mind that
@@ -515,14 +523,14 @@ hardware (which requires a tech education) However if things end up
 going down that route in future, then so be it -- Perfect Forward
 Secrecy for all! etc
 
-\subsection{how do peers know which peer to request a file
+\section{how do peers know which peer to request a file
 from?}\label{how-do-peers-know-which-peer-to-request-a-file-from}
 
 The publisher is always the busiest others aren't guaranteed to yet have
 the file requesting from everyone would promote a lot of redundant
 traffic, network congestion
 
-\subsection{One-Way Sync: the Central
+\section{One-Way Sync: the Central
 Publisher}\label{one-way-sync-the-central-publisher}
 
 Consider adopting 1-way synchronisation with a star topology, with one
@@ -551,7 +559,7 @@ collection with viewers.
 Downside is, the system isn't as decentralised; we rely on a central
 Publisher
 
-\subsection{ALERT: Rsync is complex (and possibly
+\section{ALERT: Rsync is complex (and possibly
 unnecessary)}\label{alert-rsync-is-complex-and-possibly-unnecessary}
 
 if we are only supporting 1-way sync, then (ignoring user intervention
@@ -560,7 +568,7 @@ copies in the spoke, as the remote files are the same as the spoke's
 file pre-change We don't need to solve rsync's diff between remote files
 problem, we can just use a normal diff algo
 
-\subsection{One-Way At A Time Sync}\label{one-way-at-a-time-sync}
+\section{One-Way At A Time Sync}\label{one-way-at-a-time-sync}
 
 publisher authority (ie which mirror can update the network) can be
 controlled with an arbitrary token, eg RSA key
@@ -592,7 +600,7 @@ when there's a new publisher,
   (while there are files in common) to other subscribers in both swarms
 \end{itemize}
 
-\section{Bt-Sync}\label{bt-sync}
+\chapter{Bt-Sync}\label{bt-sync}
 
 Bit-torrent sync is now our main competitor -- we're more or less
 building an opensource clone -- except I don't plan to support two-way
@@ -605,8 +613,7 @@ With this star topology, we are enabling the possibility of a
 decentralised publishing platform - self-hosted web pages with built-in
 scalability
 
-\subsection{Handling Incoming
-Messages}\label{handling-incoming-messages}
+\section{Handling Incoming Messages}\label{handling-incoming-messages}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -675,7 +682,7 @@ default to sane values) users will be given the following choices:-
 Gathering user input may be implemented using some kind of rudimentary
 GUI, such as a wizard.
 
-\section{Scenarios (Use Cases)}\label{scenarios-use-cases}
+\chapter{Scenarios (Use Cases)}\label{scenarios-use-cases}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -707,11 +714,10 @@ GUI, such as a wizard.
   Organise p2p traffic based on measured speeds of mirrors
 \end{itemize}
 
-\section{Structure of Functional
+\chapter{Structure of Functional
 Components}\label{structure-of-functional-components}
 
-\subsection{Socket Connections
-Manager}\label{socket-connections-manager}
+\section{Socket Connections Manager}\label{socket-connections-manager}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -721,7 +727,7 @@ Manager}\label{socket-connections-manager}
   Handles all low-level network housekeeping
 \end{itemize}
 
-\subsection{Rsync Diff Chunker}\label{rsync-diff-chunker}
+\section{Rsync Diff Chunker}\label{rsync-diff-chunker}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -734,7 +740,7 @@ Manager}\label{socket-connections-manager}
   every other (worst case).
 \end{itemize}
 
-\subsection{Peer Manager}\label{peer-manager}
+\section{Peer Manager}\label{peer-manager}
 
 In the star trek metaphor: the comms officer between this and other
 ships, AKA external comms/foreign minister
@@ -752,7 +758,7 @@ manages list of:
   Also sends heartbeats to all known online mirrors
 \end{itemize}
 
-\subsection{Filesystem Watcher}\label{filesystem-watcher}
+\section{Filesystem Watcher}\label{filesystem-watcher}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -762,7 +768,7 @@ manages list of:
   Triggers events which start the sync process
 \end{itemize}
 
-\subsection{DHT Manager}\label{dht-manager}
+\section{DHT Manager}\label{dht-manager}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -780,7 +786,7 @@ manages list of:
   \end{itemize}
 \end{itemize}
 
-\subsection{Functional Components (as described in
+\section{Functional Components (as described in
 FYPP):}\label{functional-components-as-described-in-fypp}
 
 \begin{itemize}
@@ -897,7 +903,7 @@ mind-changes
 Next design phase: go through each component and specify external
 methods (use UML if helpful)
 
-\section{Optional Extras (if have
+\chapter{Optional Extras (if have
 time)}\label{optional-extras-if-have-time}
 
 \begin{itemize}
@@ -912,7 +918,7 @@ time)}\label{optional-extras-if-have-time}
   Edit locks
 \end{itemize}
 
-\section{Further Work (Not Implementing in this Dev
+\chapter{Further Work (Not Implementing in this Dev
 Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
 
 \begin{itemize}
@@ -990,9 +996,9 @@ Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
   \end{itemize}
 \end{itemize}
 
-\section{Implementation}\label{implementation}
+\chapter{Implementation}\label{implementation}
 
-\subsection{Binary Messages}\label{binary-messages}
+\section{Binary Messages}\label{binary-messages}
 
 In order to provide for efficiency of communication between nodes, it
 was necessary to create a custom communications protocol.
@@ -1000,25 +1006,25 @@ was necessary to create a custom communications protocol.
 Before crating this protocol, several existing alternatives were looked
 at.
 
-\subsubsection{JSON}\label{json}
+\subsection{JSON}\label{json}
 
-\subsubsection{Bencoding}\label{bencoding}
+\subsection{Bencoding}\label{bencoding}
 
-\paragraph{BSON}\label{bson}
+\subsubsection{BSON}\label{bson}
 
-\subsubsection{Java's In-Built Serialisation
+\subsection{Java's In-Built Serialisation
 API}\label{javas-in-built-serialisation-api}
 
-\subsubsection{Type Length Value}\label{type-length-value}
+\subsection{Type Length Value}\label{type-length-value}
 
 Less of an explicity and more of a structural design pattern, TLV is the
 simple idea that each message
 
-\subsubsection{Named Binary Tag}\label{named-binary-tag}
+\subsection{Named Binary Tag}\label{named-binary-tag}
 
 An application of the
 
-\subsection{ID Bytes}\label{id-bytes}
+\section{ID Bytes}\label{id-bytes}
 
 Each Object type has an ID byte, followed either by its payload (for
 static-length types) or a length int (without the int type header
@@ -1029,7 +1035,7 @@ Objects inside a compound object don't need an ID byte; their type is
 known from the object's structure definition. Variable-length types
 (such as strings) still need their length field though.
 
-\subsection{Message Lengths}\label{message-lengths}
+\section{Message Lengths}\label{message-lengths}
 
 Message types with a static payload length (eg bitfield, ULong) don't
 have (or need) a length attribute. Their length is built into the spec.
@@ -1046,6 +1052,9 @@ Type Number Value. An different field for array types, specifying how
 many elements there are. Useful for progress estimation, or simple
 iteration
 \end{description}
+
+\textbackslash{}begin\{latexonly\} \textbackslash{}begin\{landscape\}
+\textbackslash{}end\{latexonly\}
 
 \section{Supporting Data Types}\label{supporting-data-types}
 
@@ -1092,6 +1101,8 @@ used is left to implementation, but start with the LSB
 \\\addlinespace
 \bottomrule
 \end{longtable}
+
+\newpage
 
 \section{Sendable (Communicable) Message
 Objects}\label{sendable-communicable-message-objects}
@@ -1152,12 +1163,14 @@ request for more Peers.
 \bottomrule
 \end{longtable}
 
-\subsection{Overview of
-implementation}\label{overview-of-implementation}
+\textbackslash{}begin\{latexonly\} \textbackslash{}end\{landscape\}
+\textbackslash{}end\{latexonly\}
+
+\section{Overview of implementation}\label{overview-of-implementation}
 
 Describe implemented features, compare with original goals
 
-\subsection{Main Data Structures}\label{main-data-structures}
+\section{Main Data Structures}\label{main-data-structures}
 
 \begin{figure}[htbp]
 \centering
@@ -1177,7 +1190,7 @@ to other procedures/methods and so on.}
 \section{The system in operation/Process
 description}\label{the-system-in-operationprocess-description}
 
-\subsection{Definitions}\label{definitions}
+\section{Definitions}\label{definitions}
 
 \begin{description}
 \item[P]
@@ -1186,10 +1199,10 @@ the publisher
 a new subscriber
 \end{description}
 
-\subsection{Common Scenarios}\label{common-scenarios}
+\section{Common Scenarios}\label{common-scenarios}
 
-\subsubsection{Peer Starts Program Up (Not First Time) AKA Old
-Subscriber Joins
+\subsection{Peer Starts Program Up (Not First Time) AKA Old Subscriber
+Joins
 Network}\label{peer-starts-program-up-not-first-time-aka-old-subscriber-joins-network}
 
 \begin{enumerate}
@@ -1212,7 +1225,7 @@ Network}\label{peer-starts-program-up-not-first-time-aka-old-subscriber-joins-ne
 \end{verbatim}
 \end{enumerate}
 
-\subsubsection{New Subscriber Joins
+\subsection{New Subscriber Joins
 Network}\label{new-subscriber-joins-network}
 
 \begin{enumerate}
@@ -1247,8 +1260,8 @@ Network}\label{new-subscriber-joins-network}
   Some kind of sanity check is performed to make sure everything went OK
 \end{enumerate}
 
-\subsubsection{Publisher Has Updates to Push to All Subscribers /
-Publisher Adds
+\subsection{Publisher Has Updates to Push to All Subscribers / Publisher
+Adds
 Files}\label{publisher-has-updates-to-push-to-all-subscribers-publisher-adds-files}
 
 \begin{enumerate}
@@ -1271,7 +1284,7 @@ Files}\label{publisher-has-updates-to-push-to-all-subscribers-publisher-adds-fil
   Data is gathered by every peer about speeds during the transfer
 \end{enumerate}
 
-\subsubsection{Subscriber Leaves Network
+\subsection{Subscriber Leaves Network
 Gracefully}\label{subscriber-leaves-network-gracefully}
 
 \begin{enumerate}
@@ -1288,11 +1301,11 @@ Gracefully}\label{subscriber-leaves-network-gracefully}
   Peers set their record for this Peer as `offline'
 \end{enumerate}
 
-\subsubsection{Subscriber is in the Middle of Downloading a FileID, When
-a New Version is
+\subsection{Subscriber is in the Middle of Downloading a FileID, When a
+New Version is
 Announced}\label{subscriber-is-in-the-middle-of-downloading-a-fileid-when-a-new-version-is-announced}
 
-\subsubsection{Publisher Leaves Network
+\subsection{Publisher Leaves Network
 Gracefully}\label{publisher-leaves-network-gracefully}
 
 the publisher may intend for the files to remain static, so a new
@@ -1301,7 +1314,7 @@ joins by contacting a peer will be brought up to date by the network
 (version check, file list exchange, sync files with p2p) once (if) it's
 implemented, peers may also find the network by DHT.
 
-\subsubsection{Subscriber Disappears Without Saying
+\subsection{Subscriber Disappears Without Saying
 Goodbye}\label{subscriber-disappears-without-saying-goodbye}
 
 \begin{enumerate}
@@ -1312,10 +1325,10 @@ Goodbye}\label{subscriber-disappears-without-saying-goodbye}
   individually marks it as offline in its local peer list.
 \end{enumerate}
 
-\subsubsection{Publisher Disappears Without Saying
+\subsection{Publisher Disappears Without Saying
 Goodbye}\label{publisher-disappears-without-saying-goodbye}
 
-\subsubsection{Subscriber loses some or all of local copy, subscriber
+\subsection{Subscriber loses some or all of local copy, subscriber
 erroneously edits local
 copy}\label{subscriber-loses-some-or-all-of-local-copy-subscriber-erroneously-edits-local-copy}
 
@@ -1334,10 +1347,9 @@ copy}\label{subscriber-loses-some-or-all-of-local-copy-subscriber-erroneously-ed
   Subscriber announces its loss
 \end{enumerate}
 
-\subsubsection{publisher loses its
-files}\label{publisher-loses-its-files}
+\subsection{publisher loses its files}\label{publisher-loses-its-files}
 
-\paragraph{publisher loses its files while network has differing
+\subsubsection{publisher loses its files while network has differing
 versions
 unresolved}\label{publisher-loses-its-files-while-network-has-differing-versions-unresolved}
 
@@ -1360,22 +1372,22 @@ up-to-date
   everyone else
 \end{enumerate}
 
-\subsection{Complex states with no intuitive
+\section{Complex states with no intuitive
 solution}\label{complex-states-with-no-intuitive-solution}
 
-\subsection{a token, key or password is used by a peer to become the new
+\section{a token, key or password is used by a peer to become the new
 publisher
 (P2)}\label{a-token-key-or-password-is-used-by-a-peer-to-become-the-new-publisher-p2}
 
-\subsubsection{Another peer becomes the publisher P2 while the old
+\subsection{Another peer becomes the publisher P2 while the old
 publisher (P1) is propagating
 updates}\label{another-peer-becomes-the-publisher-p2-while-the-old-publisher-p1-is-propagating-updates}
 
-\subsection{subscriber checks (with publisher or publisher-checked
-peers) that files are
+\section{subscriber checks (with publisher or publisher-checked peers)
+that files are
 up-to-date}\label{subscriber-checks-with-publisher-or-publisher-checked-peers-that-files-are-up-to-date}
 
-\subsection{Publisher can't access a subscriber, but others
+\section{Publisher can't access a subscriber, but others
 can}\label{publisher-cant-access-a-subscriber-but-others-can}
 
 \begin{itemize}
@@ -1394,7 +1406,7 @@ There's a common procedure to follow for some of these events
 
 there are general cases:
 
-\subsection{Generalisation: One Out-Of-Date
+\section{Generalisation: One Out-Of-Date
 Peer}\label{generalisation-one-out-of-date-peer}
 
 For example:
@@ -1409,7 +1421,7 @@ For example:
   subscriber erroneously edits files
 \end{itemize}
 
-\subsubsection{Procedure:}\label{procedure}
+\subsection{Procedure:}\label{procedure}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -1424,7 +1436,7 @@ For example:
   aren't as high
 \end{enumerate}
 
-\subsubsection{(Note: possibly two
+\subsection{(Note: possibly two
 chapters):}\label{note-possibly-two-chapters}
 
 \sout{Give the reader a feel for what the system is like to use (this
@@ -1441,11 +1453,17 @@ process diagrams as appropriate If your system has a significant user
 interface and a complex underlying system you may need both a
 walkthrough and a process chapter.}
 
-\section{Testing \& Evaluation}\label{testing-evaluation}
+\chapter{Testing \& Evaluation}\label{testing-evaluation}
 
 \sout{How you evaluated the system, how you designed the evaluation.}
 
-\subsection{Results of the evaluation}\label{results-of-the-evaluation}
+The main competitors to to this software are Bit-Torrent Sync and
+Dropbox. Although the primary intended use of this software is for
+backup, these similarity in use of syncing technology with Bit-Torrent
+Sync, and the popularity of Dropbox will mean they will offer direct
+competition.
+
+\section{Results of the evaluation}\label{results-of-the-evaluation}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -1469,7 +1487,7 @@ and important results indicated by the data. Make sure you summarise
 your overall findings, including statistical evaluation, and describing
 methods.}
 
-\section{Conclusions}\label{conclusions}
+\chapter{Conclusions}\label{conclusions}
 
 \sout{VERY important chapter. Revisit your objectives from chapter 1,
 for each, analyse whether the project met that objective, and if not,
@@ -1485,6 +1503,6 @@ Even projects that are not an overall success usually achieve something,
 and you acquire skills and knowledge from doing the project. End on a
 positive note.}
 
-\section{References}\label{references}
+\chapter{References}\label{references}
 
 \end{document}

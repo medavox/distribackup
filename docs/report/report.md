@@ -1,6 +1,8 @@
 Introduction
 ============
 
+Note: In this draft version, crossed-out text represent notes and guidance from the intranet site which have not yet been removed.
+
 ##Overall Aim of the Project
 
 ##Problem Description
@@ -22,8 +24,8 @@ Project Goals
 
 * Develop a distrbuted backup syncing program, autonomous enough for non-technical users to be able to use
 * Design and implement an efficient file synchronisation protocol to support this
-* Design and implement a new serialisation suite which is both efficient and succinct
-    - Write a language-agnostic specification
+* Design and implement a new serialisation suite which is both efficient and succinct for our purposes
+    - Write a language-agnostic specification 
     - Implement the specification in Java
 
 
@@ -50,11 +52,15 @@ This report will describe why this software is needed, comparing it to related w
 
 The expected timeline for this work will then be described in detail, accompanied by a Gantt chart showing this visually. The report will then finish by listing the resources required in order for it to be completed, and a list of references used.
 
-
 Background
 ==========
 
 <!--Analysis of background research and reading. Care should be taken not to stray too much into design and implementation details, which belong in later chapters. -->
+
+###Any improvements that your system offers
+###shortcomings that your work addresses, and so on
+
+##Justify your choice of platform, software, solution etc
 
 Summary of technical problems and approaches
 -------------------------------------------
@@ -64,6 +70,8 @@ More than ever before there is a need for long-term backup software which is acc
 
 Relevant work and/or existing related systems
 ---------------------------------------------
+
+###implications for this project
 
 This is by no means an exhaustive list, but discusses the most relevant existing solutions (at time of writing), and describes how Distribackup differs or extends from them.
 
@@ -86,6 +94,12 @@ http://syncthing.net/
 * No longer part of ind.ie
 
 ### Git ###
+
+Git was designed from the ground-up by Linus Torvalds as a decentralised version control system, competing with Subversion, CVS and Mercurial.
+
+Most developer's contact with Git is through a centralised, authoritative repository, usually hosted by a company such as GitHub or Bit Bucket. However, Git is able to function equally well as a standalone repository or for managing difference relationships between disparate but equally authoritative collections of copies.
+
+Central, authoritative copies of files can be useful when attempting to establish precedence, or evolve a single product towards completion, allowing users to exchange changes with each other through a single point of contact: the Master. This is much easier to conceptualise for users than communicating changes between slightly different repositories, and easier for maintaining a distributable copy for new entrants.
 
 * Updates require user intervention
 git updates need to be synced by user, using command line or separate GUI
@@ -161,11 +175,7 @@ Governments seize data wholesale from sites (like MegaUpload), stealing both pir
 The storage is run by a company, whose primary motivation is to make a profit; the agreement you sign may allow them to mine your data for information useful to them (eg. using your photos as marketing material).
 
 
-##related work and systems : implications for this project
-###Any improvements that your system offers
-###shortcomings that your work addresses, and so on
 
-##Justify your choice of platform, software, solution etc
 
 Design
 ======
@@ -175,21 +185,17 @@ Design
 Features and General Design Intentions
 --------------------------------------
 
-While specifying planned features, it was necessary to keep in mind that the aim was not to create a source code management system. Plenty of such software already exists, which in the author's opinion is perfectly adequate  -- making such a task unecessary. Furthermore, if this project was implemented properly, it would be possible to use existing source-code management solutions on top of the archive system (byt including the SCM's repo metadata in Distribackup's archive), creating a mirrored, versioned backup.
+Distribackup's intended primary use case is for synchronising backup copies of large, rarely-changing binary files such as images and videos. This means that design decision have been chosen in order to optimise for networks with low common uptime, such as a collection of commodity computing hardware: a family's PCs, laptops, tablets, and phones.
 
-Distribackup's intended primary use case is for syncrhonising backup copies of large, rarely-changing binary files such as images and videos. This means that design decision have been chosen in order to optimise for networks with low common uptime, such as a collection of commodity computing hardwar: a family's PCs, laptops, tablets, and phones.
+While specifying planned features, it was necessary to keep in mind that the aim was not to create a source code management system. Plenty of such software already exists, which in the author's opinion is perfectly adequate  -- making such a task unecessary. Furthermore, if this project was implemented properly, it would be possible to use existing source-code management solutions on top of the archive system (by including the SCM's repo metadata in Distribackup's archive), creating a mirrored, versioned backup.
 
-Changes will not be grouped into discrete updates which are pushed to files in one go;
-changes to files will appear as they are downloaded.
+Changes to files are not be grouped into discrete updates which are pushed to the file system in one go; changes appear as soon as they are downloaded, and the new version of the file is complete. This per-file updating (as opposed to per-group updating) would affect collections of interdependent files, such as a website or source code, but it matters little to the files in our intended use case.
 
-This per-file updating as opposed to per-group updating would affect groups of structured files, such as a website or a collection of java source files, but it matters little to the files in our intended use case.
+Many similar projects emphasise their network's resistance to attack and takedown requests, using a variety of encryption, trust-based connections and decentralised network architecture. The last method, decentralisation, is a popular one, as it ensures that there's no central point to fail/be attacked for the network to fail. This kind of robustness against failure is high desirable in a system designed for long-term data security.
 
-I've been working all along under the (unwritten) assumption that my network will be resistant to attack
-and takedown requests, ie there's no central "hub" (as defined below) without which the network fails.
+However designing a photo/video sharing and backup solution which is easy for a normal user to manage often equates to a single conceptual focus point (such as a company server), which is simpler to understand than a self-organising network of inter-connected devices. Also, as discussed earlier during the Background, decentralised networks can be poor at maintaining a single authoritative copy of the file or archive. From a distributed standpoint, it can also be difficult for peers to know which other peers in the network have the desired file or version of the file, without transferring it and checking. Working out which copy of files a new peer entering the network should have can be equally challenging.
 
-However making an easy photo/video sharing ad backup solution doesn't require this robustness.
-
-How do we reconcile these two viewpoints acceptably -- ie without compromising the goals of either?
+In order to reconcile these two design perspectives acceptably -- without compromising the fault-tolerance of decentralised networks, or the low barrier-to-entry and authority of centralised systems -- ?
 
 You could have selection of a new central hub if the incumbent one "fails" - becomes unavailable, or notifies spokes of withdrawal, etc...
 
@@ -197,15 +203,18 @@ We are not currently catering to the security crowd - our primary goal is not to
 It's to provide an easy-to-understand service for lay users to share and backup files without investing in corporate storage or hardware (which requires a tech education)
 However if things end up going down that route in future, then so be it -- Perfect Forward Secrecy for all! etc
 
-how do peers know which peer to request a file from?
+###How Subscribers choose which peer to request a file from
 ----------------------------------------------------
 
-The publisher is always the busiest
-others aren't guaranteed to yet have the file
-requesting from everyone would promote a lot of redundant traffic, network congestion
+The publisher is always the busiest peer, as it must transfer at least 1 copy of every change (likely to be more), along with network housekeeping messages such as update announcements. Other subscribers aren't guaranteed to yet have the file being requested, which means multiple requests may need to be sent out. Requesting a file from every other peer would create a lot of redundant traffic, which could cause network congestion, along with inflating the bandwidth requirements for using the software.
+
+The current implementation chooses a random peer to request the file from (in order to distribute network load across the network evenly), sending another request to a different peer if the first declares that it doesn't have the file. However this algorithm this could be optimised in later versions to use collected network metadata such as connection bandwidth to select a more suitable peer.
 
 One-Way Sync: the Central Publisher
 -----------------------------------
+
+In order to minimise network and design complexity, Distribackup's network architecture is designed asround the idea of a single Publisher peer, who announces updates to the mirrored files. Only the Publisher has the authority to make changes to archive. This avoids problems such as multiple concurrent versions of files,
+
 Consider adopting 1-way synchronisation with a star topology, with one node in the middle pushing updates to interested subscribed mirrors
 (who share update pieces amongst themselves to speed things up & reduce publisher's load)
 
@@ -253,7 +262,7 @@ With this star topology, we are enabling the possibility of a decentralised publ
 * connection operators receiving bytes (which they then decode into messages) will add to the queue
 
 
-each Peer has its own UUID, generated during first run and stored on-disk
+Each Peer has its own UUID, generated during first run and stored on-disk
 
 ------
 
@@ -412,25 +421,44 @@ Implementation
 Binary Messages
 ---------------
 
-In order to provide for efficiency of communication between nodes, it was necessary to create a custom communications protocol.
+In order to provide for efficiency of communication between nodes, it was necessary to create a custom communications protocol. Existing formats were inefficient for network transfer, did not implement required features or were overly cumbersome to develop with. 
 
-Before crating this protocol, several existing alternatives were looked at.
+The requirements for our serialisation format are that it should be able to store both binary data and network control messages using universal data types which have analogues in many common programming languages, such as 8, 16, 32 and 64 integers, booleans and Strings.
+
+floating-point types were not included in the specification, because they were not needed for distribackup's purposes, however they could be included and implemented in future protocol versions if the need arose.
+
+Before creating this protocol, several existing alternatives were looked at, to ensure that creation of a custom protocol was necessary.
 
 ###JSON
 
-###Bencoding
+Javascript Serial Object Notation is a plain-text, human-readable data storage and interchange format which is rapidly gaining widespread acceptance as a common data format. Less textually redundant replacement to XML, it is often found in places where data needs to be read by both humans and computers, such as in a config file, or in places where a common data interchange format (which is less heavyweight than something like CORBA) is needed for data exchange between programming languages.
+
+JSON can only store data which can be represented in plaintext. Ruling out embedding binary data in JSON files using plaintext encoding formats such as base64 or yEncoding (which are storage-inefficient and require processing overhead), BSON was next examined as a candidate.
 
 ####BSON
+  Binary Serial Object Notation is a specialised sub-format of JSON, which allows embedding of serial data alongside normal JSON.
+  
+###Bencoding
+
+Bencoding is the serialisation format used by bit-torrent applications. Although widely in use, its design is surprisingly network inefficient, storing number values as plain-text representations.
 
 ###Java's In-Built Serialisation API
 
+Although requiring no external libraries to use in Java, objects encoded in Java's own serialisation API would be more difficult to decode for clients not implemented in Java.
+
+Furthermore, it has been designed with several layers of abstraction which are specific to Java's approach to distributed systems programming, which also do not port well to other languages.
+
+Finally, the serialisation API has been found to generate significant amounts of boilerplate code in order to set up and manage, introducing subsystems which may function differently between differing Java implementations (Oracle Java 6, 7 or 8, and GNU Classpath) creating undesirable complexity in system architecture and codebase maintenance.
+
+Other Java serialisation libraries have been created to replace this relatively clunky functionality, such as the Kryo[^kryo] library, but the swiss-army-tank design of this project was deemed too heavyweight for this project.
+
 ###Type Length Value
 
-Less of an explicity and more of a structural design pattern, TLV is the simple idea that each message 
+Less of a concrete data format and more of a design pattern, TLV is the idea of storing each message as a fixed-length id header, a fixed-length message-length field, followed by length bytes of payload.
 
 ###Named Binary Tag
 
-An application of the 
+An application of the Type-Length-value design, Named Binary Tags are a binary data serialisation format originally created by Mojang AB to describe player data and world content. Although poorly-specified and susceptible to design changes without warning, the core of NBT has proved to be well-designed for efficiently storing binary data and its describing metadata.
 
 ID Bytes
 --------
@@ -456,7 +484,7 @@ TNV
 :   Type Number Value. An different field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
 
 Supporting Data Types
-=====================
+---------------------
 
 The following Objects are not used as standalone Messages by Distribackup, but instead form part of compound Messages, and so are generally used without their ID Byte. Despite this, an ID Byte number is assigned for each in case this situation changes, or another program uses this library differently.
 
@@ -477,8 +505,10 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 0F | FileInfo              | Compound | [Yes, see below](#FileInfo) |
 0E | List                  | TNV      |   |
 
+\newpage
+
 Sendable (Communicable) Message Objects
-=======================================
+---------------------------------------
 
 These objects can be sent directly to another Peer.
 
@@ -516,7 +546,7 @@ Main Data Structures
 
 
 The system in operation/Process description
-===========================================
+-------------------------------------------
 
 ##Definitions
 
@@ -643,9 +673,23 @@ For example:
 
 ~~Give the reader a feel for what the system is like to use (this may only be really relevant if the system has a user interface). Use screen dumps to illustrate - textually quite a short chapter, maybe just a walkthrough of the main features of a typical session with the system. Note that this is not a user manual. You aren't showing the reader how to operate the system, but rather what it’s like to use. As a separate chapter, you may also need a process description of your system, so that the reader can appreciate how the system works. This is not the same as the “walkthrough” described immediately above. It should be a description at a higher level than the code itself. Use supporting process diagrams as appropriate If your system has a significant user interface and a complex underlying system you may need both a walkthrough and a process chapter.~~
 
-#Testing & Evaluation
+Testing & Evaluation
+====================
 
 ~~How you evaluated the system, how you designed the evaluation.~~
+
+The main competitors to to this software are Bit-Torrent Sync and Dropbox. Although the primary intended use of this software is for backup, these technological similarities with Bit-Torrent Sync, and the popularity of Dropbox will mean they will offer direct competition.
+
+* Is the system user-friendly?
+* Is the system cross-platform?
+    * HOW cross platform? (Linux, Windows, Android...)
+* Is the system resistant to attack?
+    * random peers going down
+    * Publisher impersonation/spoofing
+    * archive status misinformation
+* How well does the system cope with sudden changes in network topology?
+* How efficient is it? (bandwidth usage, processor & memory usage)
+
 
 Results of the evaluation
 -------------------------
