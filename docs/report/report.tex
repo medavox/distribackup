@@ -151,7 +151,7 @@ compromised by a Terms Of Service agreement (TOS).
   support this
 \item
   Design and implement a new serialisation suite which is both efficient
-  and succinct
+  and succinct for our purposes
 
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
@@ -179,7 +179,9 @@ hardware failure.
 
 The backup strategy often lauded as the most prudent follows the 3-2-1
 strategy: 3 copies, on 2 different storage media, 1 offsite
-backup.{[}\^{}backup321{]} This is an ideal, but is extremely difficult
+backup.\footnote{``Backups with the 3-2-1 rule''
+  (http://blog.wisefaq.com/2010/01/05/backups-with-the-3-2-1-rule/)
+  (accessed 25/06/2014)} This is an ideal, but is extremely difficult
 for a home user to set up and maintain, without corporate resrouces at
 their disposal. For instance:
 
@@ -224,6 +226,15 @@ completed, and a list of references used.
 
 \chapter{Background}\label{background}
 
+\subsection{Any improvements that your system
+offers}\label{any-improvements-that-your-system-offers}
+
+\subsection{shortcomings that your work addresses, and so
+on}\label{shortcomings-that-your-work-addresses-and-so-on}
+
+\section{Justify your choice of platform, software, solution
+etc}\label{justify-your-choice-of-platform-software-solution-etc}
+
 \section{Summary of technical problems and
 approaches}\label{summary-of-technical-problems-and-approaches}
 
@@ -237,6 +248,9 @@ preserve their family's history.
 
 \section{Relevant work and/or existing related
 systems}\label{relevant-work-andor-existing-related-systems}
+
+\subsection{implications for this
+project}\label{implications-for-this-project}
 
 This is by no means an exhaustive list, but discusses the most relevant
 existing solutions (at time of writing), and describes how Distribackup
@@ -256,7 +270,7 @@ differs or extends from them.
   (copyright theft) in public consciousness
 \end{itemize}
 
-\subsection{Bit-Torrent Sync (BTSync)}\label{bit-torrent-sync-btsync}
+\subsection{Bit-Torrent Sync}\label{bit-torrent-sync}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -271,6 +285,11 @@ differs or extends from them.
   \item
     Differential techniques not used
   \end{itemize}
+\item
+  Without file differencing, their protocol is inefficient for updates
+  to large files
+\item
+  Use cases could be very similar to Distribackup's
 \end{itemize}
 
 \subsection{Syncthing}\label{syncthing}
@@ -284,6 +303,23 @@ http://syncthing.net/
 \end{itemize}
 
 \subsection{Git}\label{git}
+
+Git was designed from the ground-up by Linus Torvalds as a decentralised
+version control system, competing with Subversion, CVS and Mercurial.
+
+Most developer's contact with Git is through a centralised,
+authoritative repository, usually hosted by a company such as GitHub or
+Bit Bucket. However, Git is able to function equally well as a
+standalone repository or for managing difference relationships between
+disparate but equally authoritative collections of copies.
+
+Central, authoritative copies of files can be useful when attempting to
+establish precedence, or evolve a single product towards completion,
+allowing users to exchange changes with each other through a single
+point of contact: the Master. This is much easier to conceptualise for
+users than communicating changes between slightly different
+repositories, and easier for maintaining a distributable copy for new
+entrants.
 
 \begin{itemize}
 \item
@@ -320,7 +356,8 @@ http://syncthing.net/
 
 Git-Annex, and its GUI front-end Git-Annex Assistant allow the user to
 manage collections of large files using git, without checking the file
-contents into git.{[}\^{}git-annex{]}
+contents into git.\footnote{Joey Hess, ``Git Annex''
+  (http://git-annex.branchable.com/) (Accessed 25/06/2014)}
 
 Git-annex is aimed towards a more technically literate user. Also, as
 with Sparkleshare, a central server is needed to manage and distribute
@@ -335,9 +372,11 @@ proficient users and industry professionals.
 
 Tahoes-LAFS (Least Authority File system) is an open source distributed
 file system, focused on providing self-hosted cloud storage that is
-resistant to attack.{[}\^{}tahoe1page{]} This, again, is aimed much more
-at system administrators and other professionals with an understanding
-of the area.
+resistant to attack.\footnote{``Tahoe one-page summary''
+  (https://tahoe-lafs.org/trac/tahoe-lafs/browser/trunk/docs/about.rst)
+  (accessed 24/06/2014)} This, again, is aimed much more at system
+administrators and other professionals with an understanding of the
+area.
 
 \subsection{Sparkleshare}\label{sparkleshare}
 
@@ -346,13 +385,13 @@ solution with the intention of providing an alternative to DropBox.
 
 Sparkleshare is backed by Git and SSH, and is well suited to managing a
 collection of many regularly-changing small (mostly text) files which
-are edited by a group, such as in a software development
-team.{[}\^{}sparklegood{]} However, by its own admission Sparkleshare is
+are edited by a group, such as in a software development team.\footnote{http://sparkleshare.org/\#good
+  (accessed 25/06/2014)} However, by its own admission Sparkleshare is
 not well-suited to full-computer backups, or for storing large archives
-of binary data such as photos and videos.{[}\^{}sparklebad{]}
-Sparkleshare also relies on a centralised server to manage backups,
-which introduces an infrastructure overhead (including setup time and
-maintenance) which this project aims to avoid.
+of binary data such as photos and videos.\footnote{http://sparkleshare.org/\#bad
+  (accessed 25/06/2014)} Sparkleshare also relies on a centralised
+server to manage backups, which introduces an infrastructure overhead
+(including setup time and maintenance) which this project aims to avoid.
 
 \subsection{MogileFS}\label{mogilefs}
 
@@ -371,16 +410,31 @@ by using their service, Dropbox can stake a claim to your data.
 \itemsep1pt\parskip0pt\parsep0pt
 \item
   Their encryption model is not published, has been proven to be
-  unsecure in the past{[}\^{}dropbox-secpaper{]}
+  unsecure in the past\footnote{Dhiru Kholia and Przemysław Wegrzyn,
+    ``Looking inside the (Drop) box'', 7th USENIX Workshop on Offensive
+    Technologies
+    (http://0b4af6cdc2f0c5998459-c0245c5c937c5dedcca3f1764ecc9b2f.r43.cf2.rackcdn.com/12058-woot13-kholia.pdf)
+    (accessed 24/0/2014)}
 \item
   They have repeatedly leaked sensitive data, only remedying the problem
-  after being notified by third parties{[}\^{}dropbox-security1{]}
-  {[}\^{}dropbox-security2{]} {[}\^{}dropbox-leak{]}
+  after being notified by third parties\footnote{Matt Marshall,
+    ``Dropbox has become `problem child' of cloud security''
+    (http://venturebeat.com/2012/08/01/dropbox-has-become-problem-child-of-cloud-security/)(accessed
+    25/06/2014)} \footnote{Derek Newton, ``Dropbox authentication:
+    insecure by design''
+    (http://dereknewton.com/2011/04/dropbox-authentication-static-host-ids/)(Accessed
+    25/06/2014)} \footnote{Graham Cluley, ``Dropbox users leak tax
+    returns, mortgage applications and more''
+    (http://grahamcluley.com/2014/05/dropbox-box-leak/)(accessed
+    25/06/2014)}
 \item
   Data may be used for undisclosed purposes
 \item
-  You can't be sure they've really deleted
-  something{[}\^{}dropbox-hoard{]}
+  You can't be sure they've really deleted something\footnote{User
+    `IsThisTheRealLife', ``DropBox is keeping `permanently deleted'
+    files for longer than the 30 day recovery limit.'',
+    (http://www.reddit.com/r/privacy/comments/1m60yp/dropbox\_is\_keeping\_permanently\_deleted\_files\_for/)(accessed
+    26/06/2014)}
 \item
   If you stored the source code to a commercially interesting piece of
   software (something that could make money), Dropbox could feasibly
@@ -391,12 +445,15 @@ by using their service, Dropbox can stake a claim to your data.
 \item
   Dropbox are required by law to hand over data to governmental bodies
   (including overseas agencies such as US intelligence). In an age of
-  controversial laws (legislate first, ask questions
-  later){[}\^{}prism{]}, this is problematic
+  controversial laws (legislate first, ask questions later)\footnote{The
+    Guardian, ``The NSA Files''
+    (http://www.theguardian.com/world/the-nsa-files)(accessed
+    25/06/2014)}, this is problematic
 \item
   Dropbox also reserves the right to share certain personal information
-  with other companies, whose own security may be
-  insufficient{[}\^{}dropbox-privacy{]}
+  with other companies, whose own security may be insufficient\footnote{``Dropbox
+    Privacy Policy'', (https://www.dropbox.com/privacy)(accessed
+    25/06/2014)}
 \end{itemize}
 
 \subsection{Other Commercial
@@ -420,7 +477,10 @@ targets for attack. They:
   without notice)
 \item
   hand over information to governmental bodies with dubious
-  jurisdiction{[}\^{}ms-dublin-usgov-handover{]}
+  jurisdiction\footnote{Margi Murphy, ``Microsoft must hand over
+    customer data held in Dublin to US government''
+    (http://www.computerworlduk.com/news/security/3514076/microsoft-must-hand-over-customer-data-held-in-dublin-us-government/)(accessed
+    25/06/2014)}
 \end{itemize}
 
 None of the existing storage solutions are robust enough to use for
@@ -450,18 +510,6 @@ profit; the agreement you sign may allow them to mine your data for
 information useful to them (eg. using your photos as marketing
 material).
 
-\section{related work and systems : implications for this
-project}\label{related-work-and-systems-implications-for-this-project}
-
-\subsection{Any improvements that your system
-offers}\label{any-improvements-that-your-system-offers}
-
-\subsection{shortcomings that your work addresses, and so
-on}\label{shortcomings-that-your-work-addresses-and-so-on}
-
-\section{Justify your choice of platform, software, solution
-etc}\label{justify-your-choice-of-platform-software-solution-etc}
-
 \chapter{Design}\label{design}
 
 \sout{Major design decisions and justifications. System architecture,
@@ -474,165 +522,6 @@ terms, and do not stray into implementation details. Make sure that you
 explain to the reader how to interpret any design notation that you use
 (e.g.~a key in the relevant figures), unless you are using a standard
 notation (such as UML).}
-
-\section{Features and General Design
-Intentions}\label{features-and-general-design-intentions}
-
-While specifying planned features, it was necessary to keep in mind that
-the aim was not to create a source code management system. Plenty of
-such software already exists, which in the author's opinion is perfectly
-adequate -- making such a task unecessary. Furthermore, if this project
-was implemented properly, it would be possible to use existing
-source-code management solutions on top of the archive system (byt
-including the SCM's repo metadata in Distribackup's archive), creating a
-mirrored, versioned backup.
-
-Distribackup's intended primary use case is for syncrhonising backup
-copies of large, rarely-changing binary files such as images and videos.
-This means that design decision have been chosen in order to optimise
-for networks with low common uptime, such as a collection of commodity
-computing hardwar: a family's PCs, laptops, tablets, and phones.
-
-Changes will not be grouped into discrete updates which are pushed to
-files in one go; changes to files will appear as they are downloaded.
-
-This per-file updating as opposed to per-group updating would affect
-groups of structured files, such as a website or a collection of java
-source files, but it matters little to the files in our intended use
-case.
-
-I've been working all along under the (unwritten) assumption that my
-network will be resistant to attack and takedown requests, ie there's no
-central ``hub'' (as defined below) without which the network fails.
-
-However making an easy photo/video sharing ad backup solution doesn't
-require this robustness.
-
-How do we reconcile these two viewpoints acceptably -- ie without
-compromising the goals of either?
-
-You could have selection of a new central hub if the incumbent one
-``fails'' - becomes unavailable, or notifies spokes of withdrawal,
-etc\ldots{}
-
-We are not currently catering to the security crowd - our primary goal
-is not to worry about malicious parties (like torrent poisoning) -- for
-now. It's to provide an easy-to-understand service for lay users to
-share and backup files without investing in corporate storage or
-hardware (which requires a tech education) However if things end up
-going down that route in future, then so be it -- Perfect Forward
-Secrecy for all! etc
-
-\section{how do peers know which peer to request a file
-from?}\label{how-do-peers-know-which-peer-to-request-a-file-from}
-
-The publisher is always the busiest others aren't guaranteed to yet have
-the file requesting from everyone would promote a lot of redundant
-traffic, network congestion
-
-\section{One-Way Sync: the Central
-Publisher}\label{one-way-sync-the-central-publisher}
-
-Consider adopting 1-way synchronisation with a star topology, with one
-node in the middle pushing updates to interested subscribed mirrors (who
-share update pieces amongst themselves to speed things up \& reduce
-publisher's load)
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  updates to mirrors, which cannot modify the files - ``spokes in a
-  wheel''
-\item
-  what about if we share photos with a phone, which we then lose? what
-  happens to folder ownership?
-\item
-  using top-down star topology doesn't rule out distributed chunk
-  trading amongst receiving peers
-\end{itemize}
-
-In our case, each folder will be its own spoke, representing a
-collection of data (photos from one day out) belonging to one
-participant. ``Pushing'' this spoke's updates is sharing this data
-collection with viewers.
-
-Downside is, the system isn't as decentralised; we rely on a central
-Publisher
-
-\section{ALERT: Rsync is complex (and possibly
-unnecessary)}\label{alert-rsync-is-complex-and-possibly-unnecessary}
-
-if we are only supporting 1-way sync, then (ignoring user intervention
-for now) we always know the diff between remote copies and the new
-copies in the spoke, as the remote files are the same as the spoke's
-file pre-change We don't need to solve rsync's diff between remote files
-problem, we can just use a normal diff algo
-
-\section{One-Way At A Time Sync}\label{one-way-at-a-time-sync}
-
-publisher authority (ie which mirror can update the network) can be
-controlled with an arbitrary token, eg RSA key
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  allowing us to move the publishing mirror dynamically
-\item
-  which moves us back into the use-case area of 1 person, many machines
-  like dropbox!
-\item
-  something like ssh private key? possibly a password? should be sth.
-  intangible, portable
-\item
-  this has the bonus of being conceptually easy for lay users to
-  understand
-\end{itemize}
-
-when there's a new publisher,
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  each node can choose to join the new version of this swarm, or stick
-  with the old, static one
-\item
-  Subscribers sticking with the old Publisher can serve common files
-  (while there are files in common) to other subscribers in both swarms
-\end{itemize}
-
-\chapter{Bt-Sync}\label{bt-sync}
-
-Bit-torrent sync is now our main competitor -- we're more or less
-building an opensource clone -- except I don't plan to support two-way
-syncing.
-
-Without file differencing, their protocol is inefficient for updates to
-large files
-
-With this star topology, we are enabling the possibility of a
-decentralised publishing platform - self-hosted web pages with built-in
-scalability
-
-\section{Handling Incoming Messages}\label{handling-incoming-messages}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  a queue of enums which each represent incoming events
-\item
-  a single event handling thread deals with each event in order
-\item
-  each event enum will need info about it attached, like WHICH peer
-  announced its exit
-\item
-  connection operators receiving bytes (which they then decode into
-  messages) will add to the queue
-\end{itemize}
-
-each Peer has its own UUID, generated during first run and stored
-on-disk
-
-\begin{center}\rule{3in}{0.4pt}\end{center}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -679,8 +568,200 @@ default to sane values) users will be given the following choices:-
   a maximum size limit of data to sync (optionally no limit)
 \end{itemize}
 
-Gathering user input may be implemented using some kind of rudimentary
-GUI, such as a wizard.
+\section{Features and General Design
+Intentions}\label{features-and-general-design-intentions}
+
+Distribackup's intended primary use case is for synchronising backup
+copies of large, rarely-changing binary files such as images and videos.
+This means that design decision have been chosen in order to optimise
+for networks with low common uptime, such as a collection of commodity
+computing hardware: a family's PCs, laptops, tablets, and phones.
+
+While specifying planned features, it was necessary to keep in mind that
+the aim was not to create a source code management system. Plenty of
+such software already exists, which in the author's opinion is perfectly
+adequate -- making such a task unecessary. Furthermore, if this project
+was implemented properly, it would be possible to use existing
+source-code management solutions on top of the archive system (by
+including the SCM's repo metadata in Distribackup's archive), creating a
+mirrored, versioned backup.
+
+Changes to files are not be grouped into discrete updates which are
+pushed to the file system in one go; changes appear as soon as they are
+downloaded, and the new version of the file is complete. This per-file
+updating (as opposed to per-group updating) would affect collections of
+interdependent files, such as a website or source code, but it matters
+little to the files in our intended use case.
+
+Many similar projects emphasise their network's resistance to attack and
+takedown requests, using a variety of encryption, trust-based
+connections and decentralised network architecture. The last method,
+decentralisation, is a popular one, as it ensures that there's no
+central point to fail/be attacked for the network to fail. This kind of
+robustness against failure is high desirable in a system designed for
+long-term data security.
+
+However designing a photo/video sharing and backup solution which is
+easy for a normal user to manage often translates to using a single
+conceptual focus point (such as a company server), which is simpler to
+understand than a self-organising network of inter-connected devices.
+Also, as discussed earlier during the Background, decentralised networks
+can be poor at maintaining a single authoritative copy of the file or
+archive. From a distributed standpoint, it can also be difficult for
+peers to know which other peers in the network have the desired file or
+version of the file, without transferring it and checking. Working out
+which copy of files a new peer entering the network should have can be
+equally challenging.
+
+In order to reconcile these two design perspectives acceptably --
+without compromising the fault-tolerance of decentralised networks, or
+the low barrier-to-entry and authority of centralised systems -- it was
+decided to use a Publisher-Subscriber network model, where the Publisher
+is the only peer with the authority to make changes to the synced files.
+This Publisher itself contains no unrecoverable information, and in the
+event of the loss of the Publisher, a new one can be selected, or even
+created from scratch, and given proper authority.
+
+\section{One-Way At A Time Sync: the Central
+Publisher}\label{one-way-at-a-time-sync-the-central-publisher}
+
+In order to minimise network and design complexity, Distribackup's
+network architecture is designed asround the idea of a single Publisher
+peer, who announces updates to the mirrored files. Only the Publisher
+has the authority to make changes to archive. This avoids problems such
+as multiple concurrent versions of files, implementing remote diffing
+(such as increasingly outdated rsync, bsdiff -- whose final algorithm
+version was close-sourced after the end of Colin Percival's PhD -- or
+Microsoft's proprietary Remote Differential Compression) and network
+bottlenecks from transferring edits from a single peer.
+
+Consider adopting 1-way synchronisation with a star topology, with one
+node in the middle pushing updates to interested subscribed mirrors (who
+share update pieces amongst themselves to speed things up \& reduce
+publisher's load)
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  updates to mirrors, which cannot modify the files - ``spokes in a
+  wheel''
+\item
+  what about if we share photos with a phone, which we then lose? what
+  happens to folder ownership?
+\item
+  using top-down star topology doesn't rule out distributed chunk
+  trading amongst receiving peers
+\end{itemize}
+
+In our case, each folder will be its own spoke, representing a
+collection of data (photos from one day out) belonging to one
+participant. ``Pushing'' this spoke's updates is sharing this data
+collection with viewers.
+
+Downside is, the system isn't as decentralised; we rely on a central
+Publisher
+
+The difference between remote copies and the new copies in the spoke is
+always known, as the remote files are the same as the spoke's file
+pre-change We don't need to solve rsync's diff between remote files
+problem, we can just use a normal diff algo
+
+publisher authority (ie which mirror can update the network) can be
+controlled with an arbitrary token, eg an RSA key or password
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  allowing us to move the publishing mirror dynamically
+\item
+  which moves us back into the use-case area of 1 person, many machines
+  like dropbox!
+\item
+  something like ssh private key? possibly a password? should be sth.
+  intangible, portable
+\item
+  this has the bonus of being conceptually easy for lay users to
+  understand
+\end{itemize}
+
+when there's a new publisher,
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  each node can choose to join the new version of this swarm, or stick
+  with the old, static one
+\item
+  Subscribers sticking with the old Publisher can serve common files
+  (while there are files in common) to other subscribers in both swarms
+\end{itemize}
+
+With this star topology, we are enabling the possibility of a
+decentralised publishing platform - self-hosted web pages with built-in
+scalability
+
+\section{Choosing Which Peer to Request a File
+From}\label{choosing-which-peer-to-request-a-file-from}
+
+The selection process for choosing a peer to request (and hopefully
+download) a file from affects the performance of the network. Ideally,
+the request should be sent to a node which:-
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Has the file being requested
+\item
+  Has the lowest network traffic relative to other peers
+\item
+  Has the highest bandwidth connection to the network
+\end{enumerate}
+
+The publisher is by definition guaranteed to have the file, however if
+all subscribers were to favour downloading from the publisher then this
+would eliminate the peer-to-peer aspect of the network, creating a
+traditional server-client network, with the publisher as a large
+bottleneck.
+
+The publisher is always the busiest peer, as it must upload a copy of
+every change to at least one other peer (likely to be more), along with
+network housekeeping messages such as update announcements. Other
+subscribers aren't guaranteed to yet have the file being requested,
+which means multiple requests may need to be sent out.
+
+Requesting a file from every other peer (flood-requesting) would create
+a lot of redundant traffic, which could cause network congestion, along
+with inflating the bandwidth requirements for using the software.
+
+The current implementation chooses a random peer to request the file
+from (in order to distribute network load across the network evenly),
+sending another request to a different peer if the first declares that
+it doesn't have the file. However this algorithm this could be optimised
+in later versions to use collected network metadata such as connection
+bandwidth to select a more suitable peer.
+
+\section{Handling Incoming Messages}\label{handling-incoming-messages}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  a queue of enums which each represent incoming events
+\item
+  a single event handling thread deals with each event in order
+\item
+  each event enum will need info about it attached, like WHICH peer
+  announced its exit
+\item
+  connection operators receiving bytes (which they then decode into
+  messages) will add to the queue
+\end{itemize}
+
+Each Peer has its own UUID, generated during first run and stored
+on-disk
+
+Gathering user input may be implemented using some kind of GUI, such as
+a wizard.
 
 \chapter{Scenarios (Use Cases)}\label{scenarios-use-cases}
 
@@ -712,153 +793,6 @@ GUI, such as a wizard.
   she uses once a week
 \item
   Organise p2p traffic based on measured speeds of mirrors
-\end{itemize}
-
-\chapter{Structure of Functional
-Components}\label{structure-of-functional-components}
-
-\section{Socket Connections Manager}\label{socket-connections-manager}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Manage open connections
-\item
-  Handles all low-level network housekeeping
-\end{itemize}
-
-\section{Rsync Diff Chunker}\label{rsync-diff-chunker}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Calculates rsync diff sums against each other known online mirror
-  (provided by Peer Manager)
-\item
-  tightly coupled with Peer Manager, as different diffchunks may need to
-  be sent out to each mirror, as each mirror may itself be unsynced to
-  every other (worst case).
-\end{itemize}
-
-\section{Peer Manager}\label{peer-manager}
-
-In the star trek metaphor: the comms officer between this and other
-ships, AKA external comms/foreign minister
-
-manages list of:
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Seen mirrors, their MAC addresses and current IP address (and possibly
-  another unique identifier)
-\item
-  Last seen and average common uptime
-\item
-  Also sends heartbeats to all known online mirrors
-\end{itemize}
-
-\section{Filesystem Watcher}\label{filesystem-watcher}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Uses inotify on linux \& android
-\item
-  Triggers events which start the sync process
-\end{itemize}
-
-\section{DHT Manager}\label{dht-manager}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Talks to and provides a portion of the DHT
-\item
-  Interfaces between other components and the distributed data
-\item
-  maintains a local copy of the table? probably has to
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    Freshness rating?
-  \end{itemize}
-\end{itemize}
-
-\section{Functional Components (as described in
-FYPP):}\label{functional-components-as-described-in-fypp}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Mirror discovery - given that mirrors have dynamic IP addresses and
-  \textless{}100\% uptime?
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    use DHTs eg Kademlia
-
-    \begin{itemize}
-    \itemsep1pt\parskip0pt\parsep0pt
-    \item
-      is DHT mirror discovery too difficult to implement in the given
-      time?
-    \end{itemize}
-  \end{itemize}
-\item
-  Identifying/authenticating mirrors - preventing man-in the middle
-  attacks
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    use SSH authentication model
-  \end{itemize}
-\item
-  Implementing p2p file transfer - a la bit torrent
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    downloading a file from multiple peers at once by splitting into
-    file pieces
-
-    \begin{itemize}
-    \itemsep1pt\parskip0pt\parsep0pt
-    \item
-      will be heavily related to rsync-derived algorithm
-    \end{itemize}
-  \end{itemize}
-\item
-  Sending file changes only
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    look at rsync algorithm, remote differential compression, diff,
-    bsdiff, chromium's Courgette{[}\^{}courgette{]}
-  \item
-    Process edge-case file updates efficiently - eg renaming a file,
-    swapping file piece order
-  \end{itemize}
-\item
-  Detecting changes rapidly
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    using Inotify? (linux systems only)
-  \end{itemize}
-\item
-  merging conflicting versions - just do what DropBox does and rename
-  conflicts /create copies
-\item
-  Working out which files and versions are most up to date - propagating
-  most up-to-date file
-\item
-  Obtaining an open outgoing port - UPnP?
 \end{itemize}
 
 For each update between a sender-receiver pair:
@@ -899,9 +833,6 @@ We're using computing time to reduce bandwidth usage It may be useful to
 store state (or diffs) of filesystem -- the old state of the files, to
 compare against changed files, and filter for small changes and
 mind-changes
-
-Next design phase: go through each component and specify external
-methods (use UML if helpful)
 
 \chapter{Optional Extras (if have
 time)}\label{optional-extras-if-have-time}
@@ -965,10 +896,12 @@ Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
     This could get complex for the user very quickly
   \end{itemize}
 \item
-  Encryption {[}\^{}PGP{]} - this can be broken into 3 sub-areas; PGP is
-  a good candidate for providing any of these. All of these, though
-  especially the first two, are highly desirable, and may become core
-  goals during the course of the project.
+  Encryption \footnote{``Pretty Good Privacy''
+    (http://www.cryptography.org/getpgp.htm) (accessed 24/06/2014)} -
+  this can be broken into 3 sub-areas; PGP is a good candidate for
+  providing any of these. All of these, though especially the first two,
+  are highly desirable, and may become core goals during the course of
+  the project.
 
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
@@ -998,33 +931,311 @@ Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
 
 \chapter{Implementation}\label{implementation}
 
+\section{Overview of implementation}\label{overview-of-implementation}
+
+Describe implemented features, compare with original goals
+
+\section{Structure of Functional
+Components}\label{structure-of-functional-components}
+
+\section{Functional Components (as described in
+FYPP):}\label{functional-components-as-described-in-fypp}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Peer discovery - given that peers have dynamic IP addresses and
+  \textless{}100\% uptime?
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    use DHTs eg Kademlia
+
+    \begin{itemize}
+    \itemsep1pt\parskip0pt\parsep0pt
+    \item
+      is DHT mirror discovery too difficult to implement in the given
+      time?
+    \end{itemize}
+  \end{itemize}
+\item
+  Identifying/authenticating mirrors - preventing man-in the middle
+  attacks
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    use SSH authentication model
+  \end{itemize}
+\item
+  Implementing p2p file transfer - a la bit torrent
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    downloading a file from multiple peers at once by splitting into
+    file pieces
+
+    \begin{itemize}
+    \itemsep1pt\parskip0pt\parsep0pt
+    \item
+      will be heavily related to rsync-derived algorithm
+    \end{itemize}
+  \end{itemize}
+\item
+  Sending file changes only
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    look at rsync algorithm, remote differential compression, diff,
+    bsdiff, chromium's Courgette\footnote{http://dev.chromium.org/developers/design-documents/software-updates-courgette}
+  \item
+    Process edge-case file updates efficiently - eg renaming a file,
+    swapping file piece order
+  \end{itemize}
+\item
+  Detecting changes rapidly
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    using Inotify? (linux systems only)
+  \end{itemize}
+\item
+  merging conflicting versions - just do what DropBox does and rename
+  conflicts /create copies
+\item
+  Working out which files and versions are most up to date - propagating
+  most up-to-date file
+\item
+  Obtaining an open outgoing port - UPnP?
+\end{itemize}
+
+The original design comprised 5 major functional components:-
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Socket Connections Manager
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Manage open connections
+  \item
+    Handles all low-level network housekeeping
+  \end{itemize}
+\item
+  Peer
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    In the star trek metaphor: the comms officer between this and other
+    ships, AKA external comms/foreign minister
+  \item
+    manages list of:
+
+    \begin{itemize}
+    \itemsep1pt\parskip0pt\parsep0pt
+    \item
+      Seen mirrors, their MAC addresses and current IP address (and
+      possibly another unique identifier)
+    \item
+      Last seen and average common uptime
+    \item
+      Also sends heartbeats to all known online mirrors
+    \end{itemize}
+  \end{itemize}
+\item
+  Filesystem Watcher
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Uses inotify on linux \& android
+  \item
+    Triggers events which start the sync process
+  \end{itemize}
+\item
+  DHT Manager
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Talks to and provides a portion of the DHT
+  \item
+    Interfaces between other components and the distributed data
+  \item
+    maintains a local copy of the table? probably has to
+
+    \begin{itemize}
+    \itemsep1pt\parskip0pt\parsep0pt
+    \item
+      Freshness rating?
+    \end{itemize}
+  \end{itemize}
+\item
+  Rsync Diff Chunker
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Calculates rsync diff sums against each other known online mirror
+    (provided by Peer Manager)
+  \item
+    tightly coupled with Peer Manager, as different diffchunks may need
+    to be sent out to each mirror, as each mirror may itself be unsynced
+    to every other (worst case).
+  \end{itemize}
+\end{itemize}
+
+However, during the course of implementation, the working design evolved
+away from several of these.
+
+The Rsync Diff Chunking functionality was no longer needed after the
+network architecture was changed to the Publisher-Subscriber model. All
+differences were made predictable without using the rsync windowed
+hashing technique to measure differences across a network: Subscribers
+only have older versions in a linear succession of versions, rather than
+having a related but possibly divergent copy with its own changes in a
+tree.
+
+The design prototype implemented for this project does not include
+functionality for peer discovery using DHT or any other techniques.
+Currently, peers share information about other peers that have already
+connected at least once to the network, and peers are also announced to
+the whole network once they initiate a connection to any member. However
+there is no way for the network to actively discover peers which have
+not initiated a connection.
+
+This functionality is planned to be implemented in the future, however
+it was not considered necessary in order to create a working prototype
+of the core syncing functionality.
+
+The Filesystem Watcher component was implemented using Java 7's new
+Paths API, which allows registering directories to be watched for
+changes. However, Filesystem Watcher internals are confined to a single
+class, so could be replaced by an implementation which uses a different
+underlying system. This allows the future support of Android, whose
+Java-like API Dalvik forked from Java before the release of Java 7, and
+which would have to rely on another mechanism to provide filesystem
+watching, such as the previously mentioned Inotify.
+
+The final version
+
 \section{Binary Messages}\label{binary-messages}
 
 In order to provide for efficiency of communication between nodes, it
-was necessary to create a custom communications protocol.
+was necessary to create a custom communications protocol. Existing
+formats were inefficient for network transfer, did not implement
+required features or were overly cumbersome to develop with.
 
-Before crating this protocol, several existing alternatives were looked
-at.
+The requirements for our serialisation format are that it should be able
+to store both binary data and network control messages using universal
+data types which have analogues in many common programming languages,
+such as 8, 16, 32 and 64 integers, booleans and Strings.
+
+floating-point types were not included in the specification, because
+they were not needed for distribackup's purposes, however they could be
+included and implemented in future protocol versions if the need arose.
+
+Before creating this protocol, several existing alternatives were looked
+at, to ensure that creation of a custom protocol was necessary.
 
 \subsection{JSON}\label{json}
 
-\subsection{Bencoding}\label{bencoding}
+Javascript Serial Object Notation is a plain-text, human-readable data
+storage and interchange format which is rapidly gaining widespread
+acceptance as a common data format. Less textually redundant replacement
+to XML, it is often found in places where data needs to be read by both
+humans and computers, such as in a config file, or in places where a
+common data interchange format (which is less heavyweight than something
+like CORBA) is needed for data exchange between programming languages.
+
+JSON can only store data which can be represented in plaintext. Ruling
+out embedding binary data in JSON files using plaintext encoding formats
+such as base64 or yEncoding (which are storage-inefficient and require
+processing overhead), BSON was next examined as a candidate.
 
 \subsubsection{BSON}\label{bson}
+
+Binary Serial Object Notation is a specialised sub-format of JSON, which
+allows embedding of serial data alongside normal JSON.
+
+\subsection{Bencoding}\label{bencoding}
+
+Bencoding is the serialisation format used by bit-torrent applications.
+Although widely in use, its design is surprisingly network inefficient,
+storing number values as plain-text representations.
 
 \subsection{Java's In-Built Serialisation
 API}\label{javas-in-built-serialisation-api}
 
+Although requiring no external libraries to use in Java, objects encoded
+in Java's own serialisation API would be more difficult to decode for
+clients not implemented in Java.
+
+Furthermore, it has been designed with several layers of abstraction
+which are specific to Java's approach to distributed systems
+programming, which also do not port well to other languages.
+
+Finally, the serialisation API has been found to generate significant
+amounts of boilerplate code in order to set up and manage, introducing
+subsystems which may function differently between differing Java
+implementations (Oracle Java 6, 7 or 8, and GNU Classpath) creating
+undesirable complexity in system architecture and codebase maintenance.
+
+Other Java serialisation libraries have been created to replace this
+relatively clunky functionality, such as the Kryo{[}\^{}kryo{]} library,
+but the swiss-army-tank design of this project was deemed too
+heavyweight for this project.
+
 \subsection{Type Length Value}\label{type-length-value}
 
-Less of an explicity and more of a structural design pattern, TLV is the
-simple idea that each message
+Less of a concrete data format and more of a design pattern, TLV is the
+idea of storing each message as a fixed-length id header, a fixed-length
+message-length field, followed by length bytes of payload.
 
 \subsection{Named Binary Tag}\label{named-binary-tag}
 
-An application of the
+An application of the Type-Length-value design, Named Binary Tags are a
+binary data serialisation format originally created by Mojang AB to
+describe player data and world content. Although poorly-specified and
+susceptible to design changes without warning, the core of NBT has
+proved to be well-designed for efficiently storing binary data and its
+describing metadata.
 
-\section{ID Bytes}\label{id-bytes}
+\section{Distribackup's Custom Binary Communication
+Protocol}\label{distribackups-custom-binary-communication-protocol}
+
+After reviewing the existing serialisation software as detailed above, a
+decision was made to implement a new protocol which took inspiration
+from several of the projects. This new Data and Network Information
+Exchange Protocol (or DNIEPr) would be able to provide all of the
+requirements that emerged from studying the features and downsides of
+existing solutions.
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  The protocol shall make efficient use of network bandwidth, eg by
+  encoding data in succinct Messages.
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Resistance to message corruption shall be provided by the underlying
+    TCP protocol.
+  \end{itemize}
+\item
+  The protocol should be specify a clear, unambiguous API easy to work
+  with from
+\end{itemize}
+
+\subsection{ID Bytes}\label{id-bytes}
 
 Each Object type has an ID byte, followed either by its payload (for
 static-length types) or a length int (without the int type header
@@ -1052,9 +1263,6 @@ Type Number Value. An different field for array types, specifying how
 many elements there are. Useful for progress estimation, or simple
 iteration
 \end{description}
-
-\textbackslash{}begin\{latexonly\} \textbackslash{}begin\{landscape\}
-\textbackslash{}end\{latexonly\}
 
 \section{Supporting Data Types}\label{supporting-data-types}
 
@@ -1163,13 +1371,6 @@ request for more Peers.
 \bottomrule
 \end{longtable}
 
-\textbackslash{}begin\{latexonly\} \textbackslash{}end\{landscape\}
-\textbackslash{}end\{latexonly\}
-
-\section{Overview of implementation}\label{overview-of-implementation}
-
-Describe implemented features, compare with original goals
-
 \section{Main Data Structures}\label{main-data-structures}
 
 \begin{figure}[htbp]
@@ -1190,7 +1391,9 @@ to other procedures/methods and so on.}
 \section{The system in operation/Process
 description}\label{the-system-in-operationprocess-description}
 
-\section{Definitions}\label{definitions}
+\section{Common Scenarios}\label{common-scenarios}
+
+\subsection{Definitions}\label{definitions}
 
 \begin{description}
 \item[P]
@@ -1198,8 +1401,6 @@ the publisher
 \item[S]
 a new subscriber
 \end{description}
-
-\section{Common Scenarios}\label{common-scenarios}
 
 \subsection{Peer Starts Program Up (Not First Time) AKA Old Subscriber
 Joins
@@ -1375,36 +1576,32 @@ up-to-date
 \section{Complex states with no intuitive
 solution}\label{complex-states-with-no-intuitive-solution}
 
-\section{a token, key or password is used by a peer to become the new
-publisher
-(P2)}\label{a-token-key-or-password-is-used-by-a-peer-to-become-the-new-publisher-p2}
-
-\subsection{Another peer becomes the publisher P2 while the old
-publisher (P1) is propagating
-updates}\label{another-peer-becomes-the-publisher-p2-while-the-old-publisher-p1-is-propagating-updates}
-
-\section{subscriber checks (with publisher or publisher-checked peers)
-that files are
-up-to-date}\label{subscriber-checks-with-publisher-or-publisher-checked-peers-that-files-are-up-to-date}
-
-\section{Publisher can't access a subscriber, but others
-can}\label{publisher-cant-access-a-subscriber-but-others-can}
-
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  From the perspective of this weakly-connected peer S, the publisher is
-  down
+  a token, key or password is used by a peer to become the new publisher
+  (P2)
 \item
-  From the publisher's perspective, the peer has disappeared without
-  saying goodbye (timed out)
+  Another peer becomes the publisher P2 while the old publisher (P1) is
+  propagating updates
+\item
+  subscriber checks (with publisher or publisher-checked peers) that
+  files are up-to-date
+\item
+  Publisher can't access a subscriber, but others can
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    From the perspective of this weakly-connected peer S, the publisher
+    is down
+  \item
+    From the publisher's perspective, the peer has disappeared without
+    saying goodbye (timed out)
+  \end{itemize}
 \end{itemize}
 
-\begin{center}\rule{3in}{0.4pt}\end{center}
-
-There's a common procedure to follow for some of these events
-
-there are general cases:
+There are common procedure to follow for some of these events:
 
 \section{Generalisation: One Out-Of-Date
 Peer}\label{generalisation-one-out-of-date-peer}
@@ -1436,8 +1633,7 @@ For example:
   aren't as high
 \end{enumerate}
 
-\subsection{(Note: possibly two
-chapters):}\label{note-possibly-two-chapters}
+(Note: possibly two chapters):
 
 \sout{Give the reader a feel for what the system is like to use (this
 may only be really relevant if the system has a user interface). Use
@@ -1458,10 +1654,48 @@ walkthrough and a process chapter.}
 \sout{How you evaluated the system, how you designed the evaluation.}
 
 The main competitors to to this software are Bit-Torrent Sync and
-Dropbox. Although the primary intended use of this software is for
-backup, these similarity in use of syncing technology with Bit-Torrent
-Sync, and the popularity of Dropbox will mean they will offer direct
-competition.
+Dropbox, due to the similarity of their technology compared to this
+project. Although the primary intended use of this software is for
+backup, these technological similarities along with the popularity of
+Dropbox will mean they will offer direct competition.
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Is the system user-friendly?
+\item
+  Is the system cross-platform?
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    HOW cross platform? (Linux, Windows, Android\ldots{})
+  \end{itemize}
+\item
+  Is the system resistant to attack?
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    random peers going down
+  \item
+    Publisher impersonation/spoofing
+  \item
+    archive status misinformation
+  \end{itemize}
+\item
+  How well does the system cope with sudden changes in network topology?
+\item
+  How efficient is it? (bandwidth usage, processor \& memory usage)
+\item
+  completeness of the API
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    lack of ambiguity
+  \end{itemize}
+\end{itemize}
 
 \section{Results of the evaluation}\label{results-of-the-evaluation}
 

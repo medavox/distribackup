@@ -5,6 +5,8 @@ Note: In this draft version, crossed-out text represent notes and guidance from 
 
 ##Overall Aim of the Project
 
+
+
 ##Problem Description
 
 Data storage has increasingly become the responsibility of special-interest corporations, who leverage their existing massive server infrastructure (or server infrastructure subcontractors) to reduce the legwork for ordinary consumers wishing to back up their data. The concept of the 'cloud' was invented to further psychologically bolster these datacentres; a fluffy, harmless-sounding term referring to some ethereal space where all your data safely resides.
@@ -80,12 +82,13 @@ This is by no means an exhaustive list, but discusses the most relevant existing
 * Unsecure by design (IP addresses and ISP hostnames are broadcast and used as identities)
 * Nowadays highly stigmatised; associated with illegal activity (copyright theft) in public consciousness
 
-### Bit-Torrent Sync (BTSync)
+### Bit-Torrent Sync
 
 * Not open source, despite the company's most famous software's background
 * Not originally designed for optimal data transfer
     - Differential techniques not used
-    
+* Without file differencing, their protocol is inefficient for updates to large files
+* Use cases could be very similar to Distribackup's
 
 ###Syncthing
 
@@ -93,7 +96,7 @@ http://syncthing.net/
 
 * No longer part of ind.ie
 
-### Git ###
+### Git
 
 Git was designed from the ground-up by Linus Torvalds as a decentralised version control system, competing with Subversion, CVS and Mercurial.
 
@@ -114,31 +117,31 @@ git updates need to be synced by user, using command line or separate GUI
 * Existing GUIs for git are unfinished, non-free, buggy or as confusing as the command line interface, with none of the portability.
 * Git is much more complex than is necessary for our task
 
-###Git-Annex###
+###Git-Annex
 
 Git-Annex, and its GUI front-end Git-Annex Assistant allow the user to manage collections of large files using git, without checking the file contents into git.[^git-annex]
 
 Git-annex is aimed towards a more technically literate user. Also, as with Sparkleshare, a central server is needed to manage and distribute changes between different storage nodes.
 
-###Ceph###
+###Ceph
 
 Ceph is a distributed file system. Ceph is aimed more at technically proficient users and industry professionals.
 
-###Tahoe-LAFS###
+###Tahoe-LAFS
 
 Tahoes-LAFS (Least Authority File system) is an open source distributed file system, focused on providing self-hosted cloud storage that is resistant to attack.[^tahoe1page] This, again, is aimed much more at system administrators and other professionals with an understanding of the area.
 
-###Sparkleshare###
+###Sparkleshare
 
 Sparkleshare[sparkleshare] is also an open-source cloud syncing solution with the intention of providing an alternative to DropBox. 
 
 Sparkleshare is backed by Git and SSH, and is well suited to managing a collection of many regularly-changing small (mostly text) files which are edited by a group, such as in a software development team.[^sparklegood] However, by its own admission Sparkleshare is not well-suited to full-computer backups, or for storing large archives of binary data such as photos and videos.[^sparklebad] Sparkleshare also relies on a centralised server to manage backups, which introduces an infrastructure overhead (including setup time and maintenance) which this project aims to avoid.
 
-###MogileFS###
+### MogileFS
 Complex conceptual structure
 Multiple types of mirror nodes
 
-### Dropbox ###
+### Dropbox
 
 Dropbox is an extremely popular solution for accessing data across multiple machines, and sharing files easily with small groups of people. As convenient as Dropbox is, there are downsides:
 
@@ -182,6 +185,21 @@ Design
 
 ~~Major design decisions and justifications. System architecture, etc. Use supporting figures where appropriate and helpful. A diagram of the overall architecture is essential. Each component in the architectural diagram should be briefly discussed. Other designs that may be important are class hierarchies and initial user interface designs. Take care to describe any design work in reasonably high level terms, and do not stray into implementation details. Make sure that you explain to the reader how to interpret any design notation that you use (e.g. a key in the relevant figures), unless you are using a standard notation (such as UML).~~
 
+* Will not require an always-on machine - will reliably and efficiently (but not necessarily quickly) sync mirrors.
+* Not intended for real-time sync
+* The system will work best with infrequent updates among sometimes-on machines that form a network with common uptime
+	(ie each mirror is on at the same time as at least one other machine, to pass updates)
+    - a Raspberry Pi could bolster this and speed up full network sync, but should not be necessary.
+
+As a bare minimum interface (all of which will be optional, and will default to sane values) users will be given the following choices:-
+
+* a folder they wish to keep synced
+    - Creating a new network with this folder, or adding it to an existing network
+        * Joining an existing network will require some kind of network identity key as a minimum. See Aims and Objectives.
+* a maximum size limit of data to sync (optionally no limit)
+
+
+
 Features and General Design Intentions
 --------------------------------------
 
@@ -193,27 +211,14 @@ Changes to files are not be grouped into discrete updates which are pushed to th
 
 Many similar projects emphasise their network's resistance to attack and takedown requests, using a variety of encryption, trust-based connections and decentralised network architecture. The last method, decentralisation, is a popular one, as it ensures that there's no central point to fail/be attacked for the network to fail. This kind of robustness against failure is high desirable in a system designed for long-term data security.
 
-However designing a photo/video sharing and backup solution which is easy for a normal user to manage often equates to a single conceptual focus point (such as a company server), which is simpler to understand than a self-organising network of inter-connected devices. Also, as discussed earlier during the Background, decentralised networks can be poor at maintaining a single authoritative copy of the file or archive. From a distributed standpoint, it can also be difficult for peers to know which other peers in the network have the desired file or version of the file, without transferring it and checking. Working out which copy of files a new peer entering the network should have can be equally challenging.
+However designing a photo/video sharing and backup solution which is easy for a normal user to manage often translates to using a single conceptual focus point (such as a company server), which is simpler to understand than a self-organising network of inter-connected devices. Also, as discussed earlier during the Background, decentralised networks can be poor at maintaining a single authoritative copy of the file or archive. From a distributed standpoint, it can also be difficult for peers to know which other peers in the network have the desired file or version of the file, without transferring it and checking. Working out which copy of files a new peer entering the network should have can be equally challenging.
 
-In order to reconcile these two design perspectives acceptably -- without compromising the fault-tolerance of decentralised networks, or the low barrier-to-entry and authority of centralised systems -- ?
+In order to reconcile these two design perspectives acceptably -- without compromising the fault-tolerance of decentralised networks, or the low barrier-to-entry and authority of centralised systems -- it was decided to use a Publisher-Subscriber network model, where the Publisher is the only peer with the authority to make changes to the synced files. This Publisher itself contains no unrecoverable information, and in the event of the loss of the Publisher, a new one can be selected, or even created from scratch, and given proper authority.
 
-You could have selection of a new central hub if the incumbent one "fails" - becomes unavailable, or notifies spokes of withdrawal, etc...
-
-We are not currently catering to the security crowd - our primary goal is not to worry about malicious parties (like torrent poisoning) -- for now.
-It's to provide an easy-to-understand service for lay users to share and backup files without investing in corporate storage or hardware (which requires a tech education)
-However if things end up going down that route in future, then so be it -- Perfect Forward Secrecy for all! etc
-
-###How Subscribers choose which peer to request a file from
-----------------------------------------------------
-
-The publisher is always the busiest peer, as it must transfer at least 1 copy of every change (likely to be more), along with network housekeeping messages such as update announcements. Other subscribers aren't guaranteed to yet have the file being requested, which means multiple requests may need to be sent out. Requesting a file from every other peer would create a lot of redundant traffic, which could cause network congestion, along with inflating the bandwidth requirements for using the software.
-
-The current implementation chooses a random peer to request the file from (in order to distribute network load across the network evenly), sending another request to a different peer if the first declares that it doesn't have the file. However this algorithm this could be optimised in later versions to use collected network metadata such as connection bandwidth to select a more suitable peer.
-
-One-Way Sync: the Central Publisher
+One-Way At A Time Sync: the Central Publisher
 -----------------------------------
 
-In order to minimise network and design complexity, Distribackup's network architecture is designed asround the idea of a single Publisher peer, who announces updates to the mirrored files. Only the Publisher has the authority to make changes to archive. This avoids problems such as multiple concurrent versions of files,
+In order to minimise network and design complexity, Distribackup's network architecture is designed asround the idea of a single Publisher peer, who announces updates to the mirrored files. Only the Publisher has the authority to make changes to archive. This avoids problems such as multiple concurrent versions of files, implementing remote diffing (such as increasingly outdated rsync, bsdiff -- whose final algorithm version was close-sourced after the end of Colin Percival's PhD -- or Microsoft's proprietary Remote Differential Compression) and network bottlenecks from transferring edits from a single peer.
 
 Consider adopting 1-way synchronisation with a star topology, with one node in the middle pushing updates to interested subscribed mirrors
 (who share update pieces amongst themselves to speed things up & reduce publisher's load)
@@ -228,13 +233,10 @@ day out) belonging to one participant.
 
 Downside is, the system isn't as decentralised; we rely on a central Publisher
 
-##ALERT: Rsync is complex (and possibly unnecessary)
-if we are only supporting 1-way sync, then (ignoring user intervention for now) we always know the 
-diff between remote copies and the new copies in the spoke, as the remote files are the same as the spoke's file pre-change
+The difference between remote copies and the new copies in the spoke is always known, as the remote files are the same as the spoke's file pre-change
 We don't need to solve rsync's diff between remote files problem, we can just use a normal diff algo
 
-##One-Way At A Time Sync
-publisher authority (ie which mirror can update the network) can be controlled with an arbitrary token, eg RSA key
+publisher authority (ie which mirror can update the network) can be controlled with an arbitrary token, eg an RSA key or password
 
 * allowing us to move the publishing mirror dynamically
 * which moves us back into the use-case area of 1 person, many machines like dropbox!
@@ -246,15 +248,27 @@ when there's a new publisher,
 * each node can choose to join the new version of this swarm, or stick with the old, static one
 * Subscribers sticking with the old Publisher can serve common files (while there are files in common) to other subscribers in both swarms 
 
-#Bt-Sync
-Bit-torrent sync is now our main competitor --
-we're more or less building an opensource clone -- except I don't plan to support two-way syncing.
-
-Without file differencing, their protocol is inefficient for updates to large files
-
 With this star topology, we are enabling the possibility of a decentralised publishing platform - self-hosted web pages with built-in scalability
 
-##Handling Incoming Messages
+Choosing Which Peer to Request a File From
+-------------------------------------------
+
+The selection process for choosing a peer to request (and hopefully download) a file from affects the performance of the network. Ideally, the request should be sent to a node which:-
+
+1. Has the file being requested
+2. Has the lowest network traffic relative to other peers
+3. Has the highest bandwidth connection to the network
+
+The publisher is by definition guaranteed to have the file, however if all subscribers were to favour downloading from the publisher then this would eliminate the peer-to-peer aspect of the network, creating a traditional server-client network, with the publisher as a large bottleneck.
+
+The publisher is always the busiest peer, as it must upload a copy of every change to at least one other peer (likely to be more), along with network housekeeping messages such as update announcements. Other subscribers aren't guaranteed to yet have the file being requested, which means multiple requests may need to be sent out.
+
+Requesting a file from every other peer (flood-requesting) would create a lot of redundant traffic, which could cause network congestion, along with inflating the bandwidth requirements for using the software.
+
+The current implementation chooses a random peer to request the file from (in order to distribute network load across the network evenly), sending another request to a different peer if the first declares that it doesn't have the file. However this algorithm this could be optimised in later versions to use collected network metadata such as connection bandwidth to select a more suitable peer.
+
+Handling Incoming Messages
+--------------------------
 
 * a queue of enums which each represent incoming events 
 * a single event handling thread deals with each event in order
@@ -264,22 +278,8 @@ With this star topology, we are enabling the possibility of a decentralised publ
 
 Each Peer has its own UUID, generated during first run and stored on-disk
 
-------
 
-* Will not require an always-on machine - will reliably and efficiently (but not necessarily quickly) sync mirrors.
-* Not intended for real-time sync
-* The system will work best with infrequent updates among sometimes-on machines that form a network with common uptime
-	(ie each mirror is on at the same time as at least one other machine, to pass updates)
-    - a Raspberry Pi could bolster this and speed up full network sync, but should not be necessary.
-
-As a bare minimum interface (all of which will be optional, and will default to sane values) users will be given the following choices:-
-
-* a folder they wish to keep synced
-    - Creating a new network with this folder, or adding it to an existing network
-        * Joining an existing network will require some kind of network identity key as a minimum. See Aims and Objectives.
-* a maximum size limit of data to sync (optionally no limit)
-
-Gathering user input may be implemented using some kind of rudimentary GUI, such as a wizard.
+Gathering user input may be implemented using some kind of GUI, such as a wizard.
 
 #Scenarios (Use Cases)
 
@@ -294,58 +294,6 @@ Gathering user input may be implemented using some kind of rudimentary GUI, such
 * Prioritise updates to and from low uptime mirrors - ie granny's laptop she uses once a week
 * Organise p2p traffic based on measured speeds of mirrors
 
-#Structure of Functional Components
-
-##Socket Connections Manager
-* Manage open connections
-* Handles all low-level network housekeeping
-
-##Rsync Diff Chunker
-
-* Calculates rsync diff sums against each other known online mirror (provided by Peer Manager)
- * tightly coupled with Peer Manager, as different diffchunks may need to be sent out to each mirror, as each mirror may itself be unsynced to every other (worst case). 
-
-##Peer Manager
-
-In the star trek metaphor: the comms officer between this and other ships, AKA external comms/foreign minister
-
-manages list of:
-
-* Seen mirrors, their MAC addresses and current IP address (and possibly another unique identifier)
-* Last seen and average common uptime
-* Also sends heartbeats to all known online mirrors
-
-##Filesystem Watcher
-
-* Uses inotify on linux & android
-* Triggers events which start the sync process
-
-
-##DHT Manager
-
-* Talks to and provides a portion of the DHT
-* Interfaces between other components and the distributed data
- * maintains a local copy of the table? probably has to
-	* Freshness rating?
-
-##Functional Components (as described in FYPP):
-
-* Mirror discovery - given that mirrors have dynamic IP addresses and <100% uptime?
-    - use DHTs eg Kademlia
-        - is DHT mirror discovery too difficult to implement in the given time?
-* Identifying/authenticating mirrors - preventing man-in the middle attacks
-    - use SSH authentication model
-* Implementing p2p file transfer - a la bit torrent
-    - downloading a file from multiple peers at once by splitting into file pieces
-        - will be heavily related to rsync-derived algorithm 
-* Sending file changes only
-    - look at rsync algorithm, remote differential compression, diff, bsdiff, chromium's Courgette[^courgette]
-    - Process edge-case file updates efficiently - eg renaming a file, swapping file piece order
-* Detecting changes rapidly
-    - using Inotify? (linux systems only)
-* merging conflicting versions - just do what DropBox does and rename conflicts /create copies
-* Working out which files and versions are most up to date -  propagating most up-to-date file
-* Obtaining an open outgoing port - UPnP?
 
 For each update between a sender-receiver pair:
 
@@ -377,11 +325,8 @@ Collect multiple rapid-fire updates into one network transaction (minimise netwo
 
 Intelligent handling of renamed files will depend on inotify (and the java binding library), and whether it can detect file moves.
 
-
 We're using computing time to reduce bandwidth usage
 It may be useful to store state (or diffs) of filesystem -- the old state of the files, to compare against changed files, and filter for small changes and mind-changes
-
-Next design phase: go through each component and specify external methods  (use UML if helpful)
 
 #Optional Extras (if have time)
 * Android Client
@@ -417,6 +362,70 @@ Next design phase: go through each component and specify external methods  (use 
 
 Implementation
 ==============
+
+Overview of implementation
+--------------------------
+
+Describe implemented features, compare with original goals
+
+Structure of Functional Components
+----------------------------------
+
+
+##Functional Components (as described in FYPP):
+
+* Peer discovery - given that peers have dynamic IP addresses and <100% uptime?
+    - use DHTs eg Kademlia
+        - is DHT mirror discovery too difficult to implement in the given time?
+* Identifying/authenticating mirrors - preventing man-in the middle attacks
+    - use SSH authentication model
+* Implementing p2p file transfer - a la bit torrent
+    - downloading a file from multiple peers at once by splitting into file pieces
+        - will be heavily related to rsync-derived algorithm 
+* Sending file changes only
+    - look at rsync algorithm, remote differential compression, diff, bsdiff, chromium's Courgette[^courgette]
+    - Process edge-case file updates efficiently - eg renaming a file, swapping file piece order
+* Detecting changes rapidly
+    - using Inotify? (linux systems only)
+* merging conflicting versions - just do what DropBox does and rename conflicts /create copies
+* Working out which files and versions are most up to date -  propagating most up-to-date file
+* Obtaining an open outgoing port - UPnP?
+
+The original design comprised 5 major functional components:-
+
+* Socket Connections Manager
+    - Manage open connections
+    - Handles all low-level network housekeeping
+* Peer
+    - In the star trek metaphor: the comms officer between this and other ships, AKA external comms/foreign minister
+    - manages list of:
+        * Seen mirrors, their MAC addresses and current IP address (and possibly another unique identifier)
+        * Last seen and average common uptime
+        * Also sends heartbeats to all known online mirrors
+* Filesystem Watcher
+    - Uses inotify on linux & android
+    - Triggers events which start the sync process
+* DHT Manager
+    - Talks to and provides a portion of the DHT
+    - Interfaces between other components and the distributed data
+    - maintains a local copy of the table? probably has to
+        * Freshness rating?
+* Rsync Diff Chunker
+    - Calculates rsync diff sums against each other known online mirror (provided by Peer Manager)
+    - tightly coupled with Peer Manager, as different diffchunks may need to be sent out to each mirror, as each mirror may itself be unsynced to every other (worst case). 
+    
+However, during the course of implementation, the working design evolved away from several of these.
+
+The Rsync Diff Chunking functionality was no longer needed after the network architecture was changed to the Publisher-Subscriber model. All differences were made predictable without using the rsync windowed hashing technique to measure differences across a network: Subscribers only have older versions in a linear succession of versions, rather than having a related but possibly divergent copy with its own changes in a tree.
+
+The design prototype implemented for this project does not include functionality for peer discovery using DHT or any other techniques. Currently, peers share information about other peers that have already connected at least once to the network, and peers are also announced to the whole network once they initiate a connection to any member. However there is no way for the network to actively discover peers which have not initiated a connection.
+
+This functionality is planned to be implemented in the future, however it was not considered necessary in order to create a working prototype of the core syncing functionality.
+
+The Filesystem Watcher component was implemented using Java 7's new Paths API, which allows registering directories to be watched for changes. However, Filesystem Watcher internals are confined to a single class, so could be replaced by an implementation which uses a different underlying system. This allows the future support of Android, whose Java-like API Dalvik forked from Java before the release of Java 7, and which would have to rely on another mechanism to provide filesystem watching, such as the previously mentioned Inotify.
+
+The final version
+
 
 Binary Messages
 ---------------
@@ -460,8 +469,16 @@ Less of a concrete data format and more of a design pattern, TLV is the idea of 
 
 An application of the Type-Length-value design, Named Binary Tags are a binary data serialisation format originally created by Mojang AB to describe player data and world content. Although poorly-specified and susceptible to design changes without warning, the core of NBT has proved to be well-designed for efficiently storing binary data and its describing metadata.
 
-ID Bytes
---------
+Distribackup's Custom Binary Communication Protocol
+---------------------------------------------------
+
+After reviewing the existing serialisation software as detailed above, a decision was made to implement a new protocol which took inspiration from several of the projects. This new Data and Network Information Exchange Protocol (or DNIEPr) would be able to provide all of the requirements that emerged from studying the features and downsides of existing solutions.
+
+* The protocol shall make efficient use of network bandwidth, eg by encoding data in succinct Messages. 
+    * Resistance to message corruption shall be provided by the underlying TCP protocol.
+* The protocol should be specify a clear, unambiguous API easy to work with from
+
+###ID Bytes
 
 Each Object type has an ID byte, followed either by its payload (for static-length types)
 or a length int (without the int type header attached, because we know what should 
@@ -530,10 +547,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 1B | More Peers            | Compound | Contains a List:PeerInfo. Is a reply to a request for more Peers.
 
 
-Overview of implementation
---------------------------
 
-Describe implemented features, compare with original goals
 
 Main Data Structures
 --------------------
@@ -543,21 +557,19 @@ Main Data Structures
 
 ~~Really important implemented algorithms may be included (maybe in the form of pseudocode), but do not include actual code, except for very small portions of code that represent a solution to a particularly interesting or difficult problem (even then, pseudocode is better). Again, use figures as appropriate, e.g., to support discussion of communication between main procedures/methods in terms of procedure/method name, parameters, result type, function, relationship to other procedures/methods and so on.~~
 
-
-
 The system in operation/Process description
 -------------------------------------------
 
-##Definitions
+Common Scenarios
+----------------
+
+###Definitions
 
 P
 :	the publisher
 	
 S
 :	a new subscriber
-
-Common Scenarios
-----------------
 
 ###Peer Starts Program Up (Not First Time) AKA Old Subscriber Joins Network
 
@@ -633,29 +645,20 @@ situation is resolved by using file revision numbers (every update or transactio
 2. updates which conflict are weeded out, and a list of updates which need applying to the network is created
 3. Peers which have part or all of this update send what they have to everyone else
 
-Complex states with no intuitive solution
------------------------------------------
-
-##a token, key or password is used by a peer to become the new publisher (P2)
-
-###Another peer becomes the publisher P2 while the old publisher (P1) is propagating updates
-
-##subscriber checks (with publisher or publisher-checked peers) that files are up-to-date
+###Complex states with no intuitive solution
 
 
+* a token, key or password is used by a peer to become the new publisher (P2)
+* Another peer becomes the publisher P2 while the old publisher (P1) is propagating updates
+* subscriber checks (with publisher or publisher-checked peers) that files are up-to-date
+* Publisher can't access a subscriber, but others can
+    * From the perspective of this weakly-connected peer S, the publisher is down
+    * From the publisher's perspective, the peer has disappeared without saying goodbye (timed out)
 
-##Publisher can't access a subscriber, but others can
 
-* From the perspective of this weakly-connected peer S, the publisher is down
-* From the publisher's perspective, the peer has disappeared without saying goodbye (timed out)
+There are common procedure to follow for some of these events:
 
--------
-
-There's a common procedure to follow for some of these events
-
-there are general cases:
-
-##Generalisation: One Out-Of-Date Peer
+####Generalisation: One Out-Of-Date Peer
 
 For example:
 
@@ -663,13 +666,13 @@ For example:
 * peer loses its files (they are deleted, disk corrupt etc)
 * subscriber erroneously edits files
 
-###Procedure:
+#####Procedure:
 
 1. Out of date Peer P asks the publisher for the current revision number for every file in the tree, along with their checksums, size, and names
 1. P asks all known peers for more peers (in case its local peer list has been partially or wholly corrupted), and files (filtering any which aren't as high 
 
 
-###(Note: possibly two chapters):
+(Note: possibly two chapters):
 
 ~~Give the reader a feel for what the system is like to use (this may only be really relevant if the system has a user interface). Use screen dumps to illustrate - textually quite a short chapter, maybe just a walkthrough of the main features of a typical session with the system. Note that this is not a user manual. You aren't showing the reader how to operate the system, but rather what it’s like to use. As a separate chapter, you may also need a process description of your system, so that the reader can appreciate how the system works. This is not the same as the “walkthrough” described immediately above. It should be a description at a higher level than the code itself. Use supporting process diagrams as appropriate If your system has a significant user interface and a complex underlying system you may need both a walkthrough and a process chapter.~~
 
@@ -678,7 +681,7 @@ Testing & Evaluation
 
 ~~How you evaluated the system, how you designed the evaluation.~~
 
-The main competitors to to this software are Bit-Torrent Sync and Dropbox. Although the primary intended use of this software is for backup, these technological similarities with Bit-Torrent Sync, and the popularity of Dropbox will mean they will offer direct competition.
+The main competitors to to this software are Bit-Torrent Sync and Dropbox, due to the similarity of their technology compared to this project. Although the primary intended use of this software is for backup, these technological similarities along with the popularity of Dropbox will mean they will offer direct competition.
 
 * Is the system user-friendly?
 * Is the system cross-platform?
@@ -689,6 +692,8 @@ The main competitors to to this software are Bit-Torrent Sync and Dropbox. Altho
     * archive status misinformation
 * How well does the system cope with sudden changes in network topology?
 * How efficient is it? (bandwidth usage, processor & memory usage)
+* completeness of the API
+    * lack of ambiguity
 
 
 Results of the evaluation
@@ -710,3 +715,36 @@ Conclusions
 
 References
 ===========
+[^backup321]: "Backups with the 3-2-1 rule" (http://blog.wisefaq.com/2010/01/05/backups-with-the-3-2-1-rule/) (accessed 25/06/2014)
+[^wang13]: Liang Wang and Jussi Kangasharju, "Measuring Large-Scale Distributed Systems:
+Case of Bit Torrent Mainline DHT", 13-th IEEE International Conference on Peer-to-Peer Computing
+(http://www.cs.helsinki.fi/u/lxwang/publications/P2P2013_13.pdf) (accessed 19/06/14)
+
+[^tahoe]: http://tahoe-lafs.org/trac/tahoe-lafs (accessed 24/06/2014)
+[^tahoe1page]:"Tahoe one-page summary" (https://tahoe-lafs.org/trac/tahoe-lafs/browser/trunk/docs/about.rst) (accessed 24/06/2014)
+[^MogileFS]: http://code.google.com/p/mogilefs/ (accessed 25/06/2014)
+[^ceph]:http://ceph.com/(accessed 25/06/2014)
+[^sparkleshare]:http://sparkleshare.org/ (accessed 25/06/2014)
+[^sparklegood]:http://sparkleshare.org/#good (accessed 25/06/2014)
+[^sparklebad]:http://sparkleshare.org/#bad (accessed 25/06/2014)
+[^git-annex]:Joey Hess, "Git Annex" (http://git-annex.branchable.com/) (Accessed 25/06/2014)
+[^dropbox-secpaper]: Dhiru Kholia and Przemysław Wegrzyn, "Looking inside the (Drop) box", 7th USENIX Workshop on Offensive Technologies (http://0b4af6cdc2f0c5998459-c0245c5c937c5dedcca3f1764ecc9b2f.r43.cf2.rackcdn.com/12058-woot13-kholia.pdf) (accessed 24/0/2014)
+[^dropbox-security1]: Matt Marshall, "Dropbox has become 'problem child' of cloud security" (http://venturebeat.com/2012/08/01/dropbox-has-become-problem-child-of-cloud-security/)(accessed 25/06/2014)
+[^dropbox-security2]:Derek Newton, "Dropbox authentication: insecure by design" (http://dereknewton.com/2011/04/dropbox-authentication-static-host-ids/)(Accessed 25/06/2014)
+[^dropbox-leak]: Graham Cluley, "Dropbox users leak tax returns, mortgage applications and more" (http://grahamcluley.com/2014/05/dropbox-box-leak/)(accessed 25/06/2014)
+[^dropbox-hoard]: User 'IsThisTheRealLife', "DropBox is keeping 'permanently deleted' files for longer than the 30 day recovery limit.", (http://www.reddit.com/r/privacy/comments/1m60yp/dropbox_is_keeping_permanently_deleted_files_for/)(accessed 26/06/2014)
+[^prism]:The Guardian, "The NSA Files" (http://www.theguardian.com/world/the-nsa-files)(accessed 25/06/2014)
+[^dropbox-privacy]:"Dropbox Privacy Policy", (https://www.dropbox.com/privacy)(accessed 25/06/2014)
+
+[^ms-dublin-usgov-handover]:Margi Murphy, "Microsoft must hand over customer data held in Dublin to US government" (http://www.computerworlduk.com/news/security/3514076/microsoft-must-hand-over-customer-data-held-in-dublin-us-government/)(accessed 25/06/2014)
+
+[^raspi-java]: Eben Upton, "Oracle Java on Raspberry Pi" (http://www.raspberrypi.org/oracle-java-on-raspberry-pi) (accessed 24/06/2014)
+[^git]:"Git Website" (http://git-scm.com/) (accessed 24/06/2014)
+[^rsync-tech]:"The rsync algorithm" (http://rsync.samba.org/tech_report) (accessed 24/06/2014)
+[^rsync]:"Rsync" (http://rsync.samba.org/) (accessed 24/06/2014)
+[^bt-protocol]: "The BitTorrent Protocol Specification" (http://www.bittorrent.org/beps/bep_0003.html) (accessed 24/06/2014)
+[^courgette]:http://dev.chromium.org/developers/design-documents/software-updates-courgette
+[^inotify]: "inotify(7) - Linux man page" (http://linux.die.net/man/7/inotify)(alternatively try "man 7 inotify" on linux systems)
+[^FileObserver]:Android API Reference, "FileObserver Class" (https://developer.android.com/reference/android/os/FileObserver.html) (accessed 24/06/2014)
+[^PGP]:"Pretty Good Privacy" (http://www.cryptography.org/getpgp.htm) (accessed 24/06/2014)
+[^Percival06]: "Matching with Mismatches and Assorted Applications" (http://www.daemonology.net/papers/thesis.pdf) (accessed 05/03/2015)
