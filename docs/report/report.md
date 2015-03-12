@@ -5,7 +5,7 @@ Note: In this draft version, crossed-out text represent notes and guidance from 
 
 ##Overall Aim of the Project
 
-
+Distribackup aims to allow normal users of technology to create and manage backups of important family data, without relying on expensive dedicated hardware or transient cloud services.
 
 ##Problem Description
 
