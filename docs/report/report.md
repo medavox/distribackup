@@ -11,7 +11,7 @@ Distribackup aims to allow normal users of technology to create and manage backu
 
 Data storage has increasingly become the responsibility of special-interest corporations, who leverage their existing massive server infrastructure (or server infrastructure subcontractors) to reduce the legwork for ordinary consumers wishing to back up their data. The concept of the 'cloud' was invented to further psychologically bolster these data-centres; a fluffy, harmless-sounding term referring to some ethereal space where all your data safely resides.
 
-The reality, as ever, is much less reassuring. Corporations want your data data because, as the old saying goes, information is power. The purpose of this 'cloud' is not to secure average users' data but to generate Big Data (another modern term which refers to a different aspect of the same thing, this one coined by and for cardboard-cutout non-people, greed in suits and economists with dollar signs for eyes), which can be analysed statistically at massive scale, in order to better improve the company's profit techniques. Information of this type is available at such scale that new psychological techniques can be devised to coerce users, such as gamification. More personal messages can be created, using well-educated guesses about the interests and demographics of a portion of the company's audience.
+The reality, as ever, is much less reassuring. Corporations want your data because, as the old saying goes, information is power. The purpose of this 'cloud' is not to secure average users' data but to generate Big Data (another modern term which refers to a different aspect of the same thing, this one coined by and for cardboard-cutout non-people, greed in suits and economists with dollar signs for eyes), which can be analysed statistically at massive scale, in order to better improve the company's profit techniques. Information of this type is available at such scale that new psychological techniques can be devised to coerce users, such as gamification. More personal messages can be created, using well-educated guesses about the interests and demographics of a portion of the company's audience.
 
 It can be almost impossible to put the cat back into the bag once corporation(s) have dug their heels into an area of human interest -- barring massive governmental intervention, such as internationally-backed legislation. However some things have been shown to be easier to fix than others. The Open Source movement has shown that by initially appealing to users' greed by offering something for which they would otherwise have to pay money for free, it is possible to draw  non-technical users away from for-profit services. The effectiveness of doing this is also strongly influenced by the presentation and appeal of the software, which modern businesses have evolved to take very seriously, creating an entire field called 'brand management'.
 
@@ -192,11 +192,11 @@ Governments seize data wholesale from sites (like MegaUpload), stealing both pir
 The storage is run by a company, whose primary motivation is to make a profit; the agreement you sign may allow them to mine your data for information useful to them (e.g. using your photos as marketing material).
 
 ###Any improvements that your system offers
+
 ###shortcomings that your work addresses, and so on
 
 ##Justify your choice of platform, software, solution etc
 
-pandoc -c style.css -sN -r markdown+pipe_tables -w html -o report.html report.md
 Design
 ======
 
@@ -220,7 +220,7 @@ As a bare minimum interface (all of which will be optional, and will default to 
 Features and General Design Intentions
 --------------------------------------
 
-Distribackup's intended primary use case is for synchronising backup copies of large, rarely-changing binary files such as images and videos. This means that design decision have been chosen in order to optimise for networks with low common up-time, such as a collection of commodity computing hardware: a family's PCs, laptops, tablets, and phones.
+Distribackup's intended primary use case is for synchronising backup copies of large, rarely-changing binary files such as images and videos. This means that design decisions have been made which optimise the network for low common up-time, such as a collection of commodity computing hardware: a family's PCs, laptops, tablets, and phones.
 
 While specifying planned features, it was necessary to keep in mind that the aim was not to create a source code management system. Plenty of such software already exists, which in the author's opinion is perfectly adequate  -- making such a task unnecessary. Furthermore, if this project was implemented properly, it would be possible to use existing source-code management solutions on top of the archive system (by including the SCM's repository meta-data in Distribackup's archive), creating a mirrored, versioned backup.
 
@@ -345,35 +345,6 @@ Intelligent handling of renamed files will depend on inotify (and the java bindi
 We're using computing time to reduce bandwidth usage
 It may be useful to store state (or diffs) of file-system -- the old state of the files, to compare against changed files, and filter for small changes and mind-changes
 
-#Optional Extras (if have time)
-* Android Client
-* Windows Client
-* Merging conflicts
-* Edit locks
-
-Further Work (Not Implementing in this Development Cycle)
----------------------------------------------------------
-
-* Web-visible files - hosted web pages and web links to files
-* Web interface
-* Version control for managed files
-    - Likely to be implemented using Git
-* GUI
-    - stick to a daemon (and setup wizard?) with a configuration file for now
-* Fine-grained file subscriptions
-    - mirrors only host files they're interested in
-    - Risk of low availability for undesirable/unpopular files - bad
-* Merging conflicting file updates automatically (modification times, diffs, git?)
-* Multiple networks, multiple folders in each
-    * This could get complex for the user very quickly
-* Encryption [^PGP] - this can be broken into 3 sub-areas; PGP is a good candidate for providing any of these.
-	All of these, though especially the first two, are highly desirable, and may become core goals during the course of the project.
-	- Transfer encryption - preventing digital wire taps from snooping on data being transferred is extremely important, especially given the use of a public network (the internet) as the transmission medium.
-	- Authentication - prevent attackers from joining the network without permission.
-	- Local storage encryption - Focus on interfacing with existing file-system encryption technology here
-* Human-readable anonymous peer IDs
-    - map IP address of a peer to a country,
-    - then hash the peer's UUID to choose a name from a list specific for that country
 
 
 
@@ -693,6 +664,14 @@ Testing
 =======
 ~~Testing is intended to establish that the system functions correctly.~~
 
+Quantitative, code-based tests that ascertain whether the program functions as intended
+
+* Is the system cross-platform?
+    * HOW cross platform? (Linux, Windows, Android...)
+* Is the system resistant to attack?
+    * random peers going down
+    * Publisher impersonation/spoofing
+    * archive status misinformation
 
 Evaluation
 ====================
@@ -702,13 +681,6 @@ Evaluation examines how well the system achieves its aim.~~
 
 The main competitors to to this software are Bit-Torrent Sync and DropBox, due to the similarity of their technology compared to this project. Although the primary intended use of this software is for backup, these technological similarities along with the popularity of DropBox will mean they will offer direct competition.
 
-* Is the system user-friendly?
-* Is the system cross-platform?
-    * HOW cross platform? (Linux, Windows, Android...)
-* Is the system resistant to attack?
-    * random peers going down
-    * Publisher impersonation/spoofing
-    * archive status misinformation
 * How well does the system cope with sudden changes in network topology?
 * How efficient is it? (bandwidth usage, processor & memory usage)
 * completeness of the API
@@ -728,6 +700,34 @@ Conclusions
 ===========
 
 ~~VERY important chapter. Revisit your objectives from chapter 1, for each, analyse whether the project met that objective, and if not, discuss this, and suggest a solution. Discuss the project as a whole, if you did it again would you do it differently? What did you have to learn to do the project, what did you learn from doing it? What features would you add to your system if you had more time etc? Some suggested subsections for your concluding chapter are: Review of aims; Suggested revisions to design/implementation; Future work (possible developments of existing system); Lessons learned. Finish the concluding chapter with a brief, fairly upbeat overall conclusion on the project as a whole. Even projects that are not an overall success usually achieve something, and you acquire skills and knowledge from doing the project. End on a positive note.~~
+
+Future Work
+===========
+
+* Android Client
+* Windows Client
+
+* Web-visible files - hosted web pages and web links to files
+* Web interface
+* Version control for managed files
+    - Likely to be implemented using Git
+* GUI
+    - stick to a daemon (and setup wizard?) with a configuration file for now
+* Fine-grained file subscriptions
+    - mirrors only host files they're interested in
+    - Risk of low availability for undesirable/unpopular files - bad
+* Merging conflicting file updates automatically (modification times, diffs, git?)
+* Multiple networks, multiple folders in each
+    * This could get complex for the user very quickly
+* Encryption [^PGP] - this can be broken into 3 sub-areas; PGP is a good candidate for providing any of these.
+	All of these, though especially the first two, are highly desirable, and may become core goals during the course of the project.
+	- Transfer encryption - preventing digital wire taps from snooping on data being transferred is extremely important, especially given the use of a public network (the internet) as the transmission medium.
+	- Authentication - prevent attackers from joining the network without permission.
+	- Local storage encryption - Focus on interfacing with existing file-system encryption technology here
+* Human-readable anonymous peer IDs
+    - map IP address of a peer to a country,
+    - then hash the peer's UUID to choose a name from a list specific for that country
+
 
 References
 ===========

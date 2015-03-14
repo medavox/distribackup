@@ -14,7 +14,7 @@ public class CloseHook extends Thread
 	@Override
 	public void run()
 	{
-		System.out.println("losing Time!");
+		System.out.println(/*^C*/"losing Time!");
 		owner.threadsEnabled = false;//tell looping threads to shut down
 		//announce exit
 		for(PeerInfo p : owner.peers.values())

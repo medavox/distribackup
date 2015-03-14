@@ -27,7 +27,7 @@ public class Publisher extends Peer
 		publisherUUID = myUUID;
     }
     
-    public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO
+    public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO: better handling of Publisher impostor
     {
         //WE are the publisher!
     	//so there's an impostor in our midst...

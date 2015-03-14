@@ -83,6 +83,10 @@ guidance from the intranet site which have not yet been removed.
 
 \section{Overall Aim of the Project}\label{overall-aim-of-the-project}
 
+Distribackup aims to allow normal users of technology to create and
+manage backups of important family data, without relying on expensive
+dedicated hardware or transient cloud services.
+
 \section{Problem Description}\label{problem-description}
 
 Data storage has increasingly become the responsibility of
@@ -90,15 +94,15 @@ special-interest corporations, who leverage their existing massive
 server infrastructure (or server infrastructure subcontractors) to
 reduce the legwork for ordinary consumers wishing to back up their data.
 The concept of the `cloud' was invented to further psychologically
-bolster these datacentres; a fluffy, harmless-sounding term referring to
-some ethereal space where all your data safely resides.
+bolster these data-centres; a fluffy, harmless-sounding term referring
+to some ethereal space where all your data safely resides.
 
 The reality, as ever, is much less reassuring. Corporations want your
 data data because, as the old saying goes, information is power. The
 purpose of this `cloud' is not to secure average users' data but to
 generate Big Data (another modern term which refers to a different
 aspect of the same thing, this one coined by and for cardboard-cutout
-nonpeople, greed in suits and economists with dollar signs for eyes),
+non-people, greed in suits and economists with dollar signs for eyes),
 which can be analysed statistically at massive scale, in order to better
 improve the company's profit techniques. Information of this type is
 available at such scale that new psychological techniques can be devised
@@ -141,14 +145,17 @@ compromised by a Terms Of Service agreement (TOS).
 
 \section{Project Goals}\label{project-goals}
 
+The main objectives of this project are to:-
+
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Develop a distrbuted backup syncing program, autonomous enough for
-  non-technical users to be able to use
+  Develop a distributed backup syncing program, autonomous enough for
+  non-technical users to be able to use, and efficient enough to run on
+  domestic computer hardware;
 \item
   Design and implement an efficient file synchronisation protocol to
-  support this
+  support this;
 \item
   Design and implement a new serialisation suite which is both efficient
   and succinct for our purposes
@@ -162,13 +169,13 @@ compromised by a Terms Of Service agreement (TOS).
   \end{itemize}
 \end{itemize}
 
-brief chapter-by-chapter overview of the rest of the report
+TODO: brief chapter-by-chapter overview of the rest of the report
 
 Unique data collections such as photos are often stored on a physical
 medium which is vulnerable to damage or corruption. CDs are damaged by
 heat, light and wear and tear. When this storage fails (mobile phones
 are lost, old PCs break down or are replaced due to age, without
-sufficiently diligent data transferral), often the user unwittingly
+sufficiently diligent data transferal), often the user unwittingly
 throws away or loses many years of irreplaceable data.
 
 Lost laptops and pen drives cause frequent loss of important data. Old
@@ -178,11 +185,11 @@ Internet -- lack of understanding causes further personal data loss upon
 hardware failure.
 
 The backup strategy often lauded as the most prudent follows the 3-2-1
-strategy: 3 copies, on 2 different storage media, 1 offsite
+strategy: 3 copies, on 2 different storage media, 1 off-site
 backup.\footnote{``Backups with the 3-2-1 rule''
   (http://blog.wisefaq.com/2010/01/05/backups-with-the-3-2-1-rule/)
   (accessed 25/06/2014)} This is an ideal, but is extremely difficult
-for a home user to set up and maintain, without corporate resrouces at
+for a home user to set up and maintain, without corporate resources at
 their disposal. For instance:
 
 \begin{itemize}
@@ -190,7 +197,7 @@ their disposal. For instance:
 \item
   How does one set up backups in different locations?
 \item
-  How does one sync updates to each offsite copy?
+  How does one sync updates to each off-site copy?
 \end{itemize}
 
 This project aims to answer these questions with a software solution,
@@ -201,39 +208,34 @@ relying on a third party service that has ulterior motives.
 
 \section{Main Project Features}\label{main-project-features}
 
-Distribackup will watch the contents of a directory, and keep its
-contents synced with identical directories on other computers. Because
-there is no authoritative server broadcasting updates to parties,
-syncing will use a distributed model to propagate changes. In order to
-expedite large file transfers (which are likely in the primary use
-case), a differencing algorithm will be used to only send pieces of
-files that have changed with an update.
+Distribackup watches a directory, keeping its contents synced with
+copies of the data on other computers. Because the authoritative server
+broadcasting updates is likely to be a low-end machine, update data will
+be shared among subscribed peers. In order to expedite large file
+transfers (which are likely in the primary use case), a differencing
+algorithm will be used to only send pieces of files that have changed
+since an update.
 
-This report will describe why this software is needed, comparing it to
-related work, and showing how this project can build on this work. It
-will then describe the proposed programme of work to be undertaken in
-order to complete the bare-bones implementation offered here; continuing
-by laying out the sub-components of the software, their purposes, and
-how they fit together to complete the end goal. The methodology will
-then be explained, describing what software development techniques will
-be used during the project. This will lead into the proposed evaluation
-methodology, and how research will be carried out.
+This report describes the problem this software attempts to solve and
+why it is needed, comparing it to related work, and showing how this
+project builds on this work. It then describes the proposed programme of
+work to be undertaken in order to complete the bare-bones implementation
+offered here; continuing by laying out the sub-components of the
+software, their purposes, and how they fit together to complete the end
+goal. The methodology will then be explained, describing what software
+development techniques will be used during the project. This will lead
+into the proposed evaluation methodology, and how research will be
+carried out.
 
-The expected timeline for this work will then be described in detail,
+The expected time-line for this work will then be described in detail,
 accompanied by a Gantt chart showing this visually. The report will then
 finish by listing the resources required in order for it to be
 completed, and a list of references used.
 
+Abstract Introduction Background Design Implementation Testing
+Evaluation Conclusions Future Work References
+
 \chapter{Background}\label{background}
-
-\subsection{Any improvements that your system
-offers}\label{any-improvements-that-your-system-offers}
-
-\subsection{shortcomings that your work addresses, and so
-on}\label{shortcomings-that-your-work-addresses-and-so-on}
-
-\section{Justify your choice of platform, software, solution
-etc}\label{justify-your-choice-of-platform-software-solution-etc}
 
 \section{Summary of technical problems and
 approaches}\label{summary-of-technical-problems-and-approaches}
@@ -249,9 +251,6 @@ preserve their family's history.
 \section{Relevant work and/or existing related
 systems}\label{relevant-work-andor-existing-related-systems}
 
-\subsection{implications for this
-project}\label{implications-for-this-project}
-
 This is by no means an exhaustive list, but discusses the most relevant
 existing solutions (at time of writing), and describes how Distribackup
 differs or extends from them.
@@ -263,7 +262,7 @@ differs or extends from them.
 \item
   Collection contents cannot be changed after torrent creation
 \item
-  Unsecure by design (IP addresses and ISP hostnames are broadcast and
+  Unsecure by design (IP addresses and ISP host-names are broadcast and
   used as identities)
 \item
   Nowadays highly stigmatised; associated with illegal activity
@@ -295,6 +294,8 @@ differs or extends from them.
 \subsection{Syncthing}\label{syncthing}
 
 http://syncthing.net/
+
+Designed to be an open-source alternative to Bit-Torrent Sync, SyncThing
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -365,8 +366,9 @@ changes between different storage nodes.
 
 \subsection{Ceph}\label{ceph}
 
-Ceph is a distributed file system. Ceph is aimed more at technically
-proficient users and industry professionals.
+Ceph is a distributed file system. Designed for use with Storage Area
+Networks and other types of dedicated file storage hardware, Ceph is
+aimed more at technically proficient users and industry professionals.
 
 \subsection{Tahoe-LAFS}\label{tahoe-lafs}
 
@@ -397,14 +399,14 @@ server to manage backups, which introduces an infrastructure overhead
 
 Complex conceptual structure Multiple types of mirror nodes
 
-\subsection{Dropbox}\label{dropbox}
+\subsection{DropBox}\label{dropbox}
 
-Dropbox is an extremely popular solution for accessing data across
+DropBox is an extremely popular solution for accessing data across
 multiple machines, and sharing files easily with small groups of people.
-As convenient as Dropbox is, there are downsides:
+As convenient as DropBox is, there are downsides:
 
-Dropbox is useful for keeping files synced across multiple machines; but
-by using their service, Dropbox can stake a claim to your data.
+DropBox is useful for keeping files synced across multiple machines; but
+by using their service, DropBox can stake a claim to your data.
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -437,20 +439,20 @@ by using their service, Dropbox can stake a claim to your data.
     26/06/2014)}
 \item
   If you stored the source code to a commercially interesting piece of
-  software (something that could make money), Dropbox could feasibly
+  software (something that could make money), DropBox could feasibly
   contend the Intellectual Property rights
 \item
   The maximum capacity and file sizes are very low, which restricts its
   usefulness.
 \item
-  Dropbox are required by law to hand over data to governmental bodies
+  DropBox are required by law to hand over data to governmental bodies
   (including overseas agencies such as US intelligence). In an age of
   controversial laws (legislate first, ask questions later)\footnote{The
     Guardian, ``The NSA Files''
     (http://www.theguardian.com/world/the-nsa-files)(accessed
     25/06/2014)}, this is problematic
 \item
-  Dropbox also reserves the right to share certain personal information
+  DropBox also reserves the right to share certain personal information
   with other companies, whose own security may be insufficient\footnote{``Dropbox
     Privacy Policy'', (https://www.dropbox.com/privacy)(accessed
     25/06/2014)}
@@ -459,7 +461,7 @@ by using their service, Dropbox can stake a claim to your data.
 \subsection{Other Commercial
 Solutions}\label{other-commercial-solutions}
 
-Dropbox has been examined individually due to its popularity; however
+DropBox has been examined individually due to its popularity; however
 some general disadvantages apply to all third-party commercial
 solutions:-
 
@@ -483,15 +485,18 @@ targets for attack. They:
     25/06/2014)}
 \end{itemize}
 
+\section{Implications For This
+Project}\label{implications-for-this-project}
+
 None of the existing storage solutions are robust enough to use for
 long-term archival data.
 
 Existing backup solutions are commercially available, and can come with
 very restrictive space limits, or require that the user allow the data
-to be used for marketing purposes (eg photos from a birthday party used
-in advertising without explicit permission). A software system which
-allows lay people to set up extremely robust backups of data that can't
-be replaced.
+to be used for marketing purposes (e.g.~photos from a birthday party
+used in advertising without explicit permission). A software system
+which allows lay people to set up extremely robust backups of data that
+can't be replaced.
 
 Data is stored on third-party server farms. These are vulnerable because
 they can not only suffer the same physical damage (floods, earthquakes,
@@ -507,10 +512,20 @@ centres is at risk.
 
 The storage is run by a company, whose primary motivation is to make a
 profit; the agreement you sign may allow them to mine your data for
-information useful to them (eg. using your photos as marketing
+information useful to them (e.g.~using your photos as marketing
 material).
 
-\chapter{Design}\label{design}
+\subsection{Any improvements that your system
+offers}\label{any-improvements-that-your-system-offers}
+
+\subsection{shortcomings that your work addresses, and so
+on}\label{shortcomings-that-your-work-addresses-and-so-on}
+
+\section{Justify your choice of platform, software, solution
+etc}\label{justify-your-choice-of-platform-software-solution-etc}
+
+pandoc -c style.css -sN -r markdown+pipe\_tables -w html -o report.html
+report.md Design ======
 
 \sout{Major design decisions and justifications. System architecture,
 etc. Use supporting figures where appropriate and helpful. A diagram of
@@ -532,8 +547,8 @@ notation (such as UML).}
   Not intended for real-time sync
 \item
   The system will work best with infrequent updates among sometimes-on
-  machines that form a network with common uptime (ie each mirror is on
-  at the same time as at least one other machine, to pass updates)
+  machines that form a network with common up-time (i.e.~each mirror is
+  on at the same time as at least one other machine, to pass updates)
 
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
@@ -574,17 +589,17 @@ Intentions}\label{features-and-general-design-intentions}
 Distribackup's intended primary use case is for synchronising backup
 copies of large, rarely-changing binary files such as images and videos.
 This means that design decision have been chosen in order to optimise
-for networks with low common uptime, such as a collection of commodity
+for networks with low common up-time, such as a collection of commodity
 computing hardware: a family's PCs, laptops, tablets, and phones.
 
 While specifying planned features, it was necessary to keep in mind that
 the aim was not to create a source code management system. Plenty of
 such software already exists, which in the author's opinion is perfectly
-adequate -- making such a task unecessary. Furthermore, if this project
+adequate -- making such a task unnecessary. Furthermore, if this project
 was implemented properly, it would be possible to use existing
 source-code management solutions on top of the archive system (by
-including the SCM's repo metadata in Distribackup's archive), creating a
-mirrored, versioned backup.
+including the SCM's repository meta-data in Distribackup's archive),
+creating a mirrored, versioned backup.
 
 Changes to files are not be grouped into discrete updates which are
 pushed to the file system in one go; changes appear as soon as they are
@@ -594,7 +609,7 @@ interdependent files, such as a website or source code, but it matters
 little to the files in our intended use case.
 
 Many similar projects emphasise their network's resistance to attack and
-takedown requests, using a variety of encryption, trust-based
+take-down requests, using a variety of encryption, trust-based
 connections and decentralised network architecture. The last method,
 decentralisation, is a popular one, as it ensures that there's no
 central point to fail/be attacked for the network to fail. This kind of
@@ -626,7 +641,7 @@ created from scratch, and given proper authority.
 Publisher}\label{one-way-at-a-time-sync-the-central-publisher}
 
 In order to minimise network and design complexity, Distribackup's
-network architecture is designed asround the idea of a single Publisher
+network architecture is designed around the idea of a single Publisher
 peer, who announces updates to the mirrored files. Only the Publisher
 has the authority to make changes to archive. This avoids problems such
 as multiple concurrent versions of files, implementing remote diffing
@@ -664,7 +679,7 @@ Publisher
 The difference between remote copies and the new copies in the spoke is
 always known, as the remote files are the same as the spoke's file
 pre-change We don't need to solve rsync's diff between remote files
-problem, we can just use a normal diff algo
+problem, we can just use a normal diff algorithm
 
 publisher authority (ie which mirror can update the network) can be
 controlled with an arbitrary token, eg an RSA key or password
@@ -675,10 +690,10 @@ controlled with an arbitrary token, eg an RSA key or password
   allowing us to move the publishing mirror dynamically
 \item
   which moves us back into the use-case area of 1 person, many machines
-  like dropbox!
+  like DropBox!
 \item
-  something like ssh private key? possibly a password? should be sth.
-  intangible, portable
+  something like ssh private key? possibly a password? should be
+  something. intangible, portable
 \item
   this has the bonus of being conceptually easy for lay users to
   understand
@@ -738,7 +753,7 @@ The current implementation chooses a random peer to request the file
 from (in order to distribute network load across the network evenly),
 sending another request to a different peer if the first declares that
 it doesn't have the file. However this algorithm this could be optimised
-in later versions to use collected network metadata such as connection
+in later versions to use collected network meta-data such as connection
 bandwidth to select a more suitable peer.
 
 \section{Handling Incoming Messages}\label{handling-incoming-messages}
@@ -789,8 +804,8 @@ a wizard.
   Provision for dependencies -- ie you can't delete the film without
   deleting the subtitles as well?
 \item
-  Prioritise updates to and from low uptime mirrors - ie granny's laptop
-  she uses once a week
+  Prioritise updates to and from low up-time mirrors - ie granny's
+  laptop she uses once a week
 \item
   Organise p2p traffic based on measured speeds of mirrors
 \end{itemize}
@@ -810,7 +825,7 @@ Collect multiple rapid-fire updates into one network transaction
 \item
   Sync check
 
-  Upon startup: mirror discovers others using DHT as overlay network
+  Upon start-up: mirror discovers others using DHT as overlay network
 
   Upon a file change: Inotify alerts of file change
 
@@ -830,7 +845,7 @@ Intelligent handling of renamed files will depend on inotify (and the
 java binding library), and whether it can detect file moves.
 
 We're using computing time to reduce bandwidth usage It may be useful to
-store state (or diffs) of filesystem -- the old state of the files, to
+store state (or diffs) of file-system -- the old state of the files, to
 compare against changed files, and filter for small changes and
 mind-changes
 
@@ -849,8 +864,8 @@ time)}\label{optional-extras-if-have-time}
   Edit locks
 \end{itemize}
 
-\chapter{Further Work (Not Implementing in this Dev
-Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
+\section{Further Work (Not Implementing in this Development
+Cycle)}\label{further-work-not-implementing-in-this-development-cycle}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -872,7 +887,8 @@ Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
   \item
-    stick to a daemon (and setup wizard?) with a config file for now
+    stick to a daemon (and setup wizard?) with a configuration file for
+    now
   \end{itemize}
 \item
   Fine-grained file subscriptions
@@ -914,10 +930,10 @@ Cycle)}\label{further-work-not-implementing-in-this-dev-cycle}
     permission.
   \item
     Local storage encryption - Focus on interfacing with existing
-    filesystem encryption technology here
+    file-system encryption technology here
   \end{itemize}
 \item
-  Human-readable anoynmous peer IDs
+  Human-readable anonymous peer IDs
 
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
@@ -939,13 +955,13 @@ Describe implemented features, compare with original goals
 Components}\label{structure-of-functional-components}
 
 \section{Functional Components (as described in
-FYPP):}\label{functional-components-as-described-in-fypp}
+Proposal):}\label{functional-components-as-described-in-proposal}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
   Peer discovery - given that peers have dynamic IP addresses and
-  \textless{}100\% uptime?
+  \textless{}100\% up-time?
 
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
@@ -1001,7 +1017,7 @@ FYPP):}\label{functional-components-as-described-in-fypp}
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
   \item
-    using Inotify? (linux systems only)
+    using Inotify? (Linux systems only)
   \end{itemize}
 \item
   merging conflicting versions - just do what DropBox does and rename
@@ -1044,18 +1060,18 @@ The original design comprised 5 major functional components:-
       Seen mirrors, their MAC addresses and current IP address (and
       possibly another unique identifier)
     \item
-      Last seen and average common uptime
+      Last seen and average common up-time
     \item
       Also sends heartbeats to all known online mirrors
     \end{itemize}
   \end{itemize}
 \item
-  Filesystem Watcher
+  File-System Watcher
 
   \begin{itemize}
   \itemsep1pt\parskip0pt\parsep0pt
   \item
-    Uses inotify on linux \& android
+    Uses inotify on Linux \& android
   \item
     Triggers events which start the sync process
   \end{itemize}
@@ -1124,8 +1140,6 @@ Java-like API Dalvik forked from Java before the release of Java 7, and
 which would have to rely on another mechanism to provide filesystem
 watching, such as the previously mentioned Inotify.
 
-The final version
-
 \section{Binary Messages}\label{binary-messages}
 
 In order to provide for efficiency of communication between nodes, it
@@ -1139,7 +1153,7 @@ data types which have analogues in many common programming languages,
 such as 8, 16, 32 and 64 integers, booleans and Strings.
 
 floating-point types were not included in the specification, because
-they were not needed for distribackup's purposes, however they could be
+they were not needed for Distribackup's purposes, however they could be
 included and implemented in future protocol versions if the need arose.
 
 Before creating this protocol, several existing alternatives were looked
@@ -1147,18 +1161,19 @@ at, to ensure that creation of a custom protocol was necessary.
 
 \subsection{JSON}\label{json}
 
-Javascript Serial Object Notation is a plain-text, human-readable data
+JavaScript Serial Object Notation is a plain-text, human-readable data
 storage and interchange format which is rapidly gaining widespread
 acceptance as a common data format. Less textually redundant replacement
 to XML, it is often found in places where data needs to be read by both
-humans and computers, such as in a config file, or in places where a
-common data interchange format (which is less heavyweight than something
-like CORBA) is needed for data exchange between programming languages.
+humans and computers, such as in a configuration file, or in places
+where a common data interchange format (which is less heavyweight than
+something like CORBA) is needed for data exchange between programming
+languages.
 
-JSON can only store data which can be represented in plaintext. Ruling
-out embedding binary data in JSON files using plaintext encoding formats
-such as base64 or yEncoding (which are storage-inefficient and require
-processing overhead), BSON was next examined as a candidate.
+JSON can only store data which can be represented in plain text. Ruling
+out embedding binary data in JSON files using plain text encoding
+formats such as base64 or yEncoding (which are storage-inefficient and
+require processing overhead), BSON was next examined as a candidate.
 
 \subsubsection{BSON}\label{bson}
 
@@ -1186,18 +1201,19 @@ Finally, the serialisation API has been found to generate significant
 amounts of boilerplate code in order to set up and manage, introducing
 subsystems which may function differently between differing Java
 implementations (Oracle Java 6, 7 or 8, and GNU Classpath) creating
-undesirable complexity in system architecture and codebase maintenance.
+undesirable complexity in system architecture and code-base maintenance.
 
 Other Java serialisation libraries have been created to replace this
 relatively clunky functionality, such as the Kryo{[}\^{}kryo{]} library,
-but the swiss-army-tank design of this project was deemed too
+but the Swiss-army-tank design of this project was deemed too
 heavyweight for this project.
 
 \subsection{Type Length Value}\label{type-length-value}
 
-Less of a concrete data format and more of a design pattern, TLV is the
-idea of storing each message as a fixed-length id header, a fixed-length
-message-length field, followed by length bytes of payload.
+Less of a concrete data format and more of a design pattern,
+Type-Length-Value is the idea of storing each message as a fixed-length
+id header, a fixed-length message-length field, followed by length bytes
+of payload.
 
 \subsection{Named Binary Tag}\label{named-binary-tag}
 
@@ -1251,13 +1267,14 @@ known from the object's structure definition. Variable-length types
 Message types with a static payload length (eg bitfield, ULong) don't
 have (or need) a length attribute. Their length is built into the spec.
 
-Variable-length homogenous types (String, ByteArray) are TLV; see below.
+Variable-length homogeneous types (String, Byte-Array) are TLV; see
+below.
 
 \begin{description}
 \item[TLV]
 Type Length Value, a simple way of defining variable-length types such
 as Strings. Length is a Int: 32-bits, 0 to 2\^{}31 -1. Changed from
-unisgned int due to Java array addressing limitations.
+unsigned int due to Java array addressing limitations.
 \item[TNV]
 Type Number Value. An different field for array types, specifying how
 many elements there are. Useful for progress estimation, or simple
@@ -1278,7 +1295,7 @@ ID byte & Name & Payload length in bytes & Is Compound / Notes
 \\\addlinespace
 \midrule\endhead
 00 & bitfield & 1 & Contains up to 8 booleans. Knowing which bits are
-used is left to implementation, but start with the LSB
+used is left to implementation, but start with the least significant bit
 \\\addlinespace
 01 & String & TLV & UTF16; but length field is still in bytes. So chars
 = length * 2.
@@ -1339,7 +1356,8 @@ Likely to be broadcast by a new subscriber, to all known peers.
 below}
 \\\addlinespace
 13 & File Request & TLV & Contains a single FileInfo. FileInfo's RevNum
-can be for a specific version, or -1 for latest version
+(Revision Number) can be for a specific version, or -1 for latest
+version
 \\\addlinespace
 14 & Greeting & 16 & Contains UUID(long msb,long lsb). If UUID is
 unknown to receiver, it may request the sender's PeerInfo
@@ -1361,9 +1379,9 @@ the replying peer doesn't have.
 19 & PeerInfo Request & 0 & A request for the connected Peer's PeerInfo
 \\\addlinespace
 1A & ``haz nao'' announcement & Compound & Announces to network upon
-completion that this peer now has this FileID, so others can request it.
-Contains a list (usually of length 1) of FileInfos of file this peer now
-has
+completion that this peer now has this FileInfo, so others can request
+it. Contains a list (usually of length 1) of FileInfos of file this peer
+now has
 \\\addlinespace
 1B & More Peers & Compound & Contains a List:PeerInfo. Is a reply to a
 request for more Peers.
@@ -1380,9 +1398,9 @@ request for more Peers.
 \end{figure}
 
 \sout{Really important implemented algorithms may be included (maybe in
-the form of pseudocode), but do not include actual code, except for very
-small portions of code that represent a solution to a particularly
-interesting or difficult problem (even then, pseudocode is better).
+the form of pseudo-code), but do not include actual code, except for
+very small portions of code that represent a solution to a particularly
+interesting or difficult problem (even then, pseudo-code is better).
 Again, use figures as appropriate, e.g., to support discussion of
 communication between main procedures/methods in terms of
 procedure/method name, parameters, result type, function, relationship
@@ -1470,10 +1488,10 @@ Files}\label{publisher-has-updates-to-push-to-all-subscribers-publisher-adds-fil
 \itemsep1pt\parskip0pt\parsep0pt
 \item
   P announces to all known peers the changed file revision numbers
-  (partial fileTree state info)
+  (partial file Tree state info)
 \item
   If P has any data about bandwidths of various subscribers, the files
-  are sent to the fastest first, to mazimise the number of peers that
+  are sent to the fastest first, to maximise the number of peers that
   can supply the file. If not, a random subscriber is chosen
 \item
   Every time a subscriber finishes downloading a file, it announces to
@@ -1502,9 +1520,9 @@ Gracefully}\label{subscriber-leaves-network-gracefully}
   Peers set their record for this Peer as `offline'
 \end{enumerate}
 
-\subsection{Subscriber is in the Middle of Downloading a FileID, When a
-New Version is
-Announced}\label{subscriber-is-in-the-middle-of-downloading-a-fileid-when-a-new-version-is-announced}
+\subsection{Subscriber is in the Middle of Downloading a FileInfo, When
+a New Version is
+Announced}\label{subscriber-is-in-the-middle-of-downloading-a-fileinfo-when-a-new-version-is-announced}
 
 \subsection{Publisher Leaves Network
 Gracefully}\label{publisher-leaves-network-gracefully}
@@ -1563,8 +1581,8 @@ up-to-date
 \def\labelenumi{\arabic{enumi}.}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Peers exchange information about the latest updates the've seen, until
-  they are all in agreement.
+  Peers exchange information about the latest updates they've seen,
+  until they are all in agreement.
 \item
   updates which conflict are weeded out, and a list of updates which
   need applying to the network is created
@@ -1638,26 +1656,32 @@ For example:
 \sout{Give the reader a feel for what the system is like to use (this
 may only be really relevant if the system has a user interface). Use
 screen dumps to illustrate - textually quite a short chapter, maybe just
-a walkthrough of the main features of a typical session with the system.
-Note that this is not a user manual. You aren't showing the reader how
-to operate the system, but rather what it's like to use. As a separate
-chapter, you may also need a process description of your system, so that
-the reader can appreciate how the system works. This is not the same as
-the ``walkthrough'' described immediately above. It should be a
-description at a higher level than the code itself. Use supporting
+a walk-through of the main features of a typical session with the
+system. Note that this is not a user manual. You aren't showing the
+reader how to operate the system, but rather what it's like to use. As a
+separate chapter, you may also need a process description of your
+system, so that the reader can appreciate how the system works. This is
+not the same as the walkthrough described immediately above. It should
+be a description at a higher level than the code itself. Use supporting
 process diagrams as appropriate If your system has a significant user
 interface and a complex underlying system you may need both a
 walkthrough and a process chapter.}
 
-\chapter{Testing \& Evaluation}\label{testing-evaluation}
+\chapter{Testing}\label{testing}
 
-\sout{How you evaluated the system, how you designed the evaluation.}
+\sout{Testing is intended to establish that the system functions
+correctly.}
+
+\chapter{Evaluation}\label{evaluation}
+
+\sout{How you evaluated the system, how you designed the evaluation
+Evaluation examines how well the system achieves its aim.}
 
 The main competitors to to this software are Bit-Torrent Sync and
-Dropbox, due to the similarity of their technology compared to this
+DropBox, due to the similarity of their technology compared to this
 project. Although the primary intended use of this software is for
 backup, these technological similarities along with the popularity of
-Dropbox will mean they will offer direct competition.
+DropBox will mean they will offer direct competition.
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -1708,9 +1732,7 @@ Dropbox will mean they will offer direct competition.
 \end{itemize}
 
 \sout{There may be a need to have two chapters, one on testing and one
-on evaluation. Testing is intended to establish that the system
-functions correctly. Evaluation examines how well the system achieves
-its aim.}
+on evaluation.}
 
 \sout{For a system that features a user interface, some kind of user
 interface evaluation is very important. For testing and evaluation, you
