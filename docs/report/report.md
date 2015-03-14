@@ -9,17 +9,16 @@ Distribackup aims to allow normal users of technology to create and manage backu
 
 ##Problem Description
 
-Data storage has increasingly become the responsibility of special-interest corporations, who leverage their existing massive server infrastructure (or server infrastructure subcontractors) to reduce the legwork for ordinary consumers wishing to back up their data. The concept of the 'cloud' was invented to further psychologically bolster these data-centres; a fluffy, harmless-sounding term referring to some ethereal space where all your data safely resides.
+* why the project is worth doing
+* how the project may be useful or helpful for others
 
-The reality, as ever, is much less reassuring. Corporations want your data data because, as the old saying goes, information is power. The purpose of this 'cloud' is not to secure average users' data but to generate Big Data (another modern term which refers to a different aspect of the same thing, this one coined by and for cardboard-cutout non-people, greed in suits and economists with dollar signs for eyes), which can be analysed statistically at massive scale, in order to better improve the company's profit techniques. Information of this type is available at such scale that new psychological techniques can be devised to coerce users, such as gamification. More personal messages can be created, using well-educated guesses about the interests and demographics of a portion of the company's audience.
+Data storage has increasingly become the responsibility of corporate groups, who leverage their existing massive server infrastructure (or server infrastructure subcontractors) to reduce the legwork for ordinary consumers wishing to back up their data. The concept of the 'cloud' was invented to further psychologically bolster these data-centres; a fluffy, harmless-sounding term referring to some ethereal space where all your data safely resides.
+
+The reality, as ever, is much less reassuring. Corporations want your data because, as the old saying goes, information is power. The purpose of this 'cloud' is not to secure average users' data but to generate Big Data (another modern term which refers to a different aspect of the same thing, this one coined by and for cardboard-cutout non-people, greed in suits and economists with dollar signs for eyes), which can be analysed statistically at massive scale, in order to better improve the company's profit techniques. Information of this type is available at such scale that new psychological techniques can be devised to coerce users, such as gamification. More personal messages can be created, using well-educated guesses about the interests and demographics of a portion of the company's audience.
 
 It can be almost impossible to put the cat back into the bag once corporation(s) have dug their heels into an area of human interest -- barring massive governmental intervention, such as internationally-backed legislation. However some things have been shown to be easier to fix than others. The Open Source movement has shown that by initially appealing to users' greed by offering something for which they would otherwise have to pay money for free, it is possible to draw  non-technical users away from for-profit services. The effectiveness of doing this is also strongly influenced by the presentation and appeal of the software, which modern businesses have evolved to take very seriously, creating an entire field called 'brand management'.
 
 Computers have made it convenient to store all our important family data digitally. Family photos, videos, genealogy records, old family recipes; they all take less physical space on a disk, and can be copied easily for anyone interested. However, digital data is at risk of loss (flooding, fire and theft being the most often mentioned), and most homes don't have the infrastructure in place to preserve their family's unique data long-term. Lay users often have little or no idea about where or how their data is stored (on their computer or on the Internet), whether it is safe and whether their rights to it have been compromised by a Terms Of Service agreement (TOS).
-
-##Aspects of the Background 
-* why the project is worth doing
-* how the project may be useful or helpful for others
 
 Project Goals
 -------------
@@ -28,7 +27,7 @@ The main objectives of this project are to:-
 
 * Develop a distributed backup syncing program, autonomous enough for non-technical users to be able to use, and efficient enough to run on domestic computer hardware;
 * Design and implement an efficient file synchronisation protocol to support this;
-* Design and implement a new serialisation suite which is both efficient and succinct for our purposes
+* Design and implement a new serialisation suite which is both efficient for our purposes and simple to work with
     - Write a language-agnostic specification 
     - Implement the specification in Java
 
@@ -36,7 +35,7 @@ The main objectives of this project are to:-
 TODO: brief chapter-by-chapter overview of the rest of the report
 
 
-Unique data collections such as photos are often stored on a physical medium which is vulnerable to damage or corruption. CDs are damaged by heat, light and wear and tear. When this storage fails (mobile phones are lost, old PCs break down or are replaced due to age, without sufficiently diligent data transferal), often the user unwittingly throws away or loses many years of irreplaceable data.
+Ddata collections are stored on physical media which are vulnerable to damage, loss or corruption. CDs are damaged by heat, light and wear and tear. When this storage fails (mobile phones are lost, old PCs break down or are replaced due to age, without sufficiently diligent data transferal), often the user unwittingly throws away or loses many years of irreplaceable data.
 
 Lost laptops and pen drives cause frequent loss of important data. Old PCs being replaced cause families to throw away accumulated personal data, without realising what is stored locally rather than on the Internet -- lack of understanding causes further personal data loss upon hardware failure.
 
