@@ -29,8 +29,6 @@ public abstract class Peer extends Thread
 	PeerInfo Request		
 	"haz nao" announcement
 	Fresh Peers*/
-
-	
 	
 	public static final int MAX_CHUNK_SIZE = 4194304;//4MB
 	public static final int MIN_CHUNK_SIZE = 32768;//32KB
@@ -54,6 +52,12 @@ public abstract class Peer extends Thread
 	
 	public static final short version = 2;//increment this manually on every release
 	
+    /**The main program core. Contains all functionality common to both the Publisher and 
+     * Subscriber, which is most of the network communication logic (both incoming message
+     * processing and sending messages), setup and initialisation of most data structures,
+     * and various global constants and values, such as protocol version, and archive directory
+     * location.
+     * of */
 	public Peer(Path root, int port)
 	{
 		Peer.root = root;

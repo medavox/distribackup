@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+/**The main entry point for peers subscribed to updates from the Publisher.*/
 public class Subscriber extends Peer
 {
     private static String defaultHost = "127.0.0.1";

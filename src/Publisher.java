@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 
+/**The main entry point for peers pushing updates to others.*/
 public class Publisher extends Peer
 {
     private static int port = 1210;
