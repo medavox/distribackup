@@ -51,7 +51,7 @@ More than ever before there is a need for long-term backup software which is acc
 Evaluation of Existing Solutions
 --------------------------------
 
-This is by no means an exhaust
+This is by no means an exhaustive list.
 
 ### Bit-Torrent  ###
 * Collection contents cannot be changed after torrent creation
