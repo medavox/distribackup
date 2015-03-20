@@ -5,15 +5,24 @@ Note: In this draft version, crossed-out text represent notes and guidance from 
 
 Distribackup is an open-source file synchronisation tool designed around the twin principles of decentralisation and  one-to-many updates. It aims to function as autonomously as possible, reducing required technical knowledge as much as possible in order to make it a viable solution for data backup for as wide an audience as possible.
 
-##Overall Aim of the Project
+Overall Aim of the Project
+--------------------------
 
-Distribackup aims to allow normal users of technology to create and manage backups of important family data, without relying on expensive dedicated hardware or transient cloud services.
+Distribackup aims to allow normal technology users to create and manage highly fault-tolerant backups of archival data (such as family photos, videos or genealogical documents) without relying on expensive dedicated hardware or transient cloud services.
+
+As such, it aims to require as little user intervention as possible in normal use, and to be able to function normally with the less than ideal parameters for backup that occur in normal domestic environments. This includes being able to handle poor network connections, keeping infrequently used machines up-to-date, and accidental data loss. Generally the aim to either route around or repair damage from the common mishaps that can affect backed up data over a long period of time.
 
 ##Problem Description
 
-* why the project is worth doing
-* how the project may be useful or helpful for others
+The last 5 years have seen a turning point in the backup of personal data; having been the domain of specialised hobbyists and particularly diligent computer users who don't exist in every family, corporate custody of data has provided a convenient outlet to the increasing pressure of data security.
 
+In this report I argue that data backed up with for-profit organisations is far less secure than the significant dedicated server infrastructure invested in 'the cloud' would suggest, due to various long-term factors including company buyouts and political or governmental intervention.
+
+It has also been argued in recent years that the major challenge in long-term data preservation is not in preserving the bits themselves, but guarding against bit-rot. Actually being able to read the file format the data was originally stored in 20 years later can be difficult.[^fosdem15rice]
+
+This problem can badly affects closed file formats owned by a single entity. If that company goes bankrupt, is bought out, or for some other reason discontinues its support of the file format, then no-one else can continue to make new software that can read data stored in that format, without significant effort spent to reverse-engineer the format. Creation of new reading software may even be actively prevented, if the software is being suppressed after a hostile takeover, or for other corporate-political reasons. Without new reader software, as the operating system the reader originally ran on becomes obsolete and is replaced, and as the hardware architecture the operating system ran on becomes obsolete and is itself replaced, so the file format becomes unreadable without relying on ancient hardware, which may itself physically fail.
+
+This project aims to put the possibility of archival storage within reach of the general public, unfettered by reliance on changing hosting agreements or closed-source software obsolescence. 
 
 
 Project Goals
@@ -27,11 +36,7 @@ The main objectives of this project are to:-
     - Write a language-agnostic specification 
     - Implement the specification in Java
 
-
-TODO: brief chapter-by-chapter overview of the rest of the report
-
-
-Data collections are stored on physical media which are vulnerable to damage, loss or corruption. CDs are damaged by heat, light and wear and tear. When this storage fails (mobile phones are lost, old PCs break down or are replaced due to age, without sufficiently diligent data transferal), often the user unwittingly throws away or loses many years of irreplaceable data.
+Data are stored on physical media which are vulnerable to damage, loss or corruption. CDs are damaged by heat, light and wear and tear. When this storage fails (mobile phones are lost, old PCs break down or are replaced due to age, without sufficiently diligent data transferral), often the user unwittingly throws away or loses many years of irreplaceable data.
 
 Lost laptops and pen drives cause frequent loss of important data. Old PCs being replaced cause families to throw away accumulated personal data, without realising what is stored locally rather than on the Internet -- lack of understanding causes further personal data loss upon hardware failure.
 
@@ -44,16 +49,18 @@ Main Project Features
 
 Distribackup watches a directory, keeping its contents synced with copies of the data on other computers. Because the authoritative server broadcasting updates is likely to be a low-end machine, update data will be shared among subscribed peers. In order to expedite large file transfers (which are likely in the primary use case), a differencing algorithm will be used to only send pieces of files that have changed since an update.
 
-This report describes the problem this software attempts to solve and why it is needed, comparing it to related work, and showing how this project builds on this work. It then describes the proposed programme of work to be undertaken in order to complete the bare-bones implementation offered here; continuing by laying out the sub-components of the software, their purposes, and how they fit together to complete the end goal. The methodology will then be explained, describing what software development techniques will be used during the project. This will lead into the proposed evaluation methodology, and how research will be carried out.
+Having described the problem this software attempts to solve and why it is needed in this chapter, the Background chapter looks at related work, talking about how existing solutions could be improved upon for the identified problem, and how this project builds on this work. In the Design chapter, the proposed software is described in greater detail  order to complete the bare-bones implementation offered here; continuing by laying out the sub-components of the software, their purposes, and how they fit together to complete the end goal. The methodology will then be explained, describing what software development techniques will be used during the project. This will lead into the proposed evaluation methodology, and how research will be carried out.
 
 The expected time-line for this work will then be described in detail, accompanied by a Gantt chart showing this visually. The report will then finish by listing the resources required in order for it to be completed, and a list of references used.
 
 Background
 ==========
 
-Computers have made it convenient and useful to store all our important family data digitally. Family photos, videos, genealogy records, old family recipes; they all take far less physical space on a disk, and can be copied easily for interested relatives.
+Computers have made it convenient and useful to store all our important family data digitally. Family photos, videos, genealogy records, old family recipes all take far less physical space on a disk, and can be copied easily for interested parties, such as relatives.
 
-However, digital data is at a higher risk of complete loss (flooding, fire and theft being the most often mentioned) than physical data, due in part to creating a single point of failure, and also partially due to the Digital Cliff Effect, which means that digital data becomes completely unreadable when data integrity drops below 80%[^cliffEffect]. 
+In the past, any further backups made after transfer to computer would be in the form of digital media. Digital tape generally required too high an investment for home users, so writable CDs and DVDs became common home backup media. Some even dedicated a hard-drive to off-line storage of the data: the drive would only be switched on when data needed to be added, deleted or retrieved.
+
+However, stored digital data is at a higher risk of complete loss (flooding, fire and theft being the most often mentioned) than physical data, due in part to creating a single point of failure, and also partially due to the Digital Cliff Effect, which means that digital data becomes completely unreadable when data integrity drops below 80%[^cliffEffect]. 
 
 Originally discovered as a property of digital TV transmission, the Cliff Effect can also come into effect on a hard drive or tape drive which has remained switched off for long periods. Electromagnetic interference can corrupt portions of the stored data; left alone long enough, this can make data unrecoverable. Most families have neither the resources nor the technical background at their disposal to preserve their family's unique data long-term. Lay users often have little or no idea about where or how their data is stored (on their computer or on the Internet), whether it is safe and whether their own rights to it have been waived.
 
@@ -116,28 +123,23 @@ This includes support for remote file differencing techniques, such as those emp
 
 http://syncthing.net/
 
-Designed to be an open-source alternative to Bit-Torrent Sync, SyncThing
+Designed to be an open-source alternative to Bit-Torrent Sync
 
-* No longer part of ind.ie
+No longer part of ind.ie
 
 ### Git
 
-Git was designed from the ground-up by Linus Torvalds as a decentralised version control system, competing with Subversion, CVS and Mercurial.
+Git was designed from the ground-up by Linus Torvalds as a decentralised version control system, competing with Subversion, CVS and Mercurial. Git's major advantage over earlier version control systems such as Concurrent Versioning System and Subversion is that each working copy is a fully-fledged git repository, which can be pushed and pulled to, like the main server.
 
 Most developer's contact with Git is through a centralised, authoritative repository, usually hosted by a company such as GitHub or Bit Bucket. However, Git is able to function equally well as a standalone repository or for managing difference relationships between disparate but equally authoritative collections of copies.
 
 Central, authoritative copies of files can be useful when attempting to establish precedence, or evolve a single product towards completion, allowing users to exchange changes with each other through a single point of contact: the Master. This is much easier to conceptualise for users than communicating changes between slightly different repositories, and easier for maintaining a distributable copy for new entrants.
 
-* Updates require user intervention
-git updates need to be synced by user, using command line or separate GUI
-- Not automatic
-- Very hands-on; cannot fire-and-forget
+Git is a popular versioning system, however its design is not perfectly suited to the problems which this project aims to solve. Any updates to an archive's contents require user intervention in order to be propagated to others; this includes preparation of messages ideally detailing the changes made to files in this update. This is potentially disruptive to a user's workflow, and engenders its own learning curve, in order to learn the commands necessary to push updates to other servers, and in turn pull updates back.
 
-* Large vocabulary of commands to learn
-* Assumption of user = programmer
-    - unexplained technical concepts
+In short, Git has been designed with developers in mind, who are comfortable with invoking esoteric commands with arguments in order to manually move updates around. There are graphical user interface wrappers available for Git, but none of them are polished enough to be considered a reliable choice. Several clients exist for specific Git services however, such as GitHub's client, a fully graphical program for managing repositories associated to one's GitHub account.
 
-* Git is not visible to end-users: its intended audience is developers, and its steep learning curve (tens of commands to learn each with its own set of single-character optional parameters; a new mental model for manipulating 'staged' files which are 'indexed') would prevent its adoption by non-programmer power users
+Git is not visible to end-users: its intended audience is developers, and its steep learning curve (tens of commands to learn each with its own set of single-character optional parameters; a new mental model for manipulating 'staged' files which are 'indexed') would prevent its adoption by non-programmer power users
 * Existing GUIs for git are unfinished, non-free, buggy or as confusing as the command line interface, with none of the portability.
 * Git is much more complex than is necessary for our task
 
@@ -149,7 +151,7 @@ Git-annex is aimed towards a more technically literate user. Also, as with Spark
 
 ###Ceph
 
-Ceph is a distributed file system. Designed for use with Storage Area Networks and other types of dedicated file storage hardware, Ceph is aimed more at technically proficient users and industry professionals.
+Ceph is a distributed file system. Designed for use with Storage Area Networks and other types of dedicated file storage hardware, Ceph is aimed more at technically proficient users and industry professionals, as it requires considerable resources and expertise to set up.
 
 ###Tahoe-LAFS
 
@@ -170,26 +172,20 @@ Multiple types of mirror nodes
 
 DropBox is an extremely popular solution for accessing data across multiple machines, and sharing files easily with small groups of people. As convenient as DropBox is, there are downsides:
 
+The encryption model used by DropBox has not been published, and has been proven in the past to be unsecure. [^dropbox-secpaper]
 
-DropBox is useful for keeping files synced across multiple machines; but by using their service, DropBox can stake a claim to your data.
+They have leaked sensitive third-party data on multiple occasions, only remedying the problem after being notified by external sources.[^dropbox-security1] [^dropbox-security2] [^dropbox-leak]
+DropBox has been known to keep deleted data beyond its own declared retension period[^dropbox-hoard]. This is extremely concerning for a data storage company. Despite a vague Terms agreement informally stating otherwise (allegedly), DropBox could feasibly contend the Intellectual Property rights to source code for a commercially interesting piece of software which had been stored using their service (something that could make money), given a large enough incentive.
 
-* Their encryption model is not published, and has been proven to be unsecure in the past[^dropbox-secpaper]
-* They have repeatedly leaked sensitive data, only remedying the problem after being notified by third parties[^dropbox-security1] [^dropbox-security2] [^dropbox-leak]
-* Data may be used for undisclosed purposes
-* You can't be sure they've really deleted something[^dropbox-hoard]
-* If you stored the source code to a commercially interesting piece of software (something that could make money), DropBox could feasibly contend the Intellectual Property rights
-* The maximum capacity and file sizes are very low, which restricts its usefulness.
-* DropBox are required by law to hand over data to governmental bodies (including overseas agencies such as US intelligence). In an age of controversial laws (legislate first, ask questions later)[^prism], this is problematic
-* DropBox also reserves the right to share certain personal information with other companies, whose own security may be insufficient[^dropbox-privacy]
+The maximum capacity and file sizes for free storage are very low, which restricts its usefulness for domestic archival backup. Paying for storage, while a relatively common occurrence currently, increases the likelihood that the storage payments will be cancelled at some point in the future, should finances become an issue.
+Like all major internet-based companies, DropBox are required by law to hand over data to governmental bodies (including overseas agencies such as US intelligence), should a request be made. This is acceptable for preventing true crimes such as child pornography distribution, however in an age of controversial copyright acts which have been rushed into law without democratic process (SOPA, PIPA, TTIP, Digital Economy Act...)[^prism], this can cause problems. All it could take would be one erroneous copyright claim by a malicious party with sufficient financial backing to manipulate the US legal system (such as a company which sees a further financial incentive in doing so), and your data could be permanently confiscated. 
 
-### Other Commercial Solutions ###
+DropBox also reserves the right to share certain personal information with other companies, whose own security may be insufficient[^dropbox-privacy]. This is a classic security blunder; allowing third parties access to supposedly secure data merely increases the possible vectors for attack.
 
-DropBox has been examined individually due to its popularity; however some general disadvantages apply to all third-party commercial solutions:-
+### Other Commercial Solutions
 
-Other commercial solutions (such Amazon S3) entrust critical private data within large hosting data-centres. These data-centres are large targets for attack. They:
-
-* can be damaged or hacked
-* carry a risk of loss of ownership or Intellectual Property rights (Terms Of Service agreements often can change at any time, with or without notice)
+Other commercial solutions (such Amazon S3) entrust critical private data within large hosting data-centres. These data-centres are large targets for attack. They can be damaged or hacked, which, although seemingly unlikely in modern technology, is entirely possible considering the wide-open nature of the HeartBleed SSL bug, which left popular authentication software fatally compromised for a long period of time before its discovery.[^heartbleed]
+* potentially carry a risk of loss of ownership or Intellectual Property rights (Terms Of Service agreements often can change at any time, with or without notice)
 * hand over information to governmental bodies with dubious jurisdiction[^ms-dublin-usgov-handover]
 
 Implications For This Project
@@ -262,8 +258,10 @@ Design
 
 ~~Major design decisions and justifications. System architecture, etc. Use supporting figures where appropriate and helpful. A diagram of the overall architecture is essential. Each component in the architectural diagram should be briefly discussed. Other designs that may be important are class hierarchies and initial user interface designs. Take care to describe any design work in reasonably high level terms, and do not stray into implementation details. Make sure that you explain to the reader how to interpret any design notation that you use (e.g. a key in the relevant figures), unless you are using a standard notation (such as UML).~~
 
-* Will not require an always-on machine - will reliably and efficiently (but not necessarily quickly) sync mirrors.
-* Not intended for real-time sync
+Distribackup largely follows the Publisher-Subscriber model, but also includes peer-to-peer features in order to reduce network bandwidth bottleneck at the Publisher.
+
+The system does not require an always-on machine, or any dedicated hardware at all -- peers consist of normal consumer computers that reliably and efficiently (but not necessarily quickly) sync mirrors.
+It has not been designed to facilitate real-time syncing of files -- 
 * The system will work best with infrequent updates among sometimes-on machines that form a network with common up-time
 	(i.e. each mirror is on at the same time as at least one other machine, to pass updates)
     - a Raspberry Pi could bolster this and speed up full network sync, but should not be necessary.
@@ -292,7 +290,7 @@ Changes to files are not grouped into updates and pushed to the file system as o
 
 Many similar projects emphasise their network's resistance to attack and take-down requests, using a variety of encryption, trust-based connections and decentralised network architecture. The last method, decentralisation, is a popular one, as it ensures that there's no central point to fail/be attacked for the network to fail. This kind of robustness against failure is high desirable in a system designed for long-term data backup.
 
-However designing a photo/video sharing and backup solution which is easy for a normal user to manage often entails using a single conceptual focus point (such as a company server), which is simpler to understand than a self-organising network of inter-connected devices. Also, as discussed earlier during the Background, decentralised networks can be poor at maintaining a single authoritative copy of the file or archive. From a distributed standpoint, it can also be difficult for peers to know which other peers in the network have the desired file or version of the file, without transferring it and checking. Working out which copy of files a new peer entering the network should have can be equally challenging.
+Designing a backup solution which is easy enough for anyone to manage is made easier using a single conceptual focus point (such as a company server), which is simpler to work with and think about than a self-organising network of inter-connected devices. Also, as discussed earlier during the Background, decentralised networks can be poor at maintaining a single authoritative copy of the file or archive. From a distributed standpoint, it can also be difficult for peers to know which other peers in the network have the desired file or version of the file, without transferring it and checking. Working out which copy of files a new peer entering the network should have can be equally challenging.
 
 In order to reconcile these two design perspectives acceptably -- without compromising the fault-tolerance of decentralised networks, or the low barrier-to-entry and authority of centralised systems -- it was decided to use a Publisher-Subscriber network model, where the Publisher is the only peer with the authority to make changes to the synced files. This Publisher itself contains no unrecoverable information, and in the event of the loss of the Publisher, a new one can be selected, or even created from scratch, and given proper authority.
 
@@ -377,10 +375,8 @@ The prototype implementation consists of the following major areas:-
 * File-System Watcher
     - Uses inotify on Linux & android
     - Triggers events which start the sync process
-    
-During the course of implementation, the working design evolved away from using several .
 
-The Rsync Diff Chunking functionality was no longer needed after the network architecture was changed to the Publisher-Subscriber model. All differences were made predictable without using the rsync windowed hashing technique to measure differences across a network: Subscribers only have older versions in a linear succession of versions, rather than having a related but possibly divergent copy with its own changes in a tree.
+All differences were made predictable without using the rsync windowed hashing technique to measure differences across a network: Subscribers only have older versions in a linear succession of versions, rather than having a related but possibly divergent copy with its own changes in a tree.
 
 The design prototype implemented for this project does not include functionality for peer discovery using DHT or any other techniques. Currently, peers share information about other peers that have already connected at least once to the network, and peers are also announced to the whole network once they initiate a connection to any member. However there is no way for the network to actively discover peers which have not initiated a connection.
 
@@ -397,10 +393,9 @@ The prototype created for this project used Java for both the Publisher and Subs
 DNIEPr - A Custom Communications Protocol
 ----------------------------------------
 
-After reviewing the existing serialisation software as detailed above, a decision was made to implement a new protocol which took inspiration from work from several of the existing projects. Data and Network Information Exchange Protocol (or DNIEPr) has been designed to provide all of the requirements that emerged from studying the features and downsides of existing solutions.
+After reviewing the existing serialisation software as detailed in the Background chapter, a decision was made to implement a new protocol which took inspiration from work from several of the existing projects. Data and Network Information Exchange Protocol (or DNIEPr) has been designed to provide all of the requirements that emerged from studying the features and downsides of existing solutions.
 
-* The protocol shall make efficient use of network bandwidth, eg by encoding data in succinct Messages. 
-    * Resistance to message corruption shall be provided by the underlying TCP protocol.
+The protocol has been designed to make efficient use of network bandwidth, eg by encoding data in succinct Messages. Compensation message corruption will be provided by the underlying TCP protocol, as building this into the initial design would only serve to slow down development.
 * The protocol shall specify a clear, unambiguous API, which requires minimal set-up or management in code. 
 
 ###ID Bytes
@@ -414,8 +409,7 @@ Variable-length types (such as strings) still need their length field though.
 
 ###Message Lengths
 
-
-Message types with a static payload length (eg bitfield, ULong) don't have (or need) a length attribute. Their length is built into the spec.
+Message types with a static payload length (such as bitfield, ULong) don't have (or need) a length attribute. Their length is built into the spec.
 
 Variable-length homogeneous types (String, Byte-Array) are TLV; see below.
 
@@ -425,8 +419,8 @@ TLV
 TNV
 :   Type Number Value. An different field for array types, specifying how many elements there are. Useful for progress estimation, or simple iteration
 
-Supporting Data Types
----------------------
+###Supporting Data Types
+
 
 The following Objects are not used as standalone Messages by Distribackup, but instead form part of compound Messages, and so are generally used without their ID Byte. Despite this, an ID Byte number is assigned for each in case this situation changes, or another program uses this library differently.
 
@@ -449,8 +443,8 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 
 \newpage
 
-Sendable (Communicable) Message Objects
----------------------------------------
+###Sendable (Communicable) Message Objects
+
 
 These objects can be sent directly to another Peer.
 
@@ -507,10 +501,12 @@ Finally, the network may find itself in a position of partial connectivity; that
 * each event enum will need info about it attached, like WHICH peer announced its exit
 * connection operators receiving bytes (which they then decode into messages) will add to the queue
 
-The System in Operation
-=======================
+Process Description
+===================
 
-This chapter describes, in structured English, the actions taken by each peer in various situations during normal operation.
+~~As a separate chapter, you may also need a process description of your system, so that the reader can appreciate how the system works. This is not the same as the walkthrough described immediately above. It should be a description at a higher level than the code itself. Use supporting process diagrams as appropriate~~
+
+This chapter describes, in structured English, the actions taken by each peer in various situations encountered during normal operation.
 
 Non-New Peer Joins Network
 ---------------------------
@@ -552,7 +548,8 @@ Upon a file change
 ```
 
 
-###New Subscriber Joins Network
+New Subscriber Joins Network
+----------------------------
 
 1. New subscriber S connects to publisher P on P's listening port
 2. P and S exchange version numbers; if they don't match, disconnect and warn users at P and S
@@ -565,7 +562,8 @@ Upon a file change
 6. S chooses best peer to download each file or piece from, based on speed or other metrics
 8. Some kind of sanity check is performed to make sure everything went OK
 
-###Publisher Has Updates to Push to All Subscribers / Publisher Adds Files
+Publisher Announces Update
+--------------------------
 
 1. P announces to all known peers the changed file revision numbers (partial file Tree state info)
 1. If P has any data about bandwidths of various subscribers, the files are sent to the fastest first, to maximise the number of peers that can supply the file. If not, a random subscriber is chosen
@@ -573,14 +571,16 @@ Upon a file change
 3. For every subscriber still downloading the file, requests are made for that file to those who have it.
 3. Data is gathered by every peer about speeds during the transfer
 
-###Subscriber Leaves Network Gracefully
+Subscriber Exits Gracefully
+----------------------------
 
 1. Exit announcement is made to all known peers
 2. Any transfers this subscriber has in progress are finished, or if they'll take too long (which is how long?), cancelled
 3. Sockets etc are closed
 4. Peers set their record for this Peer as 'offline'
 
-###Subscriber is in the Middle of Downloading a FileInfo, When a New Version is Announced
+Subscriber is in the Middle of Downloading a FileInfo, When a New Version is Announced
+----------------------------
 
 ###Publisher Leaves Network Gracefully
 
@@ -589,72 +589,54 @@ any new peer which joins by contacting a peer will be brought up to date by the 
 (version check, file list exchange, sync files with p2p)
 once (if) it's implemented, peers may also find the network by DHT.
 
-###Subscriber Disappears Without Saying Goodbye
+Subscriber Exits Ungracefully
+-------------------------
 
-1. Subscriber fails heartbeats on each peer individually; each per individually marks it as offline in its local peer list.
+Any peers with existing open connections to this Subscriber are immediately notified by Java's Sockets API that the connection has been closed suddenly.
 
-###Publisher Disappears Without Saying Goodbye
+Publisher Exits
+---------------
 
-###Subscriber loses some or all of local copy, subscriber erroneously edits local copy
+1. Peers exchange information about the latest updates they've seen, until they are all in agreement.
+2. Updates are requested from one another, until all Subscribers have most recent available versions of files
+3. The network awaits the return of the Publisher; otherwise no changes are made or exchanged
+
+
+Subscriber Experiences Data Loss; Subscriber's Copy is Erroneously Edited
+-------------------------------------------------------------------------
 
 1. The user is warned that this is a bad idea: any changes will be overwritten. If they want to edit the files, then they should make a copy
 2. Procedure for 1 out-of-date peer is followed
 3. Request more peers and files from all known peers
-1. Subscriber announces its loss 
+4. Subscriber announces its loss 
 
-###publisher loses its files
-
-####publisher loses its files while network has differing versions unresolved
-
-situation is resolved by using file revision numbers (every update or transaction if given a number, so with conflicting updates, the later number will take priority) to bring all peers, including the Publisher, up-to-date
-
-1. Peers exchange information about the latest updates they've seen, until they are all in agreement.
-2. updates which conflict are weeded out, and a list of updates which need applying to the network is created
-3. Peers which have part or all of this update send what they have to everyone else
-
-###Complex states with no intuitive solution
-
-
-* a token, key or password is used by a peer to become the new publisher (P2)
-* Another peer becomes the publisher P2 while the old publisher (P1) is propagating updates
-* subscriber checks (with publisher or publisher-checked peers) that files are up-to-date
-* Publisher can't access a subscriber, but others can
-    * From the perspective of this weakly-connected peer S, the publisher is down
-    * From the publisher's perspective, the peer has disappeared without saying goodbye (timed out)
-
-
-There are common procedure to follow for some of these events:
-
-####Generalisation: One Out-Of-Date Peer
-
-For example:
-
-* new peer joins network
-* peer loses its files (they are deleted, disk corrupt etc)
-* subscriber erroneously edits files
-
-#####Procedure:
-
-1. Out of date Peer P asks the publisher for the current revision number for every file in the tree, along with their checksums, size, and names
-1. P asks all known peers for more peers (in case its local peer list has been partially or wholly corrupted), and files (filtering any which aren't as high 
-
-
-(Note: possibly two chapters):
-
-~~Give the reader a feel for what the system is like to use (this may only be really relevant if the system has a user interface). Use screen dumps to illustrate - textually quite a short chapter, maybe just a walk-through of the main features of a typical session with the system. Note that this is not a user manual. You aren't showing the reader how to operate the system, but rather what it's like to use. As a separate chapter, you may also need a process description of your system, so that the reader can appreciate how the system works. This is not the same as the walkthrough described immediately above. It should be a description at a higher level than the code itself. Use supporting process diagrams as appropriate If your system has a significant user interface and a complex underlying system you may need both a walkthrough and a process chapter.~~
 
 Testing 
 =======
-~~Testing is intended to establish that the system functions correctly.~~
 
-Quantitative, code-based tests that ascertain whether the program functions as intended
+Quantitative, functionality-based tests were performed in order to ascertain whether the program functions in the manner intended.
 
-* Is the system cross-platform?
+Testing correct functioning of DNIEPr
+-------------------------------------
+
+In order to ensure that the underlying translation functionality between DNIEPr's data types and binary arrays worked correctly, a testing suite was created run regularly against the DNIEPr library.
+
+The tests involved creating random (but valid) input data for each given data type, then converting it to binary and back again. The pre-conversion and post-conversion values were tested for equality. If the values did not match, then both pre-conversion and post-conversion values were printed to screen, to assist with debugging.
+
+Software Portability
+--------------------
+
     * HOW cross platform? (Linux, Windows, Android...)
+    
+
+Correct Syncing of Files
+------------------------
+
 * Is the system resistant to attack?
     * random peers going down
     * Publisher impersonation/spoofing
     * archive status misinformation
+    
 
 Evaluation
 ====================
@@ -662,7 +644,11 @@ Evaluation
 ~~How you evaluated the system, how you designed the evaluation
 Evaluation examines how well the system achieves its aim.~~
 
-The main competitors to to this software are Bit-Torrent Sync and DropBox, due to the similarity of their technology compared to this project. Although the primary intended use of this software is for backup, these technological similarities along with the popularity of DropBox will mean they will offer direct competition.
+In order to evaluate whether the implemented prototype successfully fulfilled the goals of the original design, a qualitative evaluation was performed.
+
+The main competitors to to this software are Bit-Torrent Sync and DropBox, due to the similarity of parts of each project's functionality. Although the primary intended use of this software is for backup, these technological similarities along with the popularity of DropBox will mean they will offer direct competition.
+
+As such, some the project was compared against each piece of software, 
 
 * How well does the system cope with sudden changes in network topology?
 * How efficient is it? (bandwidth usage, processor & memory usage)
@@ -675,38 +661,68 @@ Results of the evaluation
 * ~~A critical review of the evaluation itself~~
 * ~~how well it yielded the info you wanted.~~
 
-~~There may be a need to have two chapters, one on testing and one on evaluation.~~
-
-~~For a system that features a user interface, some kind of user interface evaluation is very important. For testing and evaluation, you must include descriptions of the methodology and metrics used. Tables of results may be included (main results can be summarised if a large amount of test data was accumulated). Make sure you discuss interesting and important results indicated by the data. Make sure you summarise your overall findings, including statistical evaluation, and describing methods.~~
+~~For testing and evaluation, you must include descriptions of the methodology and metrics used. Tables of results may be included (main results can be summarised if a large amount of test data was accumulated). Make sure you discuss interesting and important results indicated by the data. Make sure you summarise your overall findings, including statistical evaluation, and describing methods.~~
 
 Conclusions
 ===========
 
+A need was identified in domestic environments for robust long-term backup software which required as little user-intervention as possible; 
+
+
 ~~VERY important chapter. Revisit your objectives from chapter 1, for each, analyse whether the project met that objective, and if not, discuss this, and suggest a solution. Discuss the project as a whole, if you did it again would you do it differently? What did you have to learn to do the project, what did you learn from doing it? What features would you add to your system if you had more time etc? Some suggested subsections for your concluding chapter are: Review of aims; Suggested revisions to design/implementation; Future work (possible developments of existing system); Lessons learned. Finish the concluding chapter with a brief, fairly upbeat overall conclusion on the project as a whole. Even projects that are not an overall success usually achieve something, and you acquire skills and knowledge from doing the project. End on a positive note.~~
 
 Future Work
-===========
+-----------
 
-* Android Client
-* Windows Client
+It was necessary to streamline the functionality implemented in the prototype due to time constraints, in order to finish the core file watching and transfer functionality. This section talks about extensions to the submitted prototype that could be added during future development cycles.
 
-* Web-visible files - hosted web pages and web links to files
-* Web interface
+###Android Client
+
+
+###Windows Client Improvements
+
+###Multiple Archive Networks
+
+###Change of Publisher
+
+###Encryption/Authentication
+
+Encryption, although not initially a high priority in the system prototype,  this can be broken into 3 sub-areas; PGP is a good candidate for providing any of these. All of these, though especially the first two, are highly desirable.
+
+####Transfer encryption
+
+Preventing digital wire taps from snooping on data in-transit is extremely important, especially given the use of a public network (the internet) as the transmission medium.
+
+####Authentication
+
+Prevent attackers from joining the network without permission, and prevent malicious peers claiming to be the Publisher from making erroneous updates.
+
+####Local storage encryption
+
+Focus on interfacing with existing file-system encryption technology here. Less important for backup software, as encryption always introduces the risk that the access method (such as a password or key) will be lost over time.
+
+###Compression
+
+
+
+###Better File Transfer Load Balancing Algorithm
+
+###Graphical or Web User Interface
+
+###Persistent Peer IDs
+
+
+
+###Web-visible files
+
+hosted web pages and web links to files
+
 * Version control for managed files
     - Likely to be implemented using Git
-* GUI
-    - stick to a daemon (and setup wizard?) with a configuration file for now
-* Fine-grained file subscriptions
-    - mirrors only host files they're interested in
-    - Risk of low availability for undesirable/unpopular files - bad
-* Merging conflicting file updates automatically (modification times, diffs, git?)
+
 * Multiple networks, multiple folders in each
     * This could get complex for the user very quickly
-* Encryption [^PGP] - this can be broken into 3 sub-areas; PGP is a good candidate for providing any of these.
-	All of these, though especially the first two, are highly desirable, and may become core goals during the course of the project.
-	- Transfer encryption - preventing digital wire taps from snooping on data being transferred is extremely important, especially given the use of a public network (the internet) as the transmission medium.
-	- Authentication - prevent attackers from joining the network without permission.
-	- Local storage encryption - Focus on interfacing with existing file-system encryption technology here
+
 * Human-readable anonymous peer IDs
     - map IP address of a peer to a country,
     - then hash the peer's UUID to choose a name from a list specific for that country
@@ -734,16 +750,13 @@ Case of Bit Torrent Mainline DHT", 13-th IEEE International Conference on Peer-t
 [^dropbox-hoard]: User 'IsThisTheRealLife', "DropBox is keeping 'permanently deleted' files for longer than the 30 day recovery limit.", (http://www.reddit.com/r/privacy/comments/1m60yp/dropbox_is_keeping_permanently_deleted_files_for/)(accessed 26/06/2014)
 [^prism]:The Guardian, "The NSA Files" (http://www.theguardian.com/world/the-nsa-files)(accessed 25/06/2014)
 [^dropbox-privacy]:"Dropbox Privacy Policy", (https://www.dropbox.com/privacy)(accessed 25/06/2014)
-
 [^ms-dublin-usgov-handover]:Margi Murphy, "Microsoft must hand over customer data held in Dublin to US government" (http://www.computerworlduk.com/news/security/3514076/microsoft-must-hand-over-customer-data-held-in-dublin-us-government/)(accessed 25/06/2014)
-
 [^raspi-java]: Eben Upton, "Oracle Java on Raspberry Pi" (http://www.raspberrypi.org/oracle-java-on-raspberry-pi) (accessed 24/06/2014)
 [^git]:"Git Website" (http://git-scm.com/) (accessed 24/06/2014)
 [^rsync-tech]:"The rsync algorithm" (http://rsync.samba.org/tech_report) (accessed 24/06/2014)
-[^rsync]:"Rsync" (http://rsync.samba.org/) (accessed 24/06/2014)
 [^bt-protocol]: "The BitTorrent Protocol Specification" (http://www.bittorrent.org/beps/bep_0003.html) (accessed 24/06/2014)
 [^courgette]:http://dev.chromium.org/developers/design-documents/software-updates-courgette
-[^inotify]: "inotify(7) - Linux man page" (http://linux.die.net/man/7/inotify)(alternatively try "man 7 inotify" on linux systems)
 [^FileObserver]:Android API Reference, "FileObserver Class" (https://developer.android.com/reference/android/os/FileObserver.html) (accessed 24/06/2014)
-[^PGP]:"Pretty Good Privacy" (http://www.cryptography.org/getpgp.htm) (accessed 24/06/2014)
 [^Percival06]: "Matching with Mismatches and Assorted Applications" (http://www.daemonology.net/papers/thesis.pdf) (accessed 05/03/2015)
+[fosdem15rice]: Dave Rice "Enabling video preservation through open source", FOSDEM 2015 (https://fosdem.org/2015/schedule/event/enabling_video_preservation/) (accessed 19/03/2015, attended talk on 31/01/2015)
+[heartbleed]: "The Heartbleed Bug" (http://heartbleed.com/) (accessed 20/03/2015)
