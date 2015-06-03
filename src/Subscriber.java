@@ -138,12 +138,16 @@ public class Subscriber extends Peer
 					System.err.println("incorrect arguments. \""+args[1]+"\" is not a valid port number");
 					usage();
 			    }
+			    break;
 			case 2:
 			    port = defaultConnectPort;
 			    host = args[1];
-			
+			    break;
 			case 1:
 				initRoot = Paths.get(args[0]);
+				break;
+			case 0:
+				usage();
 		}
 		Subscriber p = new Subscriber(initRoot, host, port);
     }

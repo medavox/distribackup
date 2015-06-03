@@ -128,10 +128,10 @@ public class Publisher extends Peer
 				Path root = Paths.get(args[0]);
 				Publisher p = new Publisher(root, port);
 			}
-			else if (args.length == 0)
+			/*else if (args.length == 0)
 			{
 				Publisher p = new Publisher(defaultRoot, port);
-			}
+			}*/
 			else
 			{
 				usage();
