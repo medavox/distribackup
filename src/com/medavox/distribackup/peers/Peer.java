@@ -48,7 +48,7 @@ public abstract class Peer extends Thread
 	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
 	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
     protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
-    public ArchiveInfo globalArchiveState = new ArchiveInfo( -1, new FileInfo[0]);//initialise empty, then get state from network
+    public ArchiveInfo globalArchiveState = new ArchiveInfo( 0, new FileInfo[0]);//initialise empty, then get state from network
 	
 	public static final short version = 2;//increment this manually on every release
 	
@@ -87,7 +87,7 @@ public abstract class Peer extends Thread
 	{
 		try
 		{
-			ConnectionOperator co = new ConnectionOperator(s);
+			ConnectionOperator co = new ConnectionOperator(s, this);
 			
 			UUID newPeerUUID = co.exchangeUUIDs();
 			//after boilerplate is done, start listening thread
@@ -495,6 +495,7 @@ public abstract class Peer extends Thread
 		
 		if(peerInfo.isPublisher())
 		{
+			System.out.println("Received PeerInfo is Publisher's");
 			if(publisherUUID == null)
 			{//we've just found the publisher
 				//add it in!
@@ -513,7 +514,19 @@ public abstract class Peer extends Thread
 			if(peers.isEmpty())
 			{
 				System.out.println("This is our first peer!");
-				//send a allFileRequest, or maybe just an archiveStateRequest
+				//TODO: send a allFileRequest, or maybe just an archiveStateRequest
+				System.out.println("Requesting archive state...");
+				ConnectionOperator co = pi.getConnection();
+				try
+				{
+					co.requestArchiveStatus();
+				}
+				catch(IOException ioe)
+				{
+					System.err.println("ERROR: Failed to request archive status!");
+					ioe.printStackTrace();
+					System.exit(1);
+				}
 			}
 			peerInfo.addConnection(pi.getConnection());//add this connection 
 			peers.putIfAbsent(uuid, peerInfo);
@@ -556,7 +569,6 @@ public abstract class Peer extends Thread
         catch(IOException ioe)
         {
         	ioe.printStackTrace();
-        	//System.err.println("JAAAAAAAAAMES ABAAAAAAAAAAAAAAAAAXTER RIDES AGAAAAAAAAAIN");
         }
     }
     
@@ -571,8 +583,8 @@ public abstract class Peer extends Thread
     	}
     	else
     	{
-    		System.err.println("WARNING: got out-of-date global archive info "
-    				+"(older than ours) from "+peers.get(as.getUUID()));
+    		System.err.println("WARNING: received global archive info "
+    				+"isn't newer than ours)"/* from "+	peers.get(as.getUUID())*/);
     		System.err.println("Our Global Revision number: "+globalArchiveState.getGRN());
     		System.err.println("Their Global Revision num : "+fib.getGRN());
     	}

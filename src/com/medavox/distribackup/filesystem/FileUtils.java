@@ -4,7 +4,9 @@ import java.security.*;
 import java.util.Random;
 import java.util.UUID;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.DirectoryStream;
 
 public abstract class FileUtils
 {
@@ -102,4 +104,24 @@ public abstract class FileUtils
 			return "";
 		}
 	}
+	//TODO: tool methods for scanning the file tree upon the start of a new Publisher
+	/*public static FileInfo[] scanFileTree(Path root)
+	{
+		ArchiveInfo foundFiles = new ArchiveInfo();
+		
+		
+		return foundFiles.getFiles();
+	}
+	
+	private static FileInfo[] recursiveFileListing(Path von)
+	{
+		if(Files.isDirectory(von))
+		{
+			
+		}
+		else
+		{
+			
+		}
+	}*/
 }

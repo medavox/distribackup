@@ -1,6 +1,7 @@
 //import com.medavox.connections.*;
 import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.connections.*;
+import com.medavox.distribackup.filesystem.ArchiveInfo;
 import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfoBunch;
@@ -13,7 +14,7 @@ import java.nio.file.*;
 public class Publisher extends Peer
 {
     private static int port = 1210;
-    private static Path defaultRoot = Paths.get("/home/scc/distribackup/publisher-root");
+    private static Path defaultRoot = Paths.get("/home/scc/distribackup/publisher-root");//TODO: make relative for demo
     private long globalRevisionNumber;//the grand-daddy. This ones defines the network's value
     public Path root;
     //private List<Peer> peers = new LinkedList<Peer>();
@@ -26,6 +27,10 @@ public class Publisher extends Peer
 		    send changed file to all subscribers*/
 		super(root, port);
 		publisherUUID = myUUID;
+		globalArchiveState.setGRN(0);
+		//TODO: perform initial filetree scan, and add found files to archive state
+		//FileInfo[] foundFiles = FileUtils.scanFileTree(root);
+		//globalArchiveState.update(foundFiles);
     }
     
     public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO: better handling of Publisher impostor

@@ -5,5 +5,5 @@
 3. nat traversal
 4. compression
 5. better serialisation
-6. android port
-7. encryption
+6. encryption
+7. android port

@@ -40,12 +40,12 @@ public class ConnectionOperator extends Thread
     private UUID connectedPeer;
     private Peer owner;
     //if/when we add connection speed measuring, this is where it will go
-	public ConnectionOperator(Socket s/*, Peer owner*/) throws IOException
+	public ConnectionOperator(Socket s, Peer owner) throws IOException
 	{
 		this.socket = s;
 		bis = new BufferedInputStream(s.getInputStream());
 		bos = new BufferedOutputStream(s.getOutputStream());
-        //this.owner = owner;
+        this.owner = owner;
         
 
     	int handshook = checkVersions();
@@ -56,8 +56,6 @@ public class ConnectionOperator extends Thread
 					" has wrong version!");
 		}
 		System.out.println("new connection to "+s.getInetAddress());
-		
-		
 	}
     /*
     public ConnectionOperator(Address a, Peer owner)//TODO
@@ -268,7 +266,7 @@ public class ConnectionOperator extends Thread
 		
 	public void requestFile(FileInfo fi)
 	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
-    //having two seperate length field for this seems unecessary, but is consistent with the current spec
+    //having two seperate length field for this seems unnecessary, but is consistent with the current spec
     //maybe it can be changed later
 		System.out.println("Requesting file:"+fi.getName());
         try

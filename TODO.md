@@ -25,7 +25,7 @@ work out if we want to keep the length fields of List and Hlist as longs
     (unlike EVERY OTHER distribackup message object),
 or turn them into TNV (type-number-value) objects,
     without a number-of-bytes length field, but with a number-of-elements field
-or just keep thwem as ints
+or just keep them as ints
 
 * create an evaluation framework
 * finish file transfer

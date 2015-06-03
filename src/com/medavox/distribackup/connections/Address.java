@@ -89,7 +89,7 @@ public class Address implements Communicable//TODO: flesh this class out
 		they use a different protocol version,
 		or that they aren't part of this swarm (anymore?)*/
 		
-		if(true /*we couldn't reach this address*/)//TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+		if(true /*we couldn't reach this address*/)//TODO TODO TODO TODO TODO TODO
 		{
 			isOnline = false;
 		}

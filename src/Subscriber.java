@@ -69,7 +69,6 @@ public class Subscriber extends Peer
 					PeerInfo randomPeer;
 					do
 					{
-						
 						Random r = new Random();
 						Set<UUID> keys = peers.keySet();
 						UUID[] uuids = new UUID[keys.size()];
@@ -92,7 +91,6 @@ public class Subscriber extends Peer
 						ioe.printStackTrace();
 					}
 					//then remove this entry from filesToDownload
-					
 				}
 			}
 		}
@@ -176,12 +174,12 @@ public class Subscriber extends Peer
     private class FileBeggar implements Runnable
     {
     	//private internal classes can access parent class's variables anyway 
-    	//private Subscriber owner;
+    	private Subscriber owner;
     	
-    	/*public FileBeggar(Subscriber owner)
+    	public FileBeggar(Subscriber owner)
     	{
     		this.owner = owner;
-    	}*/
+    	}
 
     	@Override
     	public void run()
@@ -222,7 +220,7 @@ public class Subscriber extends Peer
 	    	    			{//we have no open ConnectionOperators with this PeerInfo 
 	    	    				try
 	    	    				{
-	    	    					co = pi.newConnection();
+	    	    					co = pi.newConnection(owner);
 	    	    					break;
 	    	    				}
 	    	    				catch(ConnectException ce)

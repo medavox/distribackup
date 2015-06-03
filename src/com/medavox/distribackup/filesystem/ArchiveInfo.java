@@ -54,6 +54,11 @@ public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, It
     	return update(newFiles);
     }
     
+    public void setGRN(long newGRN)
+    {
+    	globalRevNum = newGRN;
+    }
+    
     public boolean update(FileInfo fi)
     {
     	if(files.containsKey(fi.toString()))

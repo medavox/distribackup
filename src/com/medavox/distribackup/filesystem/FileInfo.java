@@ -10,7 +10,7 @@ import com.medavox.distribackup.peers.Peer;
 
 /**An immutable object whose purpose is to 
  * 1) uniquely identify a file, and
- * 2) provide Distribackup-specific information about it (checksum, revision number). 
+ * 2) provide Distribackup-specific information about it (checksum, revision number).
  * Does not have to refer to an extant file. Consider referencing Java's File class AMAP*/
 public class FileInfo extends FileSystemObjectInfo
 {/*
@@ -18,9 +18,9 @@ public class FileInfo extends FileSystemObjectInfo
 4. revision number  | ULong
 5. checksum         | SHA1*/
 //TODO: we're going to have a problem when a FileInfo is passed from a windows to a unix system:
-//the path separators will switch! 
+//the path separators will switch!
 	private long revisionNumber;//the spec called for ULongs here and here,
-	private long fileSize;//but this is extremely inconvenient in Java
+	private long fileSize;		//but this is extremely inconvenient in Java
 	private byte[] checksum;
     private boolean isDirectory;
 	
@@ -44,7 +44,7 @@ public class FileInfo extends FileSystemObjectInfo
         fileSize = -1;
         checksum = new byte[0];
     }
-    
+    /*
     public FileInfo(File f)
     {
     	
@@ -53,7 +53,7 @@ public class FileInfo extends FileSystemObjectInfo
     public FileInfo(File f, long revisionNumber)
     {
     	
-    }
+    }*/
     
 	public FileInfo(Path p, long revisionNumber)
 	{

@@ -67,7 +67,7 @@ public class PeerInfo implements Communicable
     	}
     }
     
-    public ConnectionOperator newConnection() throws ConnectException
+    public ConnectionOperator newConnection(Peer owner) throws ConnectException
     {
     	for(Address a : addresses)
     	{//try to establish a new connection until either one is made
@@ -77,7 +77,7 @@ public class PeerInfo implements Communicable
 			try
 			{
 				Socket s = new Socket(host, port);
-				ConnectionOperator co = new ConnectionOperator(s);
+				ConnectionOperator co = new ConnectionOperator(s, owner);
 				openConnections.add(co);
 				return co;
 			}
