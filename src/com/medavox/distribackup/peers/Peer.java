@@ -56,8 +56,7 @@ public abstract class Peer extends Thread
      * Subscriber, which is most of the network communication logic (both incoming message
      * processing and sending messages), setup and initialisation of most data structures,
      * and various global constants and values, such as protocol version, and archive directory
-     * location.
-     * of */
+     * location */
 	public Peer(Path root, int port)
 	{
 		Peer.root = root;

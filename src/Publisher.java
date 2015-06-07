@@ -14,7 +14,7 @@ import java.nio.file.*;
 public class Publisher extends Peer
 {
     private static int port = 1210;
-    private static Path defaultRoot = Paths.get("/home/scc/distribackup/publisher-root");//TODO: make relative for demo
+    //private static Path defaultRoot = Paths.get("/home/scc/distribackup/publisher-root");//TODO: make default relative
     private long globalRevisionNumber;//the grand-daddy. This ones defines the network's value
     public Path root;
     //private List<Peer> peers = new LinkedList<Peer>();
@@ -28,9 +28,11 @@ public class Publisher extends Peer
 		super(root, port);
 		publisherUUID = myUUID;
 		globalArchiveState.setGRN(0);
-		//TODO: perform initial filetree scan, and add found files to archive state
-		//FileInfo[] foundFiles = FileUtils.scanFileTree(root);
-		//globalArchiveState.update(foundFiles);
+		//perform initial filetree scan, and add found files to archive state
+		FileUtils.recursiveFileListing(root, globalArchiveState);
+		System.out.print(globalArchiveState);
+		//System.out.println("globalArchiveState files:"+globalArchiveState.getNumFiles());
+		//System.out.println("globalArchiveState Dirs :"+globalArchiveState.getNumDirectories());
     }
     
     public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO: better handling of Publisher impostor

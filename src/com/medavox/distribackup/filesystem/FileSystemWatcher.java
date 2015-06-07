@@ -27,9 +27,9 @@ public class FileSystemWatcher extends Thread
 		this.watcher = FileSystems.getDefault().newWatchService();
 		this.keys = new ConcurrentHashMap<WatchKey,Path>();
 
-		System.out.format("Scanning %s ...\n", dir);
+		System.out.format("Watching %s\n", dir);
 		registerAll(dir);
-		System.out.println("Done.");
+		//System.out.println("Done.");
 
 		//enable trace after initial registration
 		this.trace = true;

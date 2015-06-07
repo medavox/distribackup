@@ -61,7 +61,7 @@ public class Subscriber extends Peer
 			//ask a different random peer for each file
 			for(FileInfo fi : filesToDownload)
 			{
-				System.out.println("toDownload:"+filesToDownload.printAllFiles());
+				System.out.println("toDownload:"+filesToDownload);
 				if(!fi.isDirectory())
 				{
 					//get a random peer who has an open connection with us
@@ -118,7 +118,7 @@ public class Subscriber extends Peer
     	//fsw.ignoreList.update(cfi);
     	localArchiveState.update(cfi);
     	System.out.println("successfully removed "+cfi+" from toDownload:"+filesToDownload.remove(cfi));
-    	System.out.println("toDownload:"+filesToDownload.printAllFiles());
+    	System.out.println("toDownload:"+filesToDownload);
     }
     
     public static void main (String args[])
@@ -171,7 +171,7 @@ public class Subscriber extends Peer
 		Path relativePath = root.relativize(file);
 		System.out.println("illegally changed file:"+relativePath.toString());
 		FileInfo fi = localArchiveState.getFileInfo(relativePath.toString());//returns null?
-		System.out.println("GAS files:"+globalArchiveState.printAllFiles());
+		System.out.println("GlobalArchiveState files:"+globalArchiveState);
 		System.out.println("fi:"+fi);
 		co.requestFile(fi);
     }

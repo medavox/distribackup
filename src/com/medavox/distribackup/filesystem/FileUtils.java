@@ -105,23 +105,37 @@ public abstract class FileUtils
 		}
 	}
 	//TODO: tool methods for scanning the file tree upon the start of a new Publisher
-	/*public static FileInfo[] scanFileTree(Path root)
-	{
-		ArchiveInfo foundFiles = new ArchiveInfo();
-		
-		
-		return foundFiles.getFiles();
-	}
+	/*for a path:
+	 * if isFile:
+	 * 		return this + entries so far
+	 * else (isDirectory)
+	 * 		list Dir Contents
+	 * 			foreach newpath:
+	 * 				call self(newpath)
+	 * 			return this dir + entries so far
+	 * 	
+	 * 
+	 * */
 	
-	private static FileInfo[] recursiveFileListing(Path von)
+	public static void recursiveFileListing(Path p, ArchiveInfo ai)
 	{
-		if(Files.isDirectory(von))
+		if(Files.isDirectory(p))
 		{
-			
+			//list dir contents
+			try
+			{
+				DirectoryStream<Path> contents = Files.newDirectoryStream(p);
+				for(Path child : contents)
+				{
+					recursiveFileListing(child, ai);
+				}
+			}
+			catch(IOException ioe)//TODO: make error catching blocks better
+			{
+				ioe.printStackTrace();
+			}
 		}
-		else
-		{
-			
-		}
-	}*/
+		//is a file, or the directory entry itself
+		ai.update(p);
+	}
 }
