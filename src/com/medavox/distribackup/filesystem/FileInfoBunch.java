@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.medavox.distribackup.connections.*;
-
+/**A read-only collection of FileInfo objects, and a revision number.*/
 public class FileInfoBunch implements Communicable
 {
     protected long globalRevNum;

@@ -11,7 +11,8 @@ import java.util.concurrent.ConcurrentMap;
 import com.medavox.distribackup.connections.*;
 
 /**Mutable extension of FileInfoBunch. Used for
-maintaining changeable info about local archive state, global archive state, Files to download*/
+maintaining changeable info about local archive state, global archive state,
+or lists of needed files to download*/
 public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, Iterator<FileInfo>
 {
     ConcurrentMap<String, FileInfo> files = new ConcurrentHashMap<String, FileInfo>();

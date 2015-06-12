@@ -1,5 +1,6 @@
 package com.medavox.distribackup.connections;
-
+/**Contains a list of all possible DNIEPr message types, their IDByte mappings, 
+ * and a method to convert from byte to message enum.*/
 public enum Message
 {
 	BITFIELD		((byte)0x00,  2),

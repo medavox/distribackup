@@ -1,7 +1,3 @@
-//import java.io.File;
-//import java.io.FileInputStream;
-//import java.io.FileNotFoundException;
-//import java.io.FileOutputStream;
 import java.io.IOException;
 
 import com.medavox.distribackup.connections.ConnectionOperator;
@@ -42,13 +38,12 @@ public class Subscriber extends Peer
         if(!(publisherUUID.equals(ua.getUUID()) ))//if their UUID is not the Publisher's
         {
         	PeerInfo pi = peers.get(ua.getUUID());
-			//someone is pretending to be/thinks it's the Publisher!
+			//someone (is pretending to be/thinks it's the Publisher!
         	System.err.println("WARNING: Peer \""+pi+
         			"\" is pretending to be the Publisher!");
 		}
-		else
-		{//everything is fine, no spoofing here
-			//get list of changed files
+		else//it really is the publisher
+		{	//get list of changed files
 			//get the ArchiveInfo from the Update Announcement
 			FileInfoBunch update = (FileInfoBunch)ua.getCommunicable();
 			//update local archive and list of files we need
@@ -58,7 +53,7 @@ public class Subscriber extends Peer
 			System.out.println("Received Update Announcement");
 			
 			//request new files
-			//ask a different random peer for each file
+			//ask a different peer for each file, to spread load
 			for(FileInfo fi : filesToDownload)//TODO:check files are deleted from filesToDownload
 			{
 				System.out.println("toDownload:"+filesToDownload);
@@ -76,6 +71,7 @@ public class Subscriber extends Peer
 					}
 					catch(IOException ioe)
 					{
+						System.err.println("ERROR: failed to create directory \""+fsFile+"\"");
 						ioe.printStackTrace();
 					}
 					//then remove this entry from filesToDownload
@@ -180,7 +176,7 @@ public class Subscriber extends Peer
     	@Override
     	public void run()
     	{
-    		while(true)
+    		while(true)//slow loop
     		{
     			try
     			{

@@ -1,7 +1,8 @@
 package com.medavox.distribackup.connections;
 
 import java.util.UUID;
-
+/**A wrapper around a Communicable object. Contains the payload,
+ * connection it was received on, that peer's UUID, and any optional details.*/
 public class ReceivedMessage
 {
     private Message type;

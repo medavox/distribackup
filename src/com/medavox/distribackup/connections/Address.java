@@ -3,7 +3,9 @@ package com.medavox.distribackup.connections;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
-
+/**Ties together various TCP/IP addressing schemes into one class.
+ * Can represent an IPv4 or IPv6 address, or a internet-style hostname.
+ * All 3 types must have a port associated with it, the listening port of the peer being described.*/
 public class Address implements Communicable
 {
 	/*host (IP/IPv6/hostname)

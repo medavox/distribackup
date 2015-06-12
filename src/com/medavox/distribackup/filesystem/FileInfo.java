@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import com.medavox.distribackup.peers.Peer;
 
 /**An immutable object whose purpose is to 
- * 1) uniquely identify a file, and
+ * 1) uniquely identify one version of one file, and
  * 2) provide Distribackup-specific information about it (checksum, revision number).
  * Does not have to refer to an extant file. Consider referencing Java's File class AMAP*/
 public class FileInfo extends FileSystemObjectInfo
@@ -23,7 +23,7 @@ public class FileInfo extends FileSystemObjectInfo
 	private long fileSize;		//but this is extremely inconvenient in Java
 	private byte[] checksum;
     private boolean isDirectory;
-	
+	/**Constructor for a FileInfo representing a file.*/
 	public FileInfo(String name, String path, long fileSize, long revisionNumber, byte[] checksum)
 	{
         isDirectory = false;

@@ -33,37 +33,51 @@ public abstract class Peer extends Thread
 	/**A constant which represents the maximum allowable 
 	 * size of a file before it is split into chunks. Currently 4MB*/
 	public static final int MAX_CHUNK_SIZE = 4194304;//4MB
+	
 	/**The minimum allowable chunk size, before there is no point splitting it. Currently 32KB.*/
 	public static final int MIN_CHUNK_SIZE = 32768;//32KB
+	
 	/**The port to listen for new connections. Defaults to 1210.*/
 	protected int listenPort;
+	
 	//private String defaultRoot;//must be specified by subclass
 	/**The archive's root directory.*/
 	public static Path root;
+	
 	/**Location of the cache directory, for storing chunks of incomplete files.*/
 	protected String cacheDir = ".distribackup-cache";
+	
 	/**The OS-dependent path separator character; usually either / or \.*/
 	protected String sep = FileSystems.getDefault().getSeparator();
 	
+	/**The PEerInfo object for the Publisher. Definitely redundant, possibly entirely unnecessary.*/
 	PeerInfo publisherInfo;
+	
 	/**The UUID of the Publisher. If this instance is the Publisher, this is our UUID.*/
 	protected UUID publisherUUID;
+	
 	/**This instance's UUID.*/
 	public static UUID myUUID;
+	
 	/**A switch which lets all looping threads know if they can loop again. 
 	 * Useful for safe thread termination.*/
 	public boolean threadsEnabled = true;
     
 	/**File system change watching subsystem.*/
 	protected FileSystemWatcher fsw;
+	
 	/**This instance's list of other peers it knows about.*/
 	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	
 	/**An ordered list of all messages received from open connections.
 	 * These are handled consecutively by the Incoming Message Processing Thread.*/
 	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
+	
     protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
+    
     /**The latest (known) state of the archive copy. Local copy may not match this. */
     public ArchiveInfo globalArchiveState = new ArchiveInfo( 0, new FileInfo[0]);//initialise empty, then get state from network
+    
     /**List of open connections to other peers.*/
     public CopyOnWriteArrayList<ConnectionOperator> openConnections = new CopyOnWriteArrayList<ConnectionOperator>();
 	
@@ -338,7 +352,7 @@ public abstract class Peer extends Thread
      * The requested file is appropriately a file,
      * The requested file is the right version.
      * It's the responsibility of the caller to make sure these are true.*/
-    public FileDataChunk getFileDataChunk(FileInfo fi, int pieceNum)//TODO:loads entire file into memory!
+    public FileDataChunk getFileDataChunk(FileInfo fi, int pieceNum)//FIXME:loads entire file into memory!
     {
     	File fsFile = new File(root.toString()+sep+fi.getPath()+sep+fi.getName());
     		
@@ -502,7 +516,7 @@ public abstract class Peer extends Thread
         }
     }
     
-    public void receivePeerInfo(ReceivedMessage pi)//TODO
+    public void receivePeerInfo(ReceivedMessage pi)
     {
     	System.out.println("Received new PeerInfo");
 		PeerInfo peerInfo = (PeerInfo)pi.getCommunicable();
@@ -529,7 +543,7 @@ public abstract class Peer extends Thread
 			if(peers.isEmpty())
 			{
 				System.out.println("This is our first peer!");
-				//TODO: send a allFileRequest, or maybe just an archiveStateRequest
+				//TODO: send an allFileRequest, or maybe just an archiveStateRequest
 				System.out.println("Requesting archive state...");
 				ConnectionOperator co = pi.getConnection();
 				try
@@ -598,18 +612,17 @@ public abstract class Peer extends Thread
     	if(fib.getGRN() > globalArchiveState.getGRN())
     	{//replace our outdated globalArchiveInfo
     		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
+    		//TODO: request new files from this received archive status update
     	}
     	else
     	{
     		System.err.println("WARNING: received global archive info "
     				+"isn't newer than ours)"/* from "+	peers.get(as.getUUID())*/);
     	}
-    	
-    	//TODO: request files/versions we don't have, from random peers
 	}
 	
 	public void receiveNoHaz(ReceivedMessage nh)//TODO: implement
-	{//TODO: what to do when NO-ONE has a file you need
+	{//what to do when NO-ONE has a file you need?
     	//(reconsider your life choices)
 		
 	}
@@ -625,7 +638,8 @@ public abstract class Peer extends Thread
     {
     	Random r = new Random();
     	if(openConnections.size() > 0)
-    	{//TODO: more intelligent connection selection
+    	{//TODO: more intelligent connection selection, 
+    		//based on which open connection is the least used or fastest
     		return openConnections.get(r.nextInt());
     	}
     	else//no open connections

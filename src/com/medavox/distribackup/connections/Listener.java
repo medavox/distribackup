@@ -3,7 +3,8 @@ package com.medavox.distribackup.connections;
 import java.io.*;
 import java.net.*;
 import com.medavox.distribackup.peers.Peer;
-/**Assigns new Sockets to incoming connections*/
+/**Assigns new Sockets to incoming connections. The first point of contact for new connections.
+ * Further new connection set up is handled via a callback: Peer.setupNewSocket(Socket)*/
 public class Listener extends Thread
 {
 	static PrintStream o = System.out;

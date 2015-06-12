@@ -24,15 +24,15 @@ import com.medavox.distribackup.filesystem.FileInfoBunch;
 /**Logic in this class only pertains to conversion of primitive types to and from binary.
  * Byte arrays constructed by this class do not contain an IDByte, as not all uses
  * of every given field requires it. Instances which need one should add it manually.
- * 
+ * <p>
  * Methods which decode bytes expect no IDByte or length field; this header is
  * only useful for parsing the Message payload from the network stream.
  * The Message length can be determined from the byte[].length anyway.
- * 
+ * <p>
  * However, methods which encode data INTO bytes prepend the length field for convenience.
  * This means that bytes encoded with one method cannot be immediately passed
  * back to the corresponding decoding method without some processing first. 
- * 
+ * <p>
  * If this encoding is more hassle than help, then the behaviour can be changed.*/
 public abstract class BinaryTranslator
 {/**TODO:

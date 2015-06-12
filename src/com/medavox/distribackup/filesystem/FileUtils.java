@@ -7,9 +7,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.DirectoryStream;
-
+/**Contains various helper methods to perform file-related functions.*/
 public abstract class FileUtils
 {
+	/**Produces an SHA-1 checksum of a given file.
+	 * Reads the file into memory in 16MB chunks.*/
 	public static byte[] checksum(File f) throws FileNotFoundException, IOException
 	{
 		int bufferSize = 16*1024*1024;//read 16MB of the file into RAM at a time

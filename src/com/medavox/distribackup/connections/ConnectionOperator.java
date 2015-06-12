@@ -16,8 +16,9 @@ import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileDataChunk;
 import com.medavox.distribackup.filesystem.FileInfoBunch;
 
-/**This class handles communication over an individual Socket connection, 
- * after its initialisation. */
+/**Handles communication over an individual Socket connection. 
+ * One instance per connection. Has its own listening thread, 
+ * which passes received messages to Peer's Incoming Message Processing Thread.*/
 public class ConnectionOperator extends Thread
 {/* PeerInfo				EXISTS
 	Archive Status			EXISTS
