@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 
-public class Address implements Communicable//TODO: flesh this class out
+public class Address implements Communicable
 {
 	/*host (IP/IPv6/hostname)
 	listenPort: short
@@ -79,7 +79,7 @@ public class Address implements Communicable//TODO: flesh this class out
 		return addr.getHostName();
 	}
 	
-	public boolean isOnline()//TODO
+	public boolean isOnline()
 	{//either we use the built-in InetAddress.checkReachable() type thing (which restricts us to an ICMP echo over port 7,
 		//or we implement something clever which allows us to check the right port
 		
@@ -89,7 +89,7 @@ public class Address implements Communicable//TODO: flesh this class out
 		they use a different protocol version,
 		or that they aren't part of this swarm (anymore?)*/
 		
-		if(true /*we couldn't reach this address*/)//TODO TODO TODO TODO TODO TODO
+		if(true /*we couldn't reach this address*/)//TODO: !!! devise test for onlineness
 		{
 			isOnline = false;
 		}

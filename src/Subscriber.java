@@ -59,28 +59,16 @@ public class Subscriber extends Peer
 			
 			//request new files
 			//ask a different random peer for each file
-			for(FileInfo fi : filesToDownload)
+			for(FileInfo fi : filesToDownload)//TODO:check files are deleted from filesToDownload
 			{
 				System.out.println("toDownload:"+filesToDownload);
 				if(!fi.isDirectory())
 				{
-					//get a random peer who has an open connection with us
-					//TODO: try to open a connection rather than move on
-					PeerInfo randomPeer;
-					do
-					{
-						Random r = new Random();
-						Set<UUID> keys = peers.keySet();
-						UUID[] uuids = new UUID[keys.size()];
-						keys.toArray(uuids);
-						UUID randomID = uuids[r.nextInt(uuids.length)];
-						randomPeer = peers.get(randomID);
-					}while(!randomPeer.hasOpenConnection());
 					//request the file
-					randomPeer.getOpenConnection().requestFile(fi);
+					getOpenConnection().requestFile(fi);
 				}
 				else//it's a directory
-				{//just make an empty directory
+				{//just make an empty directory with the right name
 					String fsFile = root.toString()+sep+fi.getPath()+sep+fi.getName();
 					try
 					{
@@ -135,7 +123,8 @@ public class Subscriber extends Peer
 			    }
 			    catch(NumberFormatException nfe)
 			    {
-					System.err.println("incorrect arguments. \""+args[1]+"\" is not a valid port number");
+					System.err.println("incorrect arguments. \""+args[1]
+							+"\" is not a valid port number");
 					usage();
 			    }
 			    break;
@@ -157,7 +146,8 @@ public class Subscriber extends Peer
 		System.out.println("Usage: java Subscriber <archive root> [Publisher Address] [port]");
 		System.exit(1);
     }
-    /**Subscriber user has edited files in error */
+    /**Subscriber user has edited files in error. Requests a replacement copy, 
+     * and warns the user against editing their read-only backup. */
     public void fileChanged(Path file, String eventType)
     {
     	//System.err.println("ERROR: failed to ignore "+file);
@@ -166,7 +156,7 @@ public class Subscriber extends Peer
 		System.err.println("They are merely copies, your changes will be overwritten!");
 		//replace inappropriately changed copies with fresh copies from the Publisher
 		//request replacement copy from Publisher
-		ConnectionOperator co = peers.get(publisherUUID).getOpenConnection();
+		ConnectionOperator co = getOpenConnection();
 		System.out.println("file:"+file+" event:"+eventType);
 		Path relativePath = root.relativize(file);
 		System.out.println("illegally changed file:"+relativePath.toString());
@@ -175,6 +165,8 @@ public class Subscriber extends Peer
 		System.out.println("fi:"+fi);
 		co.requestFile(fi);
     }
+    
+    /**Continually requests files until the local archive state matches the global one.*/
     private class FileBeggar implements Runnable
     {
     	//private internal classes can access parent class's variables anyway 
@@ -203,51 +195,8 @@ public class Subscriber extends Peer
     	    		//if this file isn't in the localArchiveState, then we don't have it
     	    		if(!localArchiveState.contains(fi))
     	    		{
-    	    			//request this file from a random peer
-    	    			
-    	    			//select random peer from known peers
-    	    			PeerInfo[] peerArray = new PeerInfo[peers.size()];
-    	    			peers.values().toArray(peerArray);
-    	    			Random r = new Random();
-    	    			PeerInfo pi = peerArray[r.nextInt()];
-    	    			
-    	    			ConnectionOperator co = null;
-    	    			int peersTried = 0;
-    	    			while(peersTried < peerArray.length)//keep looking for a connected or connectable 
-    	    			{//peer who we can request the file from
-	    	    			if(pi.hasOpenConnection())
-	    	    			{
-	    	    				co = pi.getOpenConnection();
-	    	    				break;
-	    	    			}
-	    	    			else
-	    	    			{//we have no open ConnectionOperators with this PeerInfo 
-	    	    				try
-	    	    				{
-	    	    					co = pi.newConnection(owner);
-	    	    					break;
-	    	    				}
-	    	    				catch(ConnectException ce)
-	    	    				{//can't connect connect to this peer
-	    	    					System.err.println("Could't connect to "+pi);
-	    	    					System.err.println("Trying another peer...");
-	    	    					peersTried++;
-	    	    					continue;
-	    	    				}
-	    	    			}
-    	    			}
-    	    			if(co == null)
-    	    			{
-    	    				System.err.println("ERROR: couldn't connect to any other peers!");
-    	    				System.err.println("Either this archive is empty, or your network connection is down.");
-    	    				System.err.println("Fix the problem/ask someone to help fix the problem, and try again.");
-    	    				System.exit(1);
-    	    				
-    	    			}
-    	    			else
-    	    			{
-    	    				co.requestFile(fi);
-    	    			}
+    	    			//request the file from a currently-connected peer
+    	    			getOpenConnection().requestFile(fi);
     	    		}
     	    	}
     		}

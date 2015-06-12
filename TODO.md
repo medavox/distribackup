@@ -1,21 +1,3 @@
-implement receiving serialised file
-	type-length-value, bencode, MessagePack
-	list ALL possible message types, then derive needed data types
-UUID and peerinfo sending
-
-callback to send file
-
-0. Finish primitive dataype binary conversion methods as needed
-
-1. Implement compound type binary conversion methods (to and from)
-    * FileInfo	DONE (still needs other binary methods implementing)
-    * DirInfo
-    * FileData	
-    * PeerInfo
-    * Address
-    * List
-    * HList
-
 * if someone else (not the publisher) announces they have a file you want while you're waiting, request it from them
 
 Structure/Design:
@@ -27,12 +9,20 @@ or turn them into TNV (type-number-value) objects,
     without a number-of-bytes length field, but with a number-of-elements field
 or just keep them as ints
 
-* create an evaluation framework
 * finish file transfer
+    - implement file chunking, using a chunk cache
 * make exception catching consistent: have a consistent policy
 * redo package structure
 * actually use the checksums to do some error-checking
-* Call requestArchiveState() during Peer.receivePeerInfo()
-    - implement Peer.receiveArchiveStatus()
-    - implement Peer.handleArchiveStatusRequest()
 * Implement file deletion notifications    
+
+write logic for:
+----------------
+
+* connecting to Peer we've been told about
+* asking for files which are different between our local and the global archive states
+    - making the list of differences - eg localArchive.difference(globalArchive):ArchiveInfo
+    - knowing what we did enough to act on updated info/state
+        - checking to make sure we received a response (either the file or NO_HAZ)
+        - how to know when we sent a file request, so we know which file a NO_HAZ pertains to
+    - choosing a peer (or really its ConnectionOperator) to request files from

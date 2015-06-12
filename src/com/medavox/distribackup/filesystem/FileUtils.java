@@ -30,7 +30,7 @@ public abstract class FileUtils
 		catch(NoSuchAlgorithmException nsae)
 		{
 			//do nothing;
-			//the String which could cause this exception is invariate
+			//the String which could cause this exception is invariant
 		}
 		return new byte[0];
 	}
@@ -53,7 +53,7 @@ public abstract class FileUtils
 		int randomIndex = r.nextInt(allNames.length);
 		return allNames[randomIndex];
 	}
-	/**Chooses a code name based on the supplied UUID. idempotent; 
+	/**Chooses a code name based on the supplied UUID. idempotent;
 	 * gives the same name for the same uuid every time.*/
 	public static String getCodeName(UUID uuid)
 	{
@@ -104,24 +104,11 @@ public abstract class FileUtils
 			return "";
 		}
 	}
-	//TODO: tool methods for scanning the file tree upon the start of a new Publisher
-	/*for a path:
-	 * if isFile:
-	 * 		return this + entries so far
-	 * else (isDirectory)
-	 * 		list Dir Contents
-	 * 			foreach newpath:
-	 * 				call self(newpath)
-	 * 			return this dir + entries so far
-	 * 	
-	 * 
-	 * */
 	
 	public static void recursiveFileListing(Path p, ArchiveInfo ai)
 	{
 		if(Files.isDirectory(p))
-		{
-			//list dir contents
+		{//list dir contents
 			try
 			{
 				DirectoryStream<Path> contents = Files.newDirectoryStream(p);
@@ -135,7 +122,7 @@ public abstract class FileUtils
 				ioe.printStackTrace();
 			}
 		}
-		//is a file, or the directory entry itself
+		//whether p is a file or the directory, add it to the archiveInfo object
 		ai.update(p);
 	}
 }

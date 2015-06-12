@@ -9,14 +9,11 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
-//import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-/**Stores information about other peers on the network.*/
+/**Stores information about other peers in the network.*/
 public class PeerInfo implements Communicable
 {
 //WARNING: we don't care so much what GRN other Peers are on
@@ -26,11 +23,11 @@ public class PeerInfo implements Communicable
 	//ERROR: Lists aren't thread-safe!
 	/**A pool of known addresses from which to open new connections*/
 	public List<Address> addresses = new ArrayList<Address>();
-    private CopyOnWriteArrayList<ConnectionOperator> openConnections = new CopyOnWriteArrayList<ConnectionOperator>();//may need to become concurrent
+    //private CopyOnWriteArrayList<ConnectionOperator> openConnections = new CopyOnWriteArrayList<ConnectionOperator>();//may need to become concurrent
     private String codeName;
 	private boolean isPublisher;
     
-	public PeerInfo(UUID uuid, boolean isPublisher, Address[] startingAddresses)//TODO
+	public PeerInfo(UUID uuid, boolean isPublisher, Address[] startingAddresses)
 	{
         this.uuid = uuid;
         this.isPublisher = isPublisher;
@@ -47,15 +44,15 @@ public class PeerInfo implements Communicable
 		return uuid;
 	}
     
-    public boolean hasOpenConnection()
+    /*public boolean hasOpenConnection()
     {
         return !openConnections.isEmpty();
-    }
+    }*/
     
     /**Returns an open connection. This method has room for later improvement,
      * choosing which open connection to return intelligently, based on which
      * open connection is the least used or fastest.*/
-    public ConnectionOperator getOpenConnection()
+    /*public ConnectionOperator getOpenConnection()
     {//return an open connection
     	try
     	{
@@ -65,7 +62,7 @@ public class PeerInfo implements Communicable
     	{
     		return null;
     	}
-    }
+    }*/
     
     public ConnectionOperator newConnection(Peer owner) throws ConnectException
     {
@@ -78,7 +75,8 @@ public class PeerInfo implements Communicable
 			{
 				Socket s = new Socket(host, port);
 				ConnectionOperator co = new ConnectionOperator(s, owner);
-				openConnections.add(co);
+				co.start();
+				//openConnections.add(co);
 				return co;
 			}
 			catch(UnknownHostException uhe)
@@ -103,7 +101,7 @@ public class PeerInfo implements Communicable
     	return isPublisher;
     }
     
-    public void addConnection(ConnectionOperator co)
+    /*public void addConnection(ConnectionOperator co)
     {
     	openConnections.add(co);
     }
@@ -111,13 +109,18 @@ public class PeerInfo implements Communicable
     public void removeConnection(ConnectionOperator co)
     {
     	openConnections.remove(co);
-    }
+    }*/
     
     public Address[] getAddresses()
     {
     	Address[] adds = new Address[addresses.size()];
     	addresses.toArray(adds);
     	return adds;
+    }
+    
+    public String getCodeName()
+    {
+    	return codeName;
     }
 	
 	public String toString()//needed for debugging and error messages

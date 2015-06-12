@@ -9,11 +9,12 @@ import java.nio.channels.FileChannel;
 import java.nio.file.*;
 
 import com.medavox.distribackup.connections.*;
-import com.medavox.distribackup.peers.*;
 import com.medavox.distribackup.filesystem.*;
 
 /* There must be a local state object which records open sockets, and 
  * which peers they pertain to*/
+/**Core (common) functionality of both Peer and Subscriber. 
+ * Ties together disparate components into functional core. Manages lists of */
 public abstract class Peer extends Thread
 {/* PeerInfo				EXISTS
 	Archive Status			EXISTS
@@ -29,29 +30,46 @@ public abstract class Peer extends Thread
 	PeerInfo Request		
 	"haz nao" announcement
 	Fresh Peers*/
-	
+	/**A constant which represents the maximum allowable 
+	 * size of a file before it is split into chunks. Currently 4MB*/
 	public static final int MAX_CHUNK_SIZE = 4194304;//4MB
+	/**The minimum allowable chunk size, before there is no point splitting it. Currently 32KB.*/
 	public static final int MIN_CHUNK_SIZE = 32768;//32KB
+	/**The port to listen for new connections. Defaults to 1210.*/
 	protected int listenPort;
 	//private String defaultRoot;//must be specified by subclass
+	/**The archive's root directory.*/
 	public static Path root;
+	/**Location of the cache directory, for storing chunks of incomplete files.*/
 	protected String cacheDir = ".distribackup-cache";
+	/**The OS-dependent path separator character; usually either / or \.*/
 	protected String sep = FileSystems.getDefault().getSeparator();
 	
 	PeerInfo publisherInfo;
+	/**The UUID of the Publisher. If this instance is the Publisher, this is our UUID.*/
 	protected UUID publisherUUID;
+	/**This instance's UUID.*/
 	public static UUID myUUID;
+	/**A switch which lets all looping threads know if they can loop again. 
+	 * Useful for safe thread termination.*/
 	public boolean threadsEnabled = true;
     
+	/**File system change watching subsystem.*/
 	protected FileSystemWatcher fsw;
-	
+	/**This instance's list of other peers it knows about.*/
 	protected ConcurrentMap<UUID, PeerInfo> peers = new ConcurrentHashMap<UUID, PeerInfo>();
+	/**An ordered list of all messages received from open connections.
+	 * These are handled consecutively by the Incoming Message Processing Thread.*/
 	protected Queue<ReceivedMessage> messageQueue = new ConcurrentLinkedQueue<ReceivedMessage>();
     protected ArchiveInfo filesToDownload = new ArchiveInfo(-1, new FileInfo[0]);
+    /**The latest (known) state of the archive copy. Local copy may not match this. */
     public ArchiveInfo globalArchiveState = new ArchiveInfo( 0, new FileInfo[0]);//initialise empty, then get state from network
+    /**List of open connections to other peers.*/
+    public CopyOnWriteArrayList<ConnectionOperator> openConnections = new CopyOnWriteArrayList<ConnectionOperator>();
 	
+    /**The version of the protocol in use by this version of the program. Manually-incremented when necessary.*/
 	public static final short version = 2;//increment this manually on every release
-	
+
     /**The main program core. Contains all functionality common to both the Publisher and 
      * Subscriber, which is most of the network communication logic (both incoming message
      * processing and sending messages), setup and initialisation of most data structures,
@@ -61,7 +79,7 @@ public abstract class Peer extends Thread
 	{
 		Peer.root = root;
 		this.listenPort = port;
-		Peer.myUUID = UUID.randomUUID();//this uniquely IDs us on the network
+		Peer.myUUID = UUID.randomUUID();//TODO: persistent UUID from file
 		Listener listenHook = new Listener(port, this);
 		Runtime.getRuntime().addShutdownHook(new CloseHook(this));
 		try
@@ -88,8 +106,8 @@ public abstract class Peer extends Thread
 		{
 			ConnectionOperator co = new ConnectionOperator(s, this);
 			
-			UUID newPeerUUID = co.exchangeUUIDs();
-			//after boilerplate is done, start listening thread
+			UUID newPeerUUID = co.getConnectedUUID();
+			//start listening thread
 			co.start();
 			if(!peers.containsKey(newPeerUUID))
 			{//if we've not seen this Peer before:
@@ -103,7 +121,7 @@ public abstract class Peer extends Thread
 			{//we've already seen this Peer before
 				//add this new Connection info to its connections pile
 				System.out.println("We already know this peer.");
-				peers.get(newPeerUUID).addConnection(co);
+				//peers.get(newPeerUUID).addConnection(co);
 			}
 		}
 		catch(IOException ioe)
@@ -113,9 +131,8 @@ public abstract class Peer extends Thread
 		}
 	}
 	
-	/**TODO:
-	 store 1 bis-bos pair per socket entry
-		or create one when a socket is referenced from the hashmap*/
+	/*TODO: Old code - consider updating
+	 * method is only currently used by Subscriber to initiate static connection to known Publisher*/
 	public void connect(String host, int port)
 	{
 		try
@@ -126,12 +143,12 @@ public abstract class Peer extends Thread
 		catch(UnknownHostException uhe)
 		{
 			uhe.printStackTrace();
-			//TODO
+			//TODO: better handling
 		}
 		catch(IOException ioe)
 		{
 			ioe.printStackTrace();
-			//TODO
+			//TODO: better handling
 		}
 	}
 	
@@ -237,7 +254,7 @@ public abstract class Peer extends Thread
             }
         }
     }
-    public void handlePeerInfoRequest(ReceivedMessage next)//TODO
+    public void handlePeerInfoRequest(ReceivedMessage next)
     {
     	System.out.println("Received PeerInfo Request");
     	ConnectionOperator co = next.getConnection();
@@ -251,7 +268,8 @@ public abstract class Peer extends Thread
     		ioe.printStackTrace();
     	}
 	}
-	public void receiveMorePeers(ReceivedMessage next)//TODO
+    
+	public void receiveMorePeers(ReceivedMessage next)//TODO: implement
 	{
 		
 	}
@@ -260,7 +278,7 @@ public abstract class Peer extends Thread
 	
 	/**Waits until we have the whole update before pushing files to the visible copy.
 	Updates should be relatively small anyway, and this prevents broken half-states from occurring*/
-    public void receiveFileDataChunk(ReceivedMessage rxmsg)//TODO
+    public void receiveFileDataChunk(ReceivedMessage rxmsg)//TODO: work chunking algo re revisions
     {
         //check file exists
         //if there are more files or pieces on the way before this update is finished,
@@ -311,12 +329,11 @@ public abstract class Peer extends Thread
         	}
         }
         else
-        {//store this piece of the file in the cache until we have all the pieces of the update
-            //TODO
+        {//TODO: store this piece of the file in the cache until we have all the pieces of the update
         }
     }
     
-    /**Assumes:- 
+    /**Assumes that:- 
      * The requested file exists (we have the file and the right version),
      * The requested file is appropriately a file,
      * The requested file is the right version.
@@ -380,7 +397,6 @@ public abstract class Peer extends Thread
 					System.err.println("There's no backing array for the byte buffer!");
 					System.exit(1);
 				}
-				
 			}
 			catch(IOException ioe)
 			{
@@ -505,7 +521,7 @@ public abstract class Peer extends Thread
 		if(peers.containsKey(uuid))
 		{
 			System.out.println("TODO: known peer, update existing record");
-			//TODO
+			//TODO: update existing record
 		}
 		else
 		{
@@ -527,12 +543,12 @@ public abstract class Peer extends Thread
 					System.exit(1);
 				}
 			}
-			peerInfo.addConnection(pi.getConnection());//add this connection 
+			//peerInfo.addConnection(pi.getConnection());//open connections are now managed by Peer 
 			peers.putIfAbsent(uuid, peerInfo);
 		}
 	}
 
-    public void handleAllFilesRequest(ReceivedMessage afr)//TODO
+    public void handleAllFilesRequest(ReceivedMessage afr)//TODO: implement
     {
         
     }
@@ -543,8 +559,7 @@ public abstract class Peer extends Thread
         //close the connection we received this on,
     	//and remove it from the PeerInfo's list of open connections
     	ConnectionOperator co = ea.getConnection();
-    	PeerInfo p = peers.get(ea.getUUID()); 
-    	p.removeConnection(co);
+    	PeerInfo p = peers.get(ea.getUUID());
     	
     	try
     	{
@@ -558,9 +573,10 @@ public abstract class Peer extends Thread
     	
     }
     
-    public void handleArchiveStatusRequest(ReceivedMessage ftsr)
+    public void handleArchiveStatusRequest(ReceivedMessage asr)
     {
-        ConnectionOperator co = ftsr.getConnection();
+        ConnectionOperator co = asr.getConnection();
+        System.out.println("Received Archive State Request");
         try
         {
         	co.sendArchiveStatus();
@@ -571,11 +587,14 @@ public abstract class Peer extends Thread
         }
     }
     
-    public void receiveArchiveStatus(ReceivedMessage as)//TODO
+    public void receiveArchiveStatus(ReceivedMessage as)
     {//for any files we don't have (or don't have the latest version of),
     	//request them from any peer
     	//expect 1 or more of these requests to be replied with NO HAZ
+    	System.out.println("Received Archive State");
     	FileInfoBunch fib = (FileInfoBunch)as.getCommunicable();
+		System.out.println("Our Global Revision Number: "+globalArchiveState.getGRN());
+		System.out.println("Received Revision Number  : "+fib.getGRN());
     	if(fib.getGRN() > globalArchiveState.getGRN())
     	{//replace our outdated globalArchiveInfo
     		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
@@ -584,9 +603,9 @@ public abstract class Peer extends Thread
     	{
     		System.err.println("WARNING: received global archive info "
     				+"isn't newer than ours)"/* from "+	peers.get(as.getUUID())*/);
-    		System.err.println("Our Global Revision number: "+globalArchiveState.getGRN());
-    		System.err.println("Their Global Revision num : "+fib.getGRN());
     	}
+    	
+    	//TODO: request files/versions we don't have, from random peers
 	}
 	
 	public void receiveNoHaz(ReceivedMessage nh)//TODO: implement
@@ -594,13 +613,44 @@ public abstract class Peer extends Thread
     	//(reconsider your life choices)
 		
 	}
-	
-	public void receiveAcquisitionAnnouncement(ReceivedMessage aa)//TODO
+	//aka HAZ NAO
+	public void receiveAcquisitionAnnouncement(ReceivedMessage aa)//TODO: implement
 	{
 		
 	}
     
     public abstract void receiveUpdateAnnouncement(ReceivedMessage ua);
+    
+    protected ConnectionOperator getOpenConnection()
+    {
+    	Random r = new Random();
+    	if(openConnections.size() > 0)
+    	{//TODO: more intelligent connection selection
+    		return openConnections.get(r.nextInt());
+    	}
+    	else//no open connections
+    	{//try to create one
+    		PeerInfo[] peerArray = new PeerInfo[peers.size()];
+    		peers.values().toArray(peerArray);
+    		
+    		PeerInfo pi = peerArray[r.nextInt()];
+    		
+    		while(true)
+    		{
+    			try
+    			{
+    				return pi.newConnection(this);
+    			}
+    			catch(ConnectException ce)
+    			{//can't connect connect to this peer
+    				System.err.println("Could't connect to "+pi);
+    				System.err.println("Trying another peer...");
+    				pi = peerArray[r.nextInt()];
+    			}    			
+    		}
+			
+    	}
+    }
     
     public void addToQueue(ReceivedMessage rxmsg)
     {

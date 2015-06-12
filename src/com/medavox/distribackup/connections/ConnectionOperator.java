@@ -37,8 +37,8 @@ public class ConnectionOperator extends Thread
 	BufferedInputStream bis;
 	BufferedOutputStream bos;
 	Socket socket;
-    private UUID connectedPeer;
-    private Peer owner;
+    protected UUID connectedPeer;
+    protected Peer owner;
     //if/when we add connection speed measuring, this is where it will go
 	public ConnectionOperator(Socket s, Peer owner) throws IOException
 	{
@@ -56,15 +56,16 @@ public class ConnectionOperator extends Thread
 					" has wrong version!");
 		}
 		System.out.println("new connection to "+s.getInetAddress());
+		connectedPeer = exchangeUUIDs();
 	}
     /*
-    public ConnectionOperator(Address a, Peer owner)//TODO
+    public ConnectionOperator(Address a, Peer owner)//TODO: implement
     {
         
     }*/
 	
 	/**Checks that local and remote program versions match*/
-	public int checkVersions() throws IOException
+	protected int checkVersions() throws IOException
 	{
 		//check if we've seen the connecting peer before
 		//if not, create a new PeerInfo object (query for some info)
@@ -101,7 +102,7 @@ public class ConnectionOperator extends Thread
 	/*SENDING:Methods to send data down the socket*/
 	
 	/**Sends a greeting (containing our UUID), waits for a greeting in reply, and returns the received UUID */
-	public UUID exchangeUUIDs() throws IOException
+	protected UUID exchangeUUIDs() throws IOException
 	{
 		//package up data into a single byte[] before sending, 
 		//(as opposed to sending each part as we create it), to minimise packets
@@ -143,7 +144,7 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	public void announceHaveNowGotFile(FileInfo newlyAcquiredFile)//TODO
+	public void announceHaveNowGotFile(FileInfo newlyAcquiredFile)//TODO: implement
 	{
 		
 	}
@@ -155,10 +156,10 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
-	public void sendPeerInfo() throws IOException//TODO
+	public void sendPeerInfo() throws IOException
 	{
 		System.out.println("Sending my PeerInfo...");
-		//how do we find out addresses we are known by?
+		//TODO: how do we find out addresses we are known by?
 		PeerInfo me = new PeerInfo(Peer.myUUID, owner.isPublisher(), new Address[0]);
 		
 		byte[] peerInfoBytes = BinaryTranslator.peerInfoToBytes(me, owner.isPublisher());
@@ -204,6 +205,7 @@ public class ConnectionOperator extends Thread
 	
 	public void sendArchiveStatus() throws IOException
 	{
+		System.out.println("Sending Archive State...");
 		//File f = Peer.root.toFile();
 		//pull existing data from globalArchiveState
 		byte idByte = Message.ARCHIVE_STATUS.IDByte;
@@ -213,27 +215,7 @@ public class ConnectionOperator extends Thread
 		bos.write(msg, 0, msg.length);
 		bos.flush();
 	}
-	/*
-	private void listFile(File f)
-	{
-		if(f.isDirectory())
-		{
-			String[] subFiles = f.list();
-			if(subFiles.length ==0)
-			{//directory is empty: add it as an entry,
-				//as there aren't any contained files to imply its existence
-				
-			}
-			for(String subFile :subFiles)
-			{
-				listFile(new File(subFile));
-			}
-		}
-		else//is a file
-		{//add an entry for it
-			
-		}
-	}*/
+
 	
 	public void sendFileDataChunk(FileDataChunk fdc)
 	{
@@ -252,7 +234,7 @@ public class ConnectionOperator extends Thread
         }
 	}
 	
-	public void sendNoHazFile(FileInfo[] unavailableFiles)//TODO
+	public void sendNoHazFile(FileInfo[] unavailableFiles)//TODO: implement
 	{
 		
 	}
@@ -266,7 +248,7 @@ public class ConnectionOperator extends Thread
 		
 	public void requestFile(FileInfo fi)
 	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
-    //having two seperate length field for this seems unnecessary, but is consistent with the current spec
+    //having two separate length fields for this seems unnecessary, but is consistent with the current spec
     //maybe it can be changed later
 		System.out.println("Requesting file:"+fi.getName());
         try
@@ -292,7 +274,17 @@ public class ConnectionOperator extends Thread
         bos.write(allFilesReq, 0, 1);
 		bos.flush();
 	}
-    
+	
+	public UUID getConnectedUUID()
+	{
+		return connectedPeer;
+	}
+
+	public UUID getUUID()
+	{
+		return connectedPeer;
+	}
+	
     private void reportException(Exception e)
     {
         System.err.println("ERROR: ConnectionOperator thread \""+this.getName()+
@@ -310,6 +302,8 @@ public class ConnectionOperator extends Thread
     each event enum will need info about it attached, like WHICH peer announced 
     its exit. Connection operators receiving bytes (which they then decode into
     messages) will add to the queue*/
+		//now this CO is open for listening, add it to Peer's open connections list
+		owner.openConnections.add(this);
 		while(!socket.isClosed()
 		&& owner.threadsEnabled)
         {
@@ -318,14 +312,14 @@ public class ConnectionOperator extends Thread
             {
             	//wait(100);//slow things down a bit
                 int nextID = bis.read();
-                if(nextID == -1)//TODO
+                if(nextID == -1)//TODO: more robust error handling
                 {//stream has closed or "end has been reached"
                 	this.close();
                 	break;
                 }
                 byte nextIDByte = (byte)nextID;
                 Message nextMessage = Message.getMessageTypeFromID(nextIDByte);
-                if(nextMessage == null)//TODO
+                if(nextMessage == null)//TODO: more robust error handling
                 {//guard clause
                     //another error; no Message was found with that IDByte
                 	System.err.println("ERROR:No Message found with IDByte:"+nextID);
@@ -386,6 +380,7 @@ public class ConnectionOperator extends Thread
 			bis.close();
 			bos.close();
 			socket.close();
+			owner.openConnections.remove(this);//remove self from open connections
 		}
 		catch(IOException ioe)
 		{

@@ -775,19 +775,6 @@ public abstract class BinaryTranslator
             
             case FILE_DATA_CHUNK:
                 return bytesToFileDataChunk(b);
-            /*
-            case NO_HAZ:
-            case HAZ_NAO:
-            //there is no encapsulating class, java or distribackup, for these
-            //just send the FileInfo[]?
-                byte[] wneud = Arrays.copyOfRange(b, 8, b.length);
-                FileInfo[] fi = bytesToFileInfoList(wneud);
-                return new FileInfoBunch(fi);
-                
-            case FILE_REQUEST://TODO
-            	FileInfo fileInfo = bytesToFileInfoBunch(b);
-            	FileInfo[] fis = {fileInfo};
-            	return new FileInfoBunch(fis);*/
             
             default:
             	System.err.println("ERROR: bytesToCommunicable was given a Message Type it can't use!");

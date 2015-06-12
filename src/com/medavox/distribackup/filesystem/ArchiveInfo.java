@@ -68,12 +68,14 @@ public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, It
 			if(oldEntry.getRevisionNumber() < fi.getRevisionNumber())
 			{
 				files.replace(fi.toString(), fi);
+				globalRevNum++;
 				return true;
 			}
 		}
 		else
 		{
 			files.putIfAbsent(fi.toString(), fi);
+			globalRevNum++;
 			return true;
 		}
     	return false;
@@ -92,6 +94,10 @@ public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, It
     			numberOfUpdatesAdded++;
     		}
     	}
+    	if(numberOfUpdatesAdded > 0)
+    	{//if we added any files, update the ArchiveInfo revision number
+    		globalRevNum++;
+    	}
     	return numberOfUpdatesAdded;
     }
     /**Adds (or updates) file/directory entries.
@@ -104,6 +110,7 @@ public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, It
     		//System.out.println("file "+p+" is new");
     		FileInfo newFileInfo = new FileInfo(p, (long)0);
     		files.put(newFileInfo.toString(), newFileInfo);
+    		globalRevNum++;
     		return true;
     	}
     	else//file already exists

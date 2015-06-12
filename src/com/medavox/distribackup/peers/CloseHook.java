@@ -3,7 +3,7 @@ package com.medavox.distribackup.peers;
 import java.io.IOException;
 
 import com.medavox.distribackup.connections.ConnectionOperator;
-
+/**Performs cleanup tasks when the program is closed.*/
 public class CloseHook extends Thread
 {
 	Peer owner;
@@ -17,22 +17,19 @@ public class CloseHook extends Thread
 		System.out.println(/*^C*/"losing Time!");
 		owner.threadsEnabled = false;//tell looping threads to shut down
 		//announce exit
-		for(PeerInfo p : owner.peers.values())
+		for(ConnectionOperator co : owner.openConnections)
 		{
-			if(p.hasOpenConnection())
+			//System.out.println("co:"+co);
+			try
 			{
-				ConnectionOperator co = p.getOpenConnection();
-				//System.out.println("co:"+co);
-				try
-				{
-					co.announceExit();
-					co.close();
-				}
-				catch(IOException ioe)
-				{
-					ioe.printStackTrace();
-				}
+				co.announceExit();
+				co.close();
 			}
+			catch(IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
+			
 		}
 
 	}

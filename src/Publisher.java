@@ -6,8 +6,12 @@ import com.medavox.distribackup.filesystem.FileInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfoBunch;
 
+
+import java.util.HashSet;
+import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.file.*;
 
 /**The main entry point for peers pushing updates to others.*/
@@ -30,9 +34,10 @@ public class Publisher extends Peer
 		globalArchiveState.setGRN(0);
 		//perform initial filetree scan, and add found files to archive state
 		FileUtils.recursiveFileListing(root, globalArchiveState);
-		System.out.print(globalArchiveState);
-		//System.out.println("globalArchiveState files:"+globalArchiveState.getNumFiles());
-		//System.out.println("globalArchiveState Dirs :"+globalArchiveState.getNumDirectories());
+		//System.out.print(globalArchiveState);
+		System.out.println("globalArchiveState files:"+globalArchiveState.getNumFiles());
+		System.out.println("globalArchiveState Dirs :"+globalArchiveState.getNumDirectories());
+		System.out.println("global Archive revision number:"+globalArchiveState.getGlobalRevisionNumber());
     }
     
     public void receiveUpdateAnnouncement(ReceivedMessage ua)//TODO: better handling of Publisher impostor
@@ -75,42 +80,60 @@ public class Publisher extends Peer
 		switch(eventType)
 		{
 		    case "ENTRY_DELETE":
-		    	//TODO
+		    	//TODO: decide on & implement deletion handling code
 		    break;
 		    
 		    case "ENTRY_CREATE"://a MODIFY is triggered straight after anyway
 		    case "ENTRY_MODIFY":
 			    globalRevisionNumber++;//increment the actual Global Revision Number
-		    	//TODO: roll consecutive create and modifies into one
+		    	//TODO: roll consecutive CREATE and MODIFYs into one
 			    
 			    FileInfo newFile = new FileInfo(file, 1);
 		    	//add created FileInfo object to globalArchiveState
 		    	FileInfo[] update = {newFile};
 		    	globalArchiveState.update(globalRevisionNumber, update);
-		    	
-		    	//announce change to all known peers
+		    	FileInfoBunch ua = new FileInfoBunch(globalRevisionNumber, update);
+		    	HashSet<UUID> openUUIDs = new HashSet<UUID>();//de-dup entries
+		    	//announce change to all peers
+		    	for(ConnectionOperator co : openConnections)
+		    	{//first, announce to peers with an existing connection 
+		    		openUUIDs.add(co.getUUID());
+			    	try
+			    	{
+			    		co.sendUpdateAnnouncement(ua);
+			    	}
+			    	catch(IOException ioe)
+			    	{
+			    		System.err.println("ERROR: Failed to send update on ConnectionOperator: "+co);
+			    	}
+		    	}
+		    	peerloop:
 			    for(PeerInfo p : peers.values())
 			    {
-			    	if(p.hasOpenConnection())
+			    	for(UUID uuid : openUUIDs)
 			    	{
-				    	ConnectionOperator co = p.getOpenConnection();
-				    	FileInfoBunch ua = new FileInfoBunch(globalRevisionNumber, update);
-				    	try
-				    	{
-				    		co.sendUpdateAnnouncement(ua);
-				    	}
-				    	catch(IOException ioe)
-				    	{
-				    		System.err.println("ERROR: Failed to send update to peer: "+p);
-				    	}
+			    		if(p.getUUID().equals(uuid))
+			    		{//the peer has already been notified, don't bother opening a new connection
+			    			openUUIDs.remove(uuid);
+			    			continue peerloop;
+			    		}
 			    	}
-			    	else
+			    	
+			    	//TODO: open a new connection for every peer not yet dealt with
+			    	System.err.println("ERROR: no known open connections to this peer!");
+			    	System.err.println("TODO create new ones from address pool");
+			    	try
 			    	{
-			    		System.err.println("ERROR: no known open connections to this peer!");
-			    		System.err.println("TODO create new ones from address pool");
+			    		ConnectionOperator co = p.newConnection(this);
+			    		co.sendUpdateAnnouncement(ua);
 			    	}
+			    	catch(IOException ce)
+			    	{
+			    		System.err.println("ERROR: failed to create new connection for Peer "+p);
+			    		ce.printStackTrace();
+			    	}
+			    	
 			    }
-		    break;
 		}
     }
     
