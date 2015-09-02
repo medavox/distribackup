@@ -115,7 +115,7 @@ public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, It
     		return true;
     	}
     	else//file already exists
-    	{//TODO: checking whether extant FileInfo is newer than found Path
+    	{//TODO: checking whether extant FileInfo is newer than supplied Path Object
     		//System.out.println("file "+p+" already exists");
     		System.out.println(fi);
     		return false;

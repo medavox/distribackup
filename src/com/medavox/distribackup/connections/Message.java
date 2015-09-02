@@ -29,7 +29,7 @@ public enum Message
 	UPDATE_ANNOUNCE	((byte)0x17, -2),
 	NO_HAZ			((byte)0x18, -2),
 	PEER_INFO_REQ   ((byte)0x19,  0),
-	HAZ_NAO         ((byte)0x1A, -2),
+	GOT_ANNOUNCE    ((byte)0x1A, -2),
 	MORE_PEERS      ((byte)0x1B, -2);
 	
 	public final byte IDByte;

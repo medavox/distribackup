@@ -56,7 +56,8 @@ public abstract class FileUtils
 		return allNames[randomIndex];
 	}
 	/**Chooses a code name based on the supplied UUID. idempotent;
-	 * gives the same name for the same uuid every time.*/
+	 * gives the same name for the same uuid every time
+	 * (as long as the list of names is the same length)*/
 	public static String getCodeName(UUID uuid)
 	{
 		String[] boyNames = fileToString(new File("/home/scc/distribackup/res/boysnames.txt")).split("\n");
@@ -75,6 +76,7 @@ public abstract class FileUtils
 		long msb = uuid.getMostSignificantBits();
 		long lsb = uuid.getLeastSignificantBits();
 		
+		//convert uuid into a wrapped-around integer, to use as an index
 		long xored = msb ^ lsb;
 		int index = (int)(Math.abs(xored) % allNames.length);
 		//System.out.println("index chosen:"+index);

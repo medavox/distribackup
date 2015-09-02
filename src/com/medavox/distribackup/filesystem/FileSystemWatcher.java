@@ -124,7 +124,7 @@ public class FileSystemWatcher extends Thread
 				//the bad news is that >1 event is fired off during receiveFileDataChunk
 				String entry = event.kind().name()+":"+rel.toString();
 				//System.out.println("ignore List contains file:"+ignoreList.contains(entry));
-				if(ignoreList.contains(entry))//TODO: make it work
+				if(ignoreList.contains(entry))//FIXME: make it work
 				{//let it off this once
 					//System.out.println("ignored "+event.kind().name()+" for \""+child+"\".");
 					ignoreList.remove(rel.toString());

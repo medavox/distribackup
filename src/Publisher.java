@@ -52,8 +52,8 @@ public class Publisher extends Peer
     public void handleFileRequest(ReceivedMessage fr)
     {
     	//we (nearly) always have the file and the right version
-    	//(unless we are a new Publisher in an old network,
-    	//or a returning-from-long-absence Publisher that needs bringing up to date)
+    	/*(unless we are a new Publisher in an old network,
+    	or a returning-from-long-absence Publisher that needs bringing up to date)*/
 	    	//construct a FileDataChunk for it
 	    	//then send it to the relevant peer
     	
@@ -96,7 +96,7 @@ public class Publisher extends Peer
 		    	HashSet<UUID> openUUIDs = new HashSet<UUID>();//de-dup entries
 		    	//announce change to all peers
 		    	for(ConnectionOperator co : openConnections)
-		    	{//first, announce to peers with an existing connection 
+		    	{//first, announce to peers with an existing connection
 		    		openUUIDs.add(co.getUUID());
 			    	try
 			    	{

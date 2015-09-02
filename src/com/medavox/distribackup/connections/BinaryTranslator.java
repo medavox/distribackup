@@ -267,7 +267,8 @@ public abstract class BinaryTranslator
 		byte[] UUID2 = longToBytes(p.getUUID().getLeastSignificantBits());
 		//byte[] globalRevNum = longToBytes(p.getGRN());
 		
-		boolean[] bitfield = {true};
+		boolean[] bitfield = {isPublisher};
+		//boolean[] bitfield = {true};// I'm Spartacus!
 		byte[] isPubByte = {bitfieldToByte(bitfield)};
 		
 		Address[] adds = p.getAddresses();
@@ -769,7 +770,7 @@ public abstract class BinaryTranslator
             case ARCHIVE_STATUS:
             case UPDATE_ANNOUNCE:
             case NO_HAZ:
-            case HAZ_NAO:
+            case GOT_ANNOUNCE:
             case FILE_REQUEST:
                 return bytesToFileInfoBunch(b);
             

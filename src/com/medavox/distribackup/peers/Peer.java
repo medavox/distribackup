@@ -31,10 +31,12 @@ public abstract class Peer extends Thread
 	"haz nao" announcement
 	Fresh Peers*/
 	/**A constant which represents the maximum allowable 
-	 * size of a file before it is split into chunks. Currently 4MB*/
+	 * size of a file before it is split into equally-sized chunks no larger than this.
+	 *  Currently 4MB.*/
 	public static final int MAX_CHUNK_SIZE = 4194304;//4MB
 	
-	/**The minimum allowable chunk size, before there is no point splitting it. Currently 32KB.*/
+	/**The minimum allowable chunk size, before there is no point splitting it.
+	 * Currently 32KB.*/
 	public static final int MIN_CHUNK_SIZE = 32768;//32KB
 	
 	/**The port to listen for new connections. Defaults to 1210.*/
@@ -50,7 +52,7 @@ public abstract class Peer extends Thread
 	/**The OS-dependent path separator character; usually either / or \.*/
 	protected String sep = FileSystems.getDefault().getSeparator();
 	
-	/**The PEerInfo object for the Publisher. Definitely redundant, possibly entirely unnecessary.*/
+	/**The PeerInfo object for the Publisher. Definitely redundant, possibly entirely unnecessary.*/
 	PeerInfo publisherInfo;
 	
 	/**The UUID of the Publisher. If this instance is the Publisher, this is our UUID.*/
@@ -106,7 +108,7 @@ public abstract class Peer extends Thread
 			ioe.printStackTrace();
 			System.exit(1);
 		}
-		listenHook.start();
+		listenHook.start();//start listening on open port
 		this.start();//start Incoming Message Processing Thread
 	}
 	/**Called by FilesystemWatcher whenever a filesystem change is detected*/
@@ -241,7 +243,7 @@ public abstract class Peer extends Thread
                     	handlePeerInfoRequest(next);
                     break switcheroo;
 					
-					case HAZ_NAO:
+					case GOT_ANNOUNCE:
 						receiveAcquisitionAnnouncement(next);
 					break switcheroo;
 					
@@ -524,11 +526,17 @@ public abstract class Peer extends Thread
 		
 		if(peerInfo.isPublisher())
 		{
-			System.out.println("Received PeerInfo is Publisher's");
+			System.out.println("Received PeerInfo is Publisher's");//TODO: check if we're the publisher
 			if(publisherUUID == null)
 			{//we've just found the publisher
 				//add it in!
 				publisherUUID = uuid;
+			}
+			else
+			{
+				System.err.println("ERROR: someone else already claims to be the Publisher!");
+				System.err.println("Existing Publisher ID: "+FileUtils.getCodeName(publisherUUID));
+				System.err.println("New Publisher ID: "+FileUtils.getCodeName(uuid));
 			}
 		}
 		
@@ -612,12 +620,14 @@ public abstract class Peer extends Thread
     	if(fib.getGRN() > globalArchiveState.getGRN())
     	{//replace our outdated globalArchiveInfo
     		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
+    		System.out.println("received Global Archive Info is newer than ours");
     		//TODO: request new files from this received archive status update
+    		
     	}
     	else
     	{
-    		System.err.println("WARNING: received global archive info "
-    				+"isn't newer than ours)"/* from "+	peers.get(as.getUUID())*/);
+    		System.err.println("received Global Archive Info is older than ours");
+    				/* from "+	peers.get(as.getUUID())*/
     	}
 	}
 	

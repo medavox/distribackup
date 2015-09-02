@@ -107,6 +107,24 @@ public class Subscriber extends Peer
     	System.out.println("toDownload:"+filesToDownload);
     }
     
+    public void receiveArchiveStatus(ReceivedMessage as)
+    {
+    	super.receiveArchiveStatus(as);
+    	FileInfoBunch fib = (FileInfoBunch)as.getCommunicable();
+    	if(fib.getGRN() > globalArchiveState.getGRN())
+    	{//replace our outdated globalArchiveInfo
+    		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
+    		System.out.println("received Global Archive Info is newer than ours");
+    		//TODO: request new files from this received archive status update
+    		
+    	}
+    	else
+    	{
+    		System.err.println("received Global Archive Info is older than ours");
+    				/* from "+	peers.get(as.getUUID())*/
+    	}
+    }
+    
     public static void main (String args[])
     {//local listening port
 		int port = defaultConnectPort;
@@ -188,15 +206,21 @@ public class Subscriber extends Peer
     			{
     				ie.printStackTrace();
     			}
+    			int requestedFiles = 0;
     			for(FileInfo fi : globalArchiveState.getFiles())
     	    	{
     	    		//if this file isn't in the localArchiveState, then we don't have it
-    	    		if(!localArchiveState.contains(fi))
+    	    		if(!localArchiveState.contains(fi))//TODO:check that this test works for different versions of the same file
     	    		{
     	    			//request the file from a currently-connected peer
     	    			getOpenConnection().requestFile(fi);
+    	    			requestedFiles++;
     	    		}
     	    	}
+    			if(requestedFiles == 0)//there are no more files we know we don't have;
+	    		{//stop the loop (and thus the thread) for now
+	    			break;
+	    		}
     		}
     	}
     }

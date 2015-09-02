@@ -24,7 +24,7 @@ Chunk Size Calculation for Idempotent Indexing
 ---------------------------------------------
 We need to make sure all peers calculate the chunk size in a given file in the same way.
 
-Also, what if a file changes size between updates, corssing a chunk size boundary?
+Also, what if a file changes size between updates, crossing a chunk size boundary?
 
 Types of Message extension
 ==========================
