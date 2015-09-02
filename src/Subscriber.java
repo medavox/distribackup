@@ -45,10 +45,12 @@ public class Subscriber extends Peer
 		else//it really is the publisher
 		{	//get list of changed files
 			//get the ArchiveInfo from the Update Announcement
-			FileInfoBunch update = (FileInfoBunch)ua.getCommunicable();
+			FileInfoBunch announce = (FileInfoBunch)ua.getCommunicable();
 			//update local archive and list of files we need
-			globalArchiveState.update(update.getGRN(), update.getFiles());
-			filesToDownload.update(update.getGRN(), update.getFiles());
+			//FIXME:if we've missed previous updates, just adding these files
+				//to our GAS may miss out other changes
+			globalArchiveState.update(announce.getGRN(), announce.getFiles());
+			filesToDownload.update(announce.getGRN(), announce.getFiles());
 			
 			System.out.println("Received Update Announcement");
 			
