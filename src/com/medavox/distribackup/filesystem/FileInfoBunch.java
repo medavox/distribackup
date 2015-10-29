@@ -8,7 +8,7 @@ import com.medavox.distribackup.connections.*;
 public class FileInfoBunch implements Communicable
 {
     protected long globalRevNum;
-    private FileInfo[] changedFiles;
+    private FileInfo[] files;
     
     /*public static FileInfoBunch merge(FileInfoBunch a, FileInfoBunch b)
     {
@@ -20,26 +20,26 @@ public class FileInfoBunch implements Communicable
     public FileInfoBunch(long GRN, FileInfo[] files)
     {
         globalRevNum = GRN;
-        this.changedFiles = files;
+        this.files = files;
     }
     
     public FileInfoBunch(FileInfo[] files)
     {
     	globalRevNum = -1;
-    	this.changedFiles = files;
+    	this.files = files;
     }
     
     public FileInfoBunch(FileInfo fi)
     {
     	globalRevNum = -1;
     	FileInfo[] wrapper = {fi};
-    	changedFiles = wrapper;
+    	files = wrapper;
     }
     
     public FileInfoBunch()
     {
     	globalRevNum = -1;
-    	changedFiles = new FileInfo[0];
+    	files = new FileInfo[0];
     }
     
     public long getGRN()
@@ -54,20 +54,20 @@ public class FileInfoBunch implements Communicable
     
     public FileInfo[] getFiles()
     {
-        return changedFiles;
+        return files;
     }
     //avoid implementing chunks for now
     
     public ArchiveInfo toArchiveInfo()
     {
-    	return new ArchiveInfo(globalRevNum, changedFiles);
+    	return new ArchiveInfo(globalRevNum, files);
     }
     
     public String toString()
     {
     	String s = "";
     	s+="Update Announcement; GRN:"+globalRevNum;
-    	s+="Number of files:"+changedFiles.length;
+    	s+="Number of files:"+files.length;
     	
     	return s;
     }

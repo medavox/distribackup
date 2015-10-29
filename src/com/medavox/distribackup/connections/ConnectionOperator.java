@@ -204,6 +204,11 @@ public class ConnectionOperator extends Thread
 		bos.flush();
 	}
 	
+	public void sendArchiveState() throws IOException
+	{
+		sendArchiveStatus();
+	}
+	
 	public void sendArchiveStatus() throws IOException
 	{
 		System.out.println("Sending Archive State...");

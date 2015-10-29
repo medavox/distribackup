@@ -111,10 +111,13 @@ public class Subscriber extends Peer
     	FileInfoBunch fib = (FileInfoBunch)as.getCommunicable();
     	if(fib.getGRN() > globalArchiveState.getGRN())
     	{//replace our outdated globalArchiveInfo
-    		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
     		System.out.println("received Global Archive Info is newer than ours");
+    		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
+    		System.out.println("new GAS size:"+globalArchiveState.getSize());
     		//TODO: request new files from this received archive status update
-    		
+    		FileBeggar requester = new FileBeggar(this);
+    		Thread fileRequestLoop = new Thread(requester);
+    		fileRequestLoop.start();
     	}
     	else
     	{
@@ -194,11 +197,12 @@ public class Subscriber extends Peer
     	@Override
     	public void run()
     	{
-    		while(true)//slow loop
+    		System.out.println("BEGGAR BEGIN!");
+    		while(owner.threadsEnabled)//slow loop
     		{
     			try
     			{
-    				wait(2000);
+    				sleep(2000);
     			}
     			catch(InterruptedException ie)
     			{
@@ -207,16 +211,19 @@ public class Subscriber extends Peer
     			int requestedFiles = 0;
     			for(FileInfo fi : globalArchiveState.getFiles())
     	    	{
+    				System.out.println("checking file \""+fi.getName()+"\" against local repo...");
     	    		//if this file isn't in the localArchiveState, then we don't have it
     	    		if(!localArchiveState.contains(fi))//TODO:check that this test works for different versions of the same file
     	    		{
     	    			//request the file from a currently-connected peer
+    	    			//System.out.println("Requesting file \""+fi.getName()+"\"...");
     	    			getOpenConnection().requestFile(fi);
     	    			requestedFiles++;
     	    		}
     	    	}
     			if(requestedFiles == 0)//there are no more files we know we don't have;
 	    		{//stop the loop (and thus the thread) for now
+	    			System.out.println("FileBeggar has no more files to request! Goodbye!");
 	    			break;
 	    		}
     		}

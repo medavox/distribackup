@@ -31,9 +31,7 @@ import com.medavox.distribackup.filesystem.FileInfoBunch;
  * <p>
  * However, methods which encode data INTO bytes prepend the length field for convenience.
  * This means that bytes encoded with one method cannot be immediately passed
- * back to the corresponding decoding method without some processing first. 
- * <p>
- * If this encoding is more hassle than help, then the behaviour can be changed.*/
+ * back to the corresponding decoding method without some processing first. */
 public abstract class BinaryTranslator
 {/**TODO:
 	byte   -> byte		N/A

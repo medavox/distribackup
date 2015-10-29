@@ -150,7 +150,7 @@ public class FileSystemWatcher extends Thread
 						}
 					} 
 					catch (IOException ioe)
-					{//TODO
+					{//TODO: improve error handling
                         ioe.printStackTrace();
                         System.exit(1);
 					}

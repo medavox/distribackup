@@ -132,7 +132,6 @@ public class Publisher extends Peer
 			    		System.err.println("ERROR: failed to create new connection for Peer "+p);
 			    		ce.printStackTrace();
 			    	}
-			    	
 			    }
 		}
     }

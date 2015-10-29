@@ -130,7 +130,7 @@ public abstract class Peer extends Thread
 				//ask for its PeerInfo object.
 				//It will be received by the Incoming Message Processing Thread,
 				//and added to the peers list
-				System.out.println("We've not seen this peer before!");
+				System.out.println("Brand new peer: \""+FileUtils.getCodeName(newPeerUUID)+"\"");
 				co.requestPeerInfo();
 			}
 			else
@@ -359,7 +359,7 @@ public abstract class Peer extends Thread
     	File fsFile = new File(root.toString()+sep+fi.getPath()+sep+fi.getName());
     		
     	assert !fi.isDirectory() && !fsFile.isDirectory();
-		//if the file is small enough, send the whole thing
+		//if the file is small enough, grab the whole thing
 		if(fsFile.length() <= MAX_CHUNK_SIZE)
 		{
 			if(pieceNum != 0)
@@ -437,7 +437,7 @@ public abstract class Peer extends Thread
     		
     		File fsFile = new File(root.toString()+sep+fi.getPath()+sep+fi.getName());
     		System.out.println("as File:"+fsFile);
-    		System.out.println("we have version "+fi.getRevisionNumber()+" of \""+fi.getName()+"\"!");
+    		System.out.println("we have the right version ("+fi.getRevisionNumber()+") of \""+fi.getName()+"\"");
     		//check the file exists and is what it's meant to be (file/directory)
     		if(fsFile.exists())
     		{
@@ -457,10 +457,10 @@ public abstract class Peer extends Thread
 					ConnectionOperator co = fr.getConnection();
 					//break file into 1 or more chunks to send
 					//System.out.println("It's a file when it should be");
-					if(fsFile.length() ==0)
+					/*if(fsFile.length() ==0)
 					{
 						System.out.println("\""+fi.getName()+"\" is zero-length");
-					}
+					}*/
 					if(fsFile.length() <= MAX_CHUNK_SIZE)
 					{
 						FileDataChunk fdc = getFileDataChunk(fi, 0);
@@ -552,17 +552,20 @@ public abstract class Peer extends Thread
 			{
 				System.out.println("This is our first peer!");
 				//TODO: send an allFileRequest, or maybe just an archiveStateRequest
-				System.out.println("Requesting archive state...");
-				ConnectionOperator co = pi.getConnection();
-				try
+				if(publisherUUID != myUUID)//only ask for archive status if we're not the publisher; the publisher IS the archive state
 				{
-					co.requestArchiveStatus();
-				}
-				catch(IOException ioe)
-				{
-					System.err.println("ERROR: Failed to request archive status!");
-					ioe.printStackTrace();
-					System.exit(1);
+					System.out.println("Requesting archive state...");
+					ConnectionOperator co = pi.getConnection();
+					try
+					{
+						co.requestArchiveStatus();
+					}
+					catch(IOException ioe)
+					{
+						System.err.println("ERROR: Failed to request archive status!");
+						ioe.printStackTrace();
+						System.exit(1);
+					}
 				}
 			}
 			//peerInfo.addConnection(pi.getConnection());//open connections are now managed by Peer 
@@ -575,7 +578,7 @@ public abstract class Peer extends Thread
         
     }
     
-    public void receiveExitAnnouncement(ReceivedMessage ea)//TODO
+    public void receiveExitAnnouncement(ReceivedMessage ea)
     {
     	System.out.println("Received Exit Announcement");
         //close the connection we received this on,
@@ -617,18 +620,6 @@ public abstract class Peer extends Thread
     	FileInfoBunch fib = (FileInfoBunch)as.getCommunicable();
 		System.out.println("Our Global Revision Number: "+globalArchiveState.getGRN());
 		System.out.println("Received Revision Number  : "+fib.getGRN());
-    	if(fib.getGRN() > globalArchiveState.getGRN())
-    	{//replace our outdated globalArchiveInfo
-    		globalArchiveState = fib.toArchiveInfo();//and convert it to ArchiveInfo
-    		System.out.println("received Global Archive Info is newer than ours");
-    		//TODO: request new files from this received archive status update
-    		
-    	}
-    	else
-    	{
-    		System.err.println("received Global Archive Info is older than ours");
-    				/* from "+	peers.get(as.getUUID())*/
-    	}
 	}
 	
 	public void receiveNoHaz(ReceivedMessage nh)//TODO: implement
@@ -650,14 +641,14 @@ public abstract class Peer extends Thread
     	if(openConnections.size() > 0)
     	{//TODO: more intelligent connection selection, 
     		//based on which open connection is the least used or fastest
-    		return openConnections.get(r.nextInt());
+    		return openConnections.get(r.nextInt(openConnections.size()));
     	}
     	else//no open connections
     	{//try to create one
     		PeerInfo[] peerArray = new PeerInfo[peers.size()];
     		peers.values().toArray(peerArray);
     		
-    		PeerInfo pi = peerArray[r.nextInt()];
+    		PeerInfo pi = peerArray[r.nextInt(peerArray.length)];
     		
     		while(true)
     		{

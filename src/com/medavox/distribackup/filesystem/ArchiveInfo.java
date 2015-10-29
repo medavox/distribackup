@@ -156,6 +156,13 @@ public class ArchiveInfo extends FileInfoBunch implements Iterable<FileInfo>, It
     	return s+"\n";
     }
     
+    @Override
+    public FileInfo[] getFiles()
+    {
+    	FileInfo[] filesArray = new FileInfo[files.size()];
+    	return files.values().toArray(filesArray);
+    }
+    
     public FileInfo getFileInfo(String s)
     {
     	return files.get(s);
