@@ -211,9 +211,22 @@ public class Subscriber extends Peer
     				ie.printStackTrace();
     			}
     			int requestedFiles = 0;
+    			
+    			FileInfo[] globalFiles = globalArchiveState.getFiles();
+    			for(int i = 0; requestedFiles <= 5 && i < globalFiles.length; i++)
+    			{
+    				FileInfo fi = globalFiles[i];
+    				if(!localArchiveState.contains(fi))//TODO:check that this test works for different versions of the same file
+    	    		{
+    	    			//request the file from a currently-connected peer
+    	    			//System.out.println("Requesting file \""+fi.getName()+"\"...");
+    	    			getOpenConnection().requestFile(fi);
+    	    			requestedFiles++;
+    	    		}
+    			}/*
     			for(FileInfo fi : globalArchiveState.getFiles())
     	    	{
-    				System.out.println("checking file \""+fi.getName()+"\" against local repo...");
+    				//System.out.println("checking file \""+fi.getPath()+sep+fi.getName()+"\" against local repo...");
     	    		//if this file isn't in the localArchiveState, then we don't have it
     	    		if(!localArchiveState.contains(fi))//TODO:check that this test works for different versions of the same file
     	    		{
@@ -222,7 +235,7 @@ public class Subscriber extends Peer
     	    			getOpenConnection().requestFile(fi);
     	    			requestedFiles++;
     	    		}
-    	    	}
+    	    	}*/
     			if(requestedFiles == 0)//there are no more files we know we don't have;
 	    		{//stop the loop (and thus the thread) for now
 	    			System.out.println("FileBeggar has no more files to request! Goodbye!");

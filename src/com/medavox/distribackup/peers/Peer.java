@@ -50,7 +50,7 @@ public abstract class Peer extends Thread
 	protected String cacheDir = ".distribackup-cache";
 	
 	/**The OS-dependent path separator character; usually either / or \.*/
-	protected String sep = FileSystems.getDefault().getSeparator();
+	public String sep = FileSystems.getDefault().getSeparator();
 	
 	/**The PeerInfo object for the Publisher. Definitely redundant, possibly entirely unnecessary.*/
 	PeerInfo publisherInfo;
@@ -313,7 +313,7 @@ public abstract class Peer extends Thread
             }*/
         	//push the file into the archive
         	FileInfo fi = fdc.getFileInfo();
-        	String sep = FileSystems.getDefault().getSeparator();
+        	
         	//Path fsRoot = Paths.get("/");
         	//Path newPath = fsRoot.resolve(fi.getPath()+sep+fi.getName());//create path to file
         	//System.out.println("Path object:"+newPath);
@@ -331,12 +331,26 @@ public abstract class Peer extends Thread
         			fsw.ignoreList.add("ENTRY_DELETE:"+fi.toString());
         			newFile.delete();
         		}
-        		newFile.createNewFile();
-        		FileOutputStream fos = new FileOutputStream(newFile);
-        		fos.write(fdc.getPayload());
-        		fos.flush();
-        		fos.close();
-        		finishedDownloadingFile(fi);//subclass callback to deal with download
+        		//if the new files's parent directories, don't exist,
+        		//then create them
+        		if(!newFile.getParentFile().exists())
+        		{
+        			boolean madeDirs = newFile.getParentFile().mkdirs();
+            		if(!madeDirs)
+            		{
+            			System.err.println("ERROR: failed to create parent directories \""+
+            					newFile.getParent()+"\" for \""+newFile+"\"");
+            			System.exit(1);
+            		}
+        		}
+        		
+        			newFile.createNewFile();
+            		FileOutputStream fos = new FileOutputStream(newFile);
+            		fos.write(fdc.getPayload());
+            		fos.flush();
+            		fos.close();
+            		finishedDownloadingFile(fi);//subclass callback to deal with download
+
         	}
         	catch(Exception e)
         	{

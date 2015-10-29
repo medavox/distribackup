@@ -256,7 +256,8 @@ public class ConnectionOperator extends Thread
 	{//FileRequest messages are just wrappers around a FileInfo, so construct it here
     //having two separate length fields for this seems unnecessary, but is consistent with the current spec
     //maybe it can be changed later
-		System.out.println("Requesting file:"+fi.getName());
+		//String separ = (fi.getPath().length() == 0 ? "" : owner.sep);
+		System.out.println("Requesting file:"+fi.getPath()+" "+fi.getName());
         try
         {
             byte IDByte = Message.FILE_REQUEST.IDByte;
