@@ -8,11 +8,11 @@ Consistently Mapping Chunks to Variable Length Files
 
 chunksize (default: 256KB) is defined by the amount of data the slowest upload rate (in the likely network context: 4G, dialup, broadband, fibre, LAN, Gigabit) can send in 1 second.
 
-It is static for each archive collection.
+It is immutable for each archive collection.
 
 Each file entry consists of the following:
 
 * path and file name
 * size
 * simple (scalable algo) whole-file hash
-* hash of each chunk we know the file has, from the above algorithm
+* one hash for each chunk we know the file has, from the above algorithm
