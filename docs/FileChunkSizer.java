@@ -7,8 +7,8 @@ public class FileChunkSizer
     
     //constants for chunkit2 algo
     private static final int MIN_EXPONENT = 18;//256KB
-    private static final int MAX_EXPONENT = 28;//256MB
-    //private static final int MAX_EXPONENT = 30;//1GB; too large for RAM?
+    //private static final int MAX_EXPONENT = 28;//256MB
+    private static final int MAX_EXPONENT = 30;//1GB; too large for RAM?
     //private static final int MAX_EXPONENT = 62;//max LONG's highest even power of 2
     
     public static void main(String[] args)
@@ -29,7 +29,7 @@ public class FileChunkSizer
     
     public static void chunkit2(long size)
     {
-        int exponent = 18;//256KB
+        int exponent = MIN_EXPONENT;//256KB
         
         long workingSize = size;
         long dealtWith = 0;
@@ -39,42 +39,18 @@ public class FileChunkSizer
         {
             long chunkSize = 1L << exponent;//starts at 256KB
             long threshold = 1L << (exponent+8);//starts at 64MB
-            long wholeChunks = workingSize / chunkSize;
-            if(workingSize <= chunkSize) //we have a file of size <= MIN_CHUNK_SIZE
-            {//aka <= 1 chunk's worth of data
+            long wholeChunks = workingSize / chunkSize;//number of wholeChunks, unbounded
+            if(workingSize <= chunkSize) //we have < a whole chunk's worth of file left
+            {
+                totalChunks++;
                 System.out.println("1 chunk of size "+prettify(workingSize));
                 break;
             }
             int maxChunks = (initial ? 256 : 192);
-            long actualChunksOfThisSize = Math.min(wholeChunks, maxChunks);
-            if(exponent == MAX_EXPONENT)//have we reached max chunk size?
-            {
-                actualChunksOfThisSize = wholeChunks;
-            }
-            //size is > chunkSize
+            //long actualChunksOfThisSize = Math.min(wholeChunks, maxChunks);
+            long actualChunksOfThisSize = (exponent == MAX_EXPONENT ? wholeChunks : Math.min(wholeChunks, maxChunks));
             System.out.println(actualChunksOfThisSize+" chunks of size "+prettify(chunkSize));
             totalChunks += actualChunksOfThisSize;
-            
-            if(wholeChunks == 1)
-            {
-                long remainder = workingSize % chunkSize;
-                if(remainder != 0)
-                {
-                    System.out.println("1 chunk of size "+prettify(remainder));
-                }
-                break;
-            }
-            
-            if(wholeChunks <= maxChunks)
-            {
-                if (exponent == MAX_EXPONENT)//if we've hit the max chunk size this round,
-                {//print the size of the remainder from the many,many chunks
-                    long sizeTotalOfTheseChunks = actualChunksOfThisSize * chunkSize;
-                    workingSize -= sizeTotalOfTheseChunks;
-                    System.out.println("1 chunk of size"+workingSize);
-                }
-                break;
-            }
             
             long sizeTotalOfTheseChunks = actualChunksOfThisSize * chunkSize;
             workingSize -= sizeTotalOfTheseChunks;
@@ -88,95 +64,26 @@ public class FileChunkSizer
         System.out.println("total chunks: "+totalChunks);
     }
     
-    
-    public static void chunkit(long size)
-    {//example: 132GB
-//x is the highest even power of 2 < size -- aka our chunk size boundary
-
-        int x = getHighestEvenPowerOf2(size);
+    public static int getNumberOfChunks(long size)
+    {
+        boolean initial = true;
+        int chunkBoundary = 26;//64MB
+        int chunks = 0;
+        while(true)
+        {
+            if(size > (1L << chunkBoundary))//file is larger than this many chunks
+            {
+                chunks += (initial ? 256 : 192);
+                chunkBoundary <<= 2;
+                continue;
+            }
+            else//file contains no larger chunks than this size
+            {
+                long amountInThisSize = size - (chunkBoundary >> 2);
+                long wholeChunks = 
+            }
+        }
         
-        System.out.println("highest even power of 2 < input size: "+x);
-        if(x < 26)//is the file size smaller than 64MB?
-        {//if so, all chunks will be 256KB
-            chunkUplowest64MB(size);
-            
-        }
-        else
-        {
-            long largestChunkSizeBoundary = 1 << x;
-            System.out.println("highestChunksize boundary: "+prettify(largestChunkSizeBoundary));
-            
-            //int remainingSmallerChunkSize = size - largestChunkSizeBoundary;
-            //System.out.println("remaining smaller chunks : "+remainingSmallerChunkSize);
-            
-//-6 because that's the difference of powers between size boundary and chunk size at that boundary.
-            long largestChunkSize = 1 << (x-6);
-            //eg for chunks past the 2^26th byte (64MB), chunk size is 2^20 (1MB)
-            
-            System.out.println("largest chunk size : "+prettify(largestChunkSize));
-            
-            for(int i = 20; i < x; i += 2)
-            {
-                //System.out.println(
-            }
-            
-            //the number of even powers of 2 between largestChunkSize and 18, aka min chunk size: 256KB
-            int numberOfChunkSizes = ((x-6)/2)-8;
-            System.out.println("number of chunk sizes : "+numberOfChunkSizes);
-            
-            long currentSize = size;
-            long remainder = currentSize % largestChunkSize;
-            currentSize -= remainder;
-            System.out.println("last chunk's size: "+prettify(remainder, true));
-            
-            
-            for (int workingChunkSizePower = x-6; workingChunkSizePower > 18; workingChunkSizePower -= 2)
-            {
-                long currentChunkSize = 1 << workingChunkSizePower;//2^workingChunkSizePower
-                long chunksOfThisSize = (currentSize / currentChunkSize) - 64;
-                System.out.println(chunksOfThisSize+" chunks of size "+prettify(currentChunkSize));
-                currentSize -= (chunksOfThisSize * currentChunkSize);
-            }
-            
-            chunkUplowest64MB(currentSize);
-            
-            //int numOfSmallestChunks = currentSize / MIN_CHUNK_SIZE;
-            
-            //System.out.println(numOfSmallestChunks+" chunks of size "+MIN_CHUNK_SIZE);
-        }
-    }
-    
-    /**Divide files of <=64MB into <= 256 chunks of size 256KB.*/
-    public static void chunkUplowest64MB(long size)
-    {
-        if(size <= 64 * 1024 * 1024
-        && size >= 0)
-        {
-            long numChunks = size / MIN_CHUNK_SIZE;
-            long lastChunkSize = size % MIN_CHUNK_SIZE;
-            
-            System.out.println(numChunks+" chunks of size "+prettify(MIN_CHUNK_SIZE)
-            +(lastChunkSize == 0 ? "" : "\nand 1 chunk of size "+prettify(lastChunkSize)));
-        }
-        else
-        {
-            throw new IllegalArgumentException("size argument must be a number between 0 and 2^26 inclusive, or 64MB");
-        }
-    }
-    
-    
-    public static int getHighestEvenPowerOf2(long number)
-    {
-        long workingNum = number;
-        int x = 0;
-        while (workingNum != 1)
-        {
-            workingNum >>= 1;
-            x++;
-        }
-        x /= 2;
-        x *= 2;//round down to nearest even number
-        return x;
     }
     
     public static String prettify(long size)
@@ -185,26 +92,26 @@ public class FileChunkSizer
     }
     
     public static String prettify(long size, boolean twoUnits) {
-        String units = " KMGTPEZY";
+        final String units = " KMGTPEZY";
         int unitIndex = 0;
         long workingSize;
-        for(workingSize = size; workingSize >= 1024; workingSize /= 1024)
+        for(workingSize = size; workingSize >= 1024*1024; workingSize /= 1024)
         {
             unitIndex++;
         }
-        
+        long secondUnit = workingSize;
+        workingSize /= 1024;
+        unitIndex++;
         String ret = ""+workingSize+units.charAt(unitIndex)+"B";
-        
         if(twoUnits && unitIndex > 0)
         {
-            long secondUnit;
-            for(secondUnit = size; secondUnit >= 1024*1024; secondUnit /= 1024){}
             secondUnit -= (workingSize*1024);
             if(secondUnit > 0)
             {
                 ret += ","+secondUnit+units.charAt(unitIndex-1)+"B";
             }
         }
+        
         return ret;
     }
 }
