@@ -1,10 +1,6 @@
 import java.util.Scanner;
 public class FileChunkSizer
 {
-    //constants for chunkit algo
-    private static final int MIN_CHUNK_SIZE = 262144;
-    private static final int MIN_CHUNK_POWER = 18;
-    
     //constants for chunkit2 algo
     private static final int MIN_EXPONENT = 18;//256KB
     //private static final int MAX_EXPONENT = 28;//256MB
@@ -64,11 +60,12 @@ public class FileChunkSizer
         System.out.println("total chunks: "+totalChunks);
     }
     
-    public static int getNumberOfChunks(long size)
+    //todo:finish this
+    public static long getNumberOfChunks(long size)
     {
         boolean initial = true;
-        int chunkBoundary = 26;//64MB
-        int chunks = 0;
+        int chunkBoundary = MIN_EXPONENT+8;//64MB
+        long chunks = 0;
         while(true)
         {
             if(size > (1L << chunkBoundary))//file is larger than this many chunks
@@ -79,11 +76,80 @@ public class FileChunkSizer
             }
             else//file contains no larger chunks than this size
             {
-                long amountInThisSize = size - (chunkBoundary >> 2);
-                long wholeChunks = 
+                long amountInThisSize = (initial ? size : size - (1L << (chunkBoundary - 2)));
+                int chunkSize = 1 << (chunkBoundary - 8);
+                long wholeChunks = amountInThisSize / chunkSize;
+                
+                if (amountInThisSize % chunkSize != 0)
+                {//add remainder as last chunk, if it's longer than 0
+                    chunks++;
+                }
+                
+                //quick sanity check on calculated result
+                int chunkLimit = (initial ? 256 : 192);
+                if (wholeChunks > chunkLimit)
+                {
+                    throw new IllegalStateException("file should not produce > "+chunkLimit
+                    +" chunks of size "+chunkSize+"!");
+                }
+                chunks += wholeChunks;
             }
+            initial = false;
+            chunkBoundary += 2;
         }
-        
+        return chunks;
+    }
+    
+    /**This doesn't need an actual file argument,
+     * because the address for every chunk is the same for every files.
+     *It's up to the caller to check if the returned address falls within the file's length*/
+    public long getAddressOfChunk(int chunkNum)
+    {
+        long address;
+        if(chunkNum <= 255)
+        {
+            return chunkNum * (1 << MIN_EXPONENT);
+        }
+        else
+        {
+            int chunkNumAfterInitial = chunkNum - 255;//number of chunks in first size
+            int completeChunkSizes = chunkNumAfterInitial / 192;//number of chunks in every size after
+            int chunksInLastSize = chunkNumAfterInitial % 192;
+            
+            address = 256 * (1 << MIN_EXPONENT);
+            for(int i = 1; i <= completeChunkSizes; i++)
+            {
+                int exponent = MIN_EXPONENT + (i * 2);
+                address += (1L << exponent);
+            }
+            
+            //add length of chunks in this last, incomplete chunk size set and return
+            return address + (chunksInLastSize * (1L << (MIN_EXPONENT+1+completeChunkSizes)));
+            
+        }
+        /*if(chunkNum > lastChunk)
+        {
+            throw new IndexOutOfBoundsException("File of length "+fileSize
+                +" does not have a chunk number "+chunkNum);
+        }
+        else
+        {*/
+            return address;
+        //}
+    }
+    
+    public int getLengthOfChunk(int chunkNum)
+    {
+        if(chunkNum < 256)
+        {
+            return 1 << MIN_EXPONENT;
+        }
+        else
+        {
+            int chunkNumLessInitial = chunkNum - 255;
+            int exponentAdditions = chunkNumLessInitial / 192;
+            
+        }
     }
     
     public static String prettify(long size)

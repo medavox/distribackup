@@ -48,3 +48,8 @@ work out highest chunk boundary
 int x = number of times you have to shift right, in order to make your number = 1
 divide this by 2, then multiply by 2, to get the highest even power of 2 in the original number
 the highest even power of 2 = our last chunk size  boundary
+
+
+for network and memory reasons, we should also use sub-chunks:
+maxChunksSize of 256MB or 1GB keeps the number of hashes for large files down to a sensible number,
+but it's too much data to keep in RAM at one time, or to send down the network as one piece (probably)
