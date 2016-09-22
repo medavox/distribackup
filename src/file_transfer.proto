@@ -1,0 +1,25 @@
+package distriprotobuf;
+/*messages for synchronising the archive filesystem between peers, ie for transferring files*/
+option java_package = "com.medavox.distribackup.protobuf";
+option java_outer_classname = "FileTransferMessages";
+
+message RequestAllFiles {
+
+}
+message FileDataChunk {
+    2. FileInfo            | FileInfo
+    3. isWholeFile         | bitfield<0>
+    4. offset              | Long
+    5. payload             | ByteArray
+}
+message  FileRequest {
+
+}
+
+message FileRequestReply_no_haz {
+
+}
+
+message haz_naoAnnouncement {
+
+}

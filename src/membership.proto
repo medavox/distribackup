@@ -1,0 +1,43 @@
+package distriprotobuf;
+
+/**messages for leaving & joining archive network,
+ * and synchronising knowledge of peers in archive network*/
+option java_package = "com.medavox.distribackup.protobuf";
+option java_outer_classname = "MemberShipMessages";
+
+message Address {
+2. isUp                | bitfield<0>
+3. usingHostname(NotIP)| bitfield<1>
+4. Using IPv6          | bitfield<2>
+
+5. IP/hostname         | ByteArray.4/String
+6. listenPort          | UShort
+    optional int64 lastKnownTimeOnline = 7;
+}
+
+message PeerInfo {
+    required fixed64 UUID1msb = 1;
+    required fixed64 UUID2lsb = 2;
+    optional uint64 GlobalRevisionNumber = 3;
+    optional bool isPublisher = 4;
+    repeated Address addresses = 5;
+}
+message RequestForPeers {
+
+}
+message RequestAllFiles {
+
+}
+message Greeting {
+
+}
+message ExitAnnouncement {
+
+}
+message PeerInfoRequest {
+
+}
+
+message MorePeers {
+
+}

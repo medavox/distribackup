@@ -141,7 +141,7 @@ This structure is the payload for several Communicables:
 
 The information within is used differently depending on the label. 
 Only the Publisher can send an Update Announcement.
-As an Archive Status, it's a reply to file tree status req. 
+As an Archive Status, it's a reply to and archive status req. 
 It gives the known status of the global archive, not the requested peer's local mirror.
 
 Element             | Type
@@ -205,11 +205,11 @@ Element                | Type
 5. payload             | ByteArray
 
 
-Each peer has to request files it wants.<br />
-Other peers will help by sending requested files (or pieces of it), but can also reply with "I don't have it"<br />
+Each peer has to request files it wants.  
+Other peers will help by sending requested files (or pieces of it), but can also reply with "I don't have it"  
 All peers will announce when they have finished downloading a file, so other peers now know to request that file from it
 
-This means that a File Tree Status Requset isn't for asking another peer about its personal state, which is pointless: 
+This means that a File Tree Status Requset isn't for asking another peer about its personal state, which is pointless:  
 each peer is responsible for managing its own archive copy, and this type of request would only 
 benefit a system where peers try to be helpful by pre-emptively pushing to each other.
 

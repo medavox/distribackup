@@ -1,0 +1,31 @@
+package distriprotobuf;
+/*messages for dealing with synchronising knowledge of the archive state,
+ * eg the latest version files are supposed to be*/
+option java_package = "com.medavox.distribackup.protobuf";
+option java_outer_classname = "ArchiveStateMessages";
+
+message FileInfo {
+  required string name = 1;
+  required string path = 2;
+  required bool isDirectory = 3;
+  required uint64 fileSize = 4;
+  required uint64 revisionNumber = 5;
+  //required
+}
+
+message ArchiveStatus {
+
+}
+message ArchiveStatusRequest {
+
+}
+message UpdateAnnouncement {
+
+}
+
+message PeerInfoRequest {
+
+}
+message haz_naoAnnouncement {
+
+}
