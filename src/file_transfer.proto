@@ -7,19 +7,20 @@ message RequestAllFiles {
 
 }
 message FileDataChunk {
-    2. FileInfo            | FileInfo
-    3. isWholeFile         | bitfield<0>
-    4. offset              | Long
-    5. payload             | ByteArray
+    required FileInfo fileInfo = 1;
+    required bool isWholeFile = 2;
+    optional uint64 offset = 3;
+    required bytes payload = 4;
 }
+//uses former FileInfoBunch
 message  FileRequest {
 
 }
-
+//uses former FileInfoBunch
 message FileRequestReply_no_haz {
 
 }
-
-message haz_naoAnnouncement {
+//uses former FileInfoBunch
+message haz_nao_Announcement {
 
 }

@@ -8,24 +8,26 @@ message FileInfo {
   required string name = 1;
   required string path = 2;
   required bool isDirectory = 3;
-  required uint64 fileSize = 4;
-  required uint64 revisionNumber = 5;
-  //required
+  optional uint64 fileSize = 4;
+
+  //-1 means latest
+  required sint64 revisionNumber = 5;
+  required bytes checksum = 6;
 }
 
+//uses former FileInfoBunch
 message ArchiveStatus {
 
 }
 message ArchiveStatusRequest {
 
 }
+//uses former FileInfoBunch
+//only the publisher can send an update announcement
 message UpdateAnnouncement {
 
 }
 
-message PeerInfoRequest {
-
-}
 message haz_naoAnnouncement {
 
 }

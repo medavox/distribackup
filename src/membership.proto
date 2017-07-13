@@ -3,7 +3,7 @@ package distriprotobuf;
 /**messages for leaving & joining archive network,
  * and synchronising knowledge of peers in archive network*/
 option java_package = "com.medavox.distribackup.protobuf";
-option java_outer_classname = "MemberShipMessages";
+option java_outer_classname = "MembershipMessages";
 
 message Address {
 2. isUp                | bitfield<0>

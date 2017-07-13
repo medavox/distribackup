@@ -1,4 +1,4 @@
-Protocol Binary Spec 
+Protocol Binary Spec
 ====================
 
 Current Issues
@@ -24,8 +24,8 @@ Any situation where an object encloses another object, and their length fields a
 2. Make it so that PeerInfo (and any other Message types which contain a List or HList) only count their length up to the start of the List, which must be the last element. The List's length field then denotes the length of the rest of the message
 
     - downside: 2 locations must be checked to find the total Message length (including List)
-    
-3. Lists and HLists could become TNV, dropping the length field. Variable-length elements would need their own length fields (as before), and fixed-length elements' length would be known. 
+
+3. Lists and HLists could become TNV, dropping the length field. Variable-length elements would need their own length fields (as before), and fixed-length elements' length would be known.
 
     - Downside: it would be slow to iterate through Lists of variable-length messages. Each element would need its own own length field querying, and it would be difficult to know how far through the List we are.
     The total byte-length would not be known - but would also not need to be known by Java, which is an advantage for supporting large arrays. Can't have an overflow of a value you don't explicitly store!
@@ -34,7 +34,7 @@ ID Bytes
 --------
 
 Each Object type has an ID byte, followed either by its payload (for static-length types)
-or a length int (without the int type header attached, because we know what should 
+or a length int (without the int type header attached, because we know what should
 follow for a certain message type), followed by its payload.
 
 Objects inside a compound object don't need an ID byte; their type is known from the object's structure definition.
@@ -84,7 +84,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 ---|------------|-------------------------|-------------|
 0C | PeerInfo              | Compound | [Yes, see below](#PeerInfo) Can be sent in reply to a PeerInfo Request |
 0D | Archive Status        | Compound | Same type as update announcement, but with a different IDByte: [FileInfoBunch](#FileInfoBunch). A reply to Archive Status Request
-10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known 
+10 | Request For Peers     | 0/TLV    | Can have no payload (length 0), or List of UUIDs of peers already known
 11 | Request All Files     | 0        | Asks for latest known version of all files. Likely to be broadcast by a new subscriber, to all known peers.
 12 | File Data Chunk       | Compound | [Yes, see below](#FileDataChunk)
 13 | File Request          | TLV      | Contains a single FileInfo. FileInfo's RevNum can be for a specific version, or -1 for latest version
@@ -92,7 +92,7 @@ ID byte | Name  | Payload length in bytes | Is Compound / Notes
 15 | Exit Announcement     | 0        | Usually sent to all known peers
 16 | Archive Status Request| 0        | Queries overall archive status, not any 1 peer's mirror
 17 | Update Announcement   | Compound | Same type as Archive Status, but with a different IDByte: [FileInfoBunch](#FileInfoBunch). Sendable by Publisher only.|
-18 | "no haz" FileReq Reply| Compound | Used as a reply to a File Request when a peer doesn't have a (version of a?) file requested of it. Contains a list of FileInfos that the requesting peer asked for, which the replying peer doesn't have. 
+18 | "no haz" FileReq Reply| Compound | Used as a reply to a File Request when a peer doesn't have a (version of a?) file requested of it. Contains a list of FileInfos that the requesting peer asked for, which the replying peer doesn't have.
 19 | PeerInfo Request      | 0        | A request for the connected Peer's PeerInfo
 1A | "haz nao" announcement| Compound | Announces to network upon completion that this peer now has this FileID, so others can request it. Contains a list (usually of length 1) of FileInfos of file this peer now has
 1B | More Peers            | Compound | Contains a List:PeerInfo. Is a reply to a request for more Peers.
@@ -110,7 +110,7 @@ List:FileInfo
 Compound Object Constituents
 ============================
 
-<a name="FileInfo" />FileInfo 
+<a name="FileInfo" />FileInfo
 -----------------------------------
 Empty directories in a tree are also specified by this type.
 If isDirectory is true, the last 3 fields can be left out.
@@ -131,7 +131,7 @@ Element             | Type
 
 <a name="FileInfoBunch" />FileInfoBunch
 -----------
-This structure is the payload for several Communicables: 
+This structure is the payload for several Communicables:
 
 * File Request (soon)
 * "No Haz" File Request Reply
@@ -139,9 +139,9 @@ This structure is the payload for several Communicables:
 * Archive Status
 * Update Announcement
 
-The information within is used differently depending on the label. 
+The information within is used differently depending on the label.
 Only the Publisher can send an Update Announcement.
-As an Archive Status, it's a reply to and archive status req. 
+As an Archive Status, it's a reply to an archive status req. 
 It gives the known status of the global archive, not the requested peer's local mirror.
 
 Element             | Type
@@ -210,7 +210,7 @@ Other peers will help by sending requested files (or pieces of it), but can also
 All peers will announce when they have finished downloading a file, so other peers now know to request that file from it
 
 This means that a File Tree Status Requset isn't for asking another peer about its personal state, which is pointless:  
-each peer is responsible for managing its own archive copy, and this type of request would only 
+each peer is responsible for managing its own archive copy, and this type of request would only
 benefit a system where peers try to be helpful by pre-emptively pushing to each other.
 
 Instead, it's asking what a peer knows about the about the global archive tree
@@ -235,12 +235,12 @@ DONE
 * Personal PeerInfo
 * Global Revision Number
     - a simple counter for the whole file tree, incremented on every revision
-* Request for all files: used by a new peer to ask for all the files in the archive, 
+* Request for all files: used by a new peer to ask for all the files in the archive,
 without having to specifically request each one (also avoid querying for them)
 * File Request Reply: I don't have that version/file
 * 'I now have this file version' announcement
     - announces to network that this peer now has this FileID upon completion, so others can request it
-* Differentiate between supporting data types (like int, bitfield, String) and 
-objects that can actually be sent down the Socket. 
+* Differentiate between supporting data types (like int, bitfield, String) and
+objects that can actually be sent down the Socket.
 
 The latter are more likely to have a custom java class, and implement Communicable.
