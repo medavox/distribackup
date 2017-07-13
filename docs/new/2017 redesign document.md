@@ -47,7 +47,9 @@ TODO: mechanism to prevent a compromised Publisher from damaging archive content
 Very-High-Level TODO
 ===
 
-* FInd a good (robust, failure-toelrant) transfer library for Java
+* Find a good transfer library for Java
+    - (download resuming)
+    - can receive all manner of HTTP error codes without crashing the whole application
 * restructure repo tree to fit traditional gradle
 * Use a subset of the Git protocol (provided by Eclipse's JGit) to calculate difference between files
 * perhaps use a swarm-like network , or some subset of the BitTorrent protocol
