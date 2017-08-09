@@ -4,6 +4,10 @@
 
 * Use gradle for dependency management
 
+In order to prevent malicious Publishers from poisoning archive  content (deleting/overwriting files),
+
+subscribers  need to be able to access any previously published version of the archive.
+
 
 Two Networks: Low and High Bandwidth
 ----------
@@ -11,8 +15,9 @@ Two Networks: Low and High Bandwidth
 Uses the Raft consensus algorithm to maintain a global archive state structure across all nodes.
 
 Every node is easily able to keep-in sync with the Global Archive State Data, 
-as GAS updates are low bandwidth (estimated usually <2KB, unless including hashes).
-Negotiating downloads for these files is more costly.
+as GASD
+ updates are low bandwidth (estimated usually <2KB, unless including hashes).
+Negotiating the actual downloads of these files is more costly.
 
 The whole system therfore has 2 distributed byte-stores;
 the first one (The Global Archive State) is a data structure about the second.
@@ -82,14 +87,14 @@ Glossary
 Archive
 : A single directory (with zero or more subfiles and subdirectories) being shared using Distribackup.
 
+Archive Network
+: The collection of nodes that an archive is being shared between. 
+NOT the internet, the local-area network or all computers everywhere using Distribackup.
+
 Global Archive State Data
 :Desribes the 'latest' edition' of the archive's state. 
 Usually the same as the version that the Publisher has, unless the Publisher is newly elected, 
 or its local archive has been somehow damaged.
-
-Archive Network
-: The collection of nodes that an archive is being shared between. 
-NOT the internet, the local-area network or all computers everywhere using Distribackup.
 
 Node
 : Describes either a Publisher or a Subscriber.
@@ -101,6 +106,3 @@ Subscriber
 Listens for changes of the Global Archive State, 
 and requests the blocks necessary to bring its local archive copy up-to-date
 
-System
-
-: 
