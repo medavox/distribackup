@@ -1,0 +1,20 @@
+Rsync algorithm as pseudocode
+
+On The Sender (with the latest version)
+For each file id the generator sends,
+	it will store the block checksums
+	and build a hash index of them for rapid lookup.
+
+Then the local file is read,
+and a checksum is generated for the block beginning with the first byte of the local file.
+This block checksum is looked for in the set that was sent by the generator.
+	if no match is found (there's no block on receiver with this checksum),
+		the non-matching byte will be appended to the non-matching data 
+		and the block starting at the next byte will be compared.
+(This is what is referred to as the “rolling checksum”)
+	else if a block checksum match is found,
+		it is considered a matching block
+		and any accumulated non-matching data will be sent to the receiver followed by the offset and length in the receiver's file of the matching block,
+		and the block checksum generator will be advanced to the next byte after the matching block.
+
+(Matching blocks can be identified in this way even if the blocks are reordered or at different offsets. This process is the very heart of the rsync algorithm.)

@@ -55,7 +55,7 @@ We don't need to solve rsync's diff between remote files problem, we can just us
 publisher authority (ie which mirror can update the network) can be controlled with an arbitrary token, eg RSA key
 
 * allowing us to move the publishing mirror dynamically
-* which moves us back into the use-case area of 1 person, many machines like dropbox!
+* which moves us back into the use-case area of 1 person:many machines like dropbox!
 * something like ssh private key? possibly a password? should be sth. intangible, portable
 * this has the bonus of being conceptually easy for lay users to understand
 

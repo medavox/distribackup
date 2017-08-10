@@ -5,7 +5,6 @@
 * Use gradle for dependency management
 
 In order to prevent malicious Publishers from poisoning archive  content (deleting/overwriting files),
-
 subscribers  need to be able to access any previously published version of the archive.
 
 
@@ -15,8 +14,7 @@ Two Networks: Low and High Bandwidth
 Uses the Raft consensus algorithm to maintain a global archive state structure across all nodes.
 
 Every node is easily able to keep-in sync with the Global Archive State Data, 
-as GASD
- updates are low bandwidth (estimated usually <2KB, unless including hashes).
+as GASD updates are low bandwidth (estimated usually <2KB, unless including hashes).
 Negotiating the actual downloads of these files is more costly.
 
 The whole system therfore has 2 distributed byte-stores;
