@@ -13,8 +13,6 @@ import java.io.EOFException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
-import testing.BinTest;
-
 import com.medavox.distribackup.peers.PeerInfo;
 import com.medavox.distribackup.filesystem.FileUtils;
 import com.medavox.distribackup.filesystem.FileInfo;

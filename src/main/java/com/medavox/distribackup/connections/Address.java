@@ -25,7 +25,7 @@ public class Address implements Communicable
 6. listenPort          | UShort (char)
 7. lastKnownTimeOnline | Long (ms since epoch)*/
 
-	private Date lastTimeKnownOnline;
+	private Date lastKnownTimeOnline;
 	private boolean isOnline;
 	private boolean usingHostName;
 	private boolean IPv6;
@@ -53,7 +53,7 @@ public class Address implements Communicable
 	{
 		this.port = port;
 		this.isOnline = isOnline;
-		lastTimeKnownOnline = new Date(timeOnlineLong);
+		lastKnownTimeOnline = new Date(timeOnlineLong);
 	}
 	
 	public char getPort()
@@ -98,13 +98,13 @@ public class Address implements Communicable
 		else//we could reach them
 		{
 			isOnline = true;
-			lastTimeKnownOnline = new Date();//we last saw them online right now
+			lastKnownTimeOnline = new Date();//we last saw them online right now
 		}
 		return isOnline;
 	}
 	
 	public Date getLastKnownTimeOnline()
 	{
-		return lastTimeKnownOnline;
+		return lastKnownTimeOnline;
 	}
 }

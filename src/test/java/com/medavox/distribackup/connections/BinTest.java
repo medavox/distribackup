@@ -1,4 +1,4 @@
-package testing;
+package com.medavox.distribackup.connections;
 
 import com.medavox.distribackup.connections.*;
 import com.medavox.distribackup.filesystem.FileDataChunk;
