@@ -85,6 +85,7 @@ Recap
 So, to recap intended features so far:
 
 * Has a full version history, implemented slightly differently than git
+	- the metadata contains a special copy of each file in the repo: how the file looked, as of the last commit
 	- only the last commit to change file contains a full version of it; every modifying commit before it merely stores the diff
 	between that version and the newer.
 * Needs the ability to merge diverged network histories in the event of a healed network partition

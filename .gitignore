@@ -1,1 +1,16 @@
+*.class
 .DS_Store
+.gradle/
+.git
+.idea
+build/
+
+# generated files
+bin/
+gen/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Windows thumbnail db
+Thumbs.db
