@@ -11,7 +11,6 @@ Instead, can we use the live, normal file as the 'basis' file, and store diffs o
 
 so like this:-
 
-
 Normal File, accessible on disk		(version 3)
 	|
 	V
@@ -84,18 +83,20 @@ Recap
 
 So, to recap intended features so far:
 
-* Has a full version history, implemented slightly differently than git
+* Each node has a full version history, implemented slightly differently than git
 	- the metadata contains a special copy of each file in the repo: how the file looked, as of the last commit
 	- only the last commit to change file contains a full version of it; every modifying commit before it merely stores the diff
 	between that version and the newer.
 * Needs the ability to merge diverged network histories in the event of a healed network partition
 	- Should only be rarely necessary, so doesn't need to be 'cheap'. But must be possible. And not too difficult for humans
 * So only the Publisher can modify the files, but every subscriber has access to the full modification history
-* No index; all files (barring ignored files) in a repositiry are commited upon modification (after a cooldown)
+* No index; all files in a repositry are commited upon modification (after a cooldown)
 * No branches; there aren't supposed to be multiple concurrent variants of the archive. Multiple concurrent
 * 99% of the time, the modification history is therefore almost always completely linear.
 * Our diff/delta format must be completely reversible, if any existing one is not already
-* The commit history graph should be highly resistant to tampering, probably using signed keys to 1) the publisher wrote it 2) at the time it says.
+* The commit history graph must be highly resistant to tampering, probably using signed keys to guarantee that 
+	1. the commit was authored by the publisher 
+	2. at the time stated.
 	-merkle hashes?
 
 Should we still use chunking???
@@ -107,3 +108,12 @@ Observation: because of the way Git stores objects on disk, it gets the followin
 We can't do that, because every object is stored as its current version, and a chain of diffs going back into the past
 
 Solution: store the whole file's SHA-1 sum with the diff, not just a sum of the diff.
+
+-----
+
+We don't need Chunks That Change anymore; ie chunks will not be used as a mechanism for sharing updates.
+Chunks will now only be used to share basefiles.
+New peers asking for full copies of all files (with no old data) will receive different chunks of the same version of the same file from different peers.
+Sharing changes to these basefiles will be done by sharing the Deltas, and the accompanying trees and commits.
+
+It would still be even more efficient to store the basefiles with some sort of similarity checking between them: deduplicating similar files within the archive.

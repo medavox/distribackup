@@ -57,7 +57,7 @@ the first stored version of a file has no delta.
 un-applying (reversing the effects of) the latest delta reveals the contents of the file at the previous delta, accessed using the parent reference of the current delta.
 The delta that has no parent is the SECOND version of the file.
 
-The first version is recreated by applying that first, parentless delta.
+The first version is recreated by un-applying that first, parentless delta.
 
 The full file is never stored directly in the hash-object datastore; only its deltas.
 
@@ -77,7 +77,6 @@ To check out a previous archive version:
 
 To find files that no longer exist in the working directory:
 ----
-
-treat them as empty files, with the last delta being an instruction to delete the basefile's contents. 
+Treat them as empty files, with the last delta being an instruction to delete the basefile's contents. 
 
 Deltas don't NEED to store their own parentage; that info can be gotten from the parent commit's hash for that file.
