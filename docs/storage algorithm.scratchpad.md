@@ -116,4 +116,6 @@ Chunks will now only be used to share basefiles.
 New peers asking for full copies of all files (with no old data) will receive different chunks of the same version of the same file from different peers.
 Sharing changes to these basefiles will be done by sharing the Deltas, and the accompanying trees and commits.
 
-It would still be even more efficient to store the basefiles with some sort of similarity checking between them: deduplicating similar files within the archive.
+It would still be even more efficient to store the basefiles with some sort of similarity checking between them: deduplicating similar files within the archive. Bup's algorithm can help with this  (if I can understand it)
+
+Also, in the case that the Publisher is authoring content that Subscribers wait for the next, finished version of (eg a blog or a vlog), automatic commits would not be a good idea. The Publisher should then instead be able to commit when they want.
