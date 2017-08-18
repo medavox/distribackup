@@ -103,11 +103,11 @@ Should we still use chunking???
 
 ---------
 
-Observation: because of the way Git stores objects on disk, it gets the following ability extra: objects which are the same in different files can be reused, only storing the data once. So if two files' contents are identical, the data  is only stored once.
+Observation: because of the way Git stores objects on disk, it gets the following ability extra: objects which are the same in different files can be reused, only storing the data once. So if two files' contents are identical, the data is only stored once.
 
 We can't do that, because every object is stored as its current version, and a chain of diffs going back into the past
 
-Solution: store the whole file's SHA-1 sum with the diff, not just a sum of the diff.
+Solution: store the SHA-1 hash of the whole file with the diff, not just the hash of the diff.
 
 -----
 
@@ -118,4 +118,4 @@ Sharing changes to these basefiles will be done by sharing the Deltas, and the a
 
 It would still be even more efficient to store the basefiles with some sort of similarity checking between them: deduplicating similar files within the archive. Bup's algorithm can help with this  (if I can understand it)
 
-Also, in the case that the Publisher is authoring content that Subscribers wait for the next, finished version of (eg a blog or a vlog), automatic commits would not be a good idea. The Publisher should then instead be able to commit when they want.
+Also, in the case that the Publisher is authoring content which Subscribers wait for the next, finished version of (eg a blog or a vlog), automatic commits would not be a good idea. The Publisher should then instead be able to commit when they want.

@@ -1,7 +1,7 @@
 Distribackup Storage Objects
 ===================
 
-These are all stored like in git, as a file named with its hash.
+These are all stored as a file named with its hash.
 Except for Deltas, which are stored under the hash of the full file contents they construct.
 
 Commit
@@ -23,7 +23,7 @@ File Entry
 
 Delta
 ------
-- the hash of the previous file
+- the hash of the previous file (parent version)
 - the delta from previous version. Apply this patch to the next newer version to get the whole file
 - a pointer to the file to apply this patch to
 
@@ -35,7 +35,7 @@ Archive State
 
 A full copy of the archive state, as of the last commit.
 
-All the files are separate and independent from the working directory (which users interact with), so that 
+All the files are separate and independent from the working directory (which users interact with), so that:
 
 1. Publishers can make changes to the archive, and Distribackup can detect *what* has been changed, and
 2. Distribackup can easily replace files which Subscribers erroneously modify/delete.

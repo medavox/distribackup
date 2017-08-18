@@ -1,7 +1,6 @@
 2017 Redesign
 ============
 
-
 * Use gradle for dependency management
 
 In order to prevent malicious Publishers from poisoning archive  content (deleting/overwriting files),
@@ -48,14 +47,14 @@ TODO: mechanism to prevent a compromised Publisher from damaging archive content
 
 
 Very-High-Level TODO
-===
+====================
 
 * Find a good transfer library for Java
     - (download resuming)
     - can receive all manner of HTTP error codes without crashing the whole application
 * restructure repo tree to fit traditional gradle
 * Use a subset of the Git protocol (provided by Eclipse's JGit) to calculate difference between files
-* perhaps use a swarm-like network , or some subset of the BitTorrent protocol
+* perhaps use a swarm-like network, or some subset of the BitTorrent protocol
 * Use the Kademlia DHT (provided by Joshua Kissoon's [java implementation](https://github.com/JoshuaKissoon/Kademlia) ) to persist network details, eg a list of peers
 
 

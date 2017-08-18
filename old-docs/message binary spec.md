@@ -4,7 +4,7 @@ Protocol Binary Spec
 Current Issues
 --------------
 
-###Length Fields In Containing Objects
+### Length Fields In Containing Objects
 
 Using int as the length field type could allow a string of Messages, when still strung together as a byte[] (ie a compound Message), to overflow an integer's max value.
 
@@ -16,7 +16,7 @@ There is an inherent tension here between number of bytes from a stream (which i
 Any situation where an object encloses another object, and their length fields are the same size, could cause this to happen.
 
 
-###Possible Solutions:
+### Possible Solutions:
 
 1. Just disallow Lists inside PeerInfo objects from being so big that they overflow PeerInfo's length field.
     - Clunky, as the length measures total bytes, not number of elements, and this would be annoying to count all the time to make sure we're not going over, especially in HLists
