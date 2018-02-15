@@ -58,7 +58,9 @@ and are always calculated the same, given the same file size. The reordering abi
 
 
 BTW: We _DO_ need the archives to support merging, in the event of a network partition. 
-The two halves of the network could each re-elect a different Publisher (or the half without the original Publisher could elect a new one), and move forward with completely different changes to the archive.
+The two halves of the network could each re-elect a different Publisher
+(or the half without the original Publisher could elect a new one),
+and move forward with completely different changes to the archive.
 If/when the network is healed, the diverged histories will need to be MERGED.
 
 
@@ -67,15 +69,18 @@ Custom packfiles are also created to transfer only the differences between repos
 	to transfer the minimum data across the network.
 
 We, however, always know the exact difference between archive versions.
-We  don't need to produce unique packfiles for every inter-node transfer (hopefully; barring local  damage to an archive).
-However, we could do better than a single packfile per archive version increment. Each file diff, so individual diffs can be tranferred from different nodes
+We  don't need to produce unique packfiles for every inter-node transfer (hopefully; barring local damage to an archive).
+However, we could do better than a single packfile per archive version increment.
+Each file diff, so individual diffs can be transferred from different nodes
 
-In order to avoid wasting CPU cycles on re-calculating diffs on the same content,  i don't want to store packed copies of whole files on disk, then compress them after the fact.
+In order to avoid wasting CPU cycles on re-calculating diffs on the same content,
+i don't want to store packed copies of whole files on disk, then compress them after the fact.
 
 Instead of what git does, how about this:
 
-Only the most recent version of a file in the commit history is whole; every older version is only stored as a diff from the next newer version. Diffs going back.
-These diffs shouldbe the same diffs as were sent to update a local archive, reusing the calculations.
+Only the most recent version of a file in the commit history is whole;
+every older version is only stored as a diff from the next newer version. Diffs going back.
+These diffs should be the same diffs as were sent to update a local archive, reusing the calculations.
 This means the diff format must be reversible.
 
 Recap
@@ -90,7 +95,8 @@ So, to recap intended features so far:
 * Needs the ability to merge diverged network histories in the event of a healed network partition
 	- Should only be rarely necessary, so doesn't need to be 'cheap'. But must be possible. And not too difficult for humans
 * So only the Publisher can modify the files, but every subscriber has access to the full modification history
-* No index; all files in a repositry are commited upon modification (after a cooldown)
+* No index/staging area
+; all files in a repository are committed upon modification (after a cooldown)
 * No branches; there aren't supposed to be multiple concurrent variants of the archive. Multiple concurrent
 * 99% of the time, the modification history is therefore almost always completely linear.
 * Our diff/delta format must be completely reversible, if any existing one is not already

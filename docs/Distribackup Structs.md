@@ -41,7 +41,7 @@ All the files are separate and independent from the working directory (which use
 2. Distribackup can easily replace files which Subscribers erroneously modify/delete.
 
 The Archive State will probably be stored in a compressed file
-(in an compression format supporting random file access without full extraction), to save disk space.
+(in a compression format supporting random file access without full extraction), to save disk space.
 
 Basefile
 -------
@@ -49,12 +49,13 @@ A full copy of a file in the archive, as it was at the most recent commit.
 Its hash is the hash used to store the latest delta: the one that produces this file.
 
 Basefiles should always be the most recent known version of a file.
-The known version may 
-These are the core storage mechanism; the working directory is merely for ease of viewing (on Subscribers) and ease of editing (on each archive's Publisher).
+These are the core storage mechanism;
+the working directory is merely for ease of viewing (on Subscribers) and ease of editing (on each archive's Publisher).
 
 The latest delta constructs the latest version of the basefile, from the previous version.
 the first stored version of a file has no delta.
-un-applying (reversing the effects of) the latest delta reveals the contents of the file at the previous delta, accessed using the parent reference of the current delta.
+un-applying (reversing the effects of) the latest delta reveals the contents of the file at the previous delta,
+accessed using the parent reference of the current delta.
 The delta that has no parent is the SECOND version of the file.
 
 The first version is recreated by un-applying that first, parentless delta.
