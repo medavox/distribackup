@@ -5,15 +5,9 @@ These are all stored as a file named with its hash.
 Except for Deltas, which are stored under the hash of the full file contents they construct.
 
 Commit
--------
-- hash of the Tree object of the archive's state at this commit
+------
 - hash of the parent commit(s?)
-
-Tree object ( a Directory )
-----
-- Full path and directory name
-- Zero or more hashes of (sub)Trees
-- Zero or more hashes of File Entries
+- Zero or more hashes of File Entries -- the archive's state at this commit
 
 File Entry
 ----------
@@ -22,16 +16,13 @@ File Entry
 - Unix-style three-digit octal permissions (not reduced like git; but no ownership data)
 
 Delta
-------
-- the hash of the previous file (parent version)
-- the delta from previous version. Apply this patch to the next newer version to get the whole file
+-----
+- the hash of the previous file version (parent version)
+- the delta from the previous version. Apply this patch to the next newer version to get the whole file
 - a pointer to the file to apply this patch to
 
-Basefile
--------
-
 Archive State
--------
+-------------
 
 A full copy of the archive state, as of the last commit.
 
