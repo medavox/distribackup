@@ -9,7 +9,7 @@ Commit
 - hash of the Tree object of the archive's state at this commit
 - hash of the parent commit(s?)
 
-Tree object
+Tree object ( a Directory )
 ----
 - Full path and directory name
 - Zero or more hashes of (sub)Trees
