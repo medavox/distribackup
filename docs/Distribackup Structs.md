@@ -4,10 +4,10 @@ Distribackup Storage Objects
 These are all stored as a file named with its hash.
 Except for Deltas, which are stored under the hash of the full file contents they construct.
 
-Commit
+Edition (formerly edition)
 ------
-- hash of the parent commit(s?)
-- Zero or more hashes of File Entries -- the archive's state at this commit
+- hash of the parent edition(s?)
+- Zero or more hashes of File Entries -- the archive's state at this edition
 
 File Entry
 ----------
@@ -24,7 +24,7 @@ Delta
 Archive State
 -------------
 
-A full copy of the archive state, as of the last commit.
+A full copy of the archive state, as of the last edition.
 
 All the files are separate and independent from the working directory (which users interact with), so that:
 
@@ -36,7 +36,7 @@ The Archive State will probably be stored in a compressed file
 
 Basefile
 -------
-A full copy of a file in the archive, as it was at the most recent commit.
+A full copy of a file in the archive, as it was at the most recent edition.
 Its hash is the hash used to store the latest delta: the one that produces this file.
 
 Basefiles should always be the most recent known version of a file.
@@ -71,4 +71,4 @@ To find files that no longer exist in the working directory:
 ----
 Treat them as empty files, with the last delta being an instruction to delete the basefile's contents. 
 
-Deltas don't NEED to store their own parentage; that info can be gotten from the parent commit's hash for that file.
+Deltas don't NEED to store their own parentage; that info can be gotten from the parent edition's hash for that file.

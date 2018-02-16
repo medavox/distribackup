@@ -8,6 +8,9 @@ Archive Network
 : The collection of nodes that an archive is being shared between. 
 NOT the internet, the local-area network or all computers everywhere using Distribackup.
 
+Edition
+:Analogous to a commit in git. Represents a version of the repository.
+
 Global Archive State Data
 :Describes the 'latest edition' of the archive's state. 
 Usually the same as the version that the Publisher has, unless the Publisher is newly elected, 
