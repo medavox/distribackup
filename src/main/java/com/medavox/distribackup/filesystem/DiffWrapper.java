@@ -1,8 +1,6 @@
 package com.medavox.distribackup.filesystem;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Arrays;
 
 /**Allows us to use an existing diff engine (GNU diff, or otherwise on other systems)
@@ -11,6 +9,38 @@ import java.util.Arrays;
  * This method shouldn't directly store the output of the diff command into a String,
  * because that would mean reading file-size amounts of data (gigabytes, potentially) into memory.*/
 public abstract class DiffWrapper {
+
+    public interface DiffResult{
+        void onDiffResult(int exitCode);
+        void onError(Throwable t);
+    }
+
+    public static void asyncDiff(OutputStream o, File a, File b, DiffResult callback) {
+        ProcessBuilder pb = new ProcessBuilder("/usr/bin/diff", a.getAbsolutePath(), b.getAbsolutePath());
+        try {
+            Process p = pb.start();
+            int exitCode = p.waitFor();
+            if(exitCode == 1) {
+                //int charRead = p.getInputStream().read();
+                byte[] buffer = new byte[4096];
+                InputStream stdout = p.getInputStream();
+
+                int bytesRead = stdout.read(buffer);
+                while(bytesRead == buffer.length) {
+                    o.write(buffer);
+                    bytesRead = stdout.read(buffer);
+                }
+                //write remainder
+                o.write(buffer,0, bytesRead);
+            }//if the exit code was 0 (files are identical) or otherwise,
+            //then there's no need to write the diff output
+            callback.onDiffResult(exitCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onError(e);
+        }
+    }
+
     public static void diff(PrintStream o, File a, File b) {
         ProcessBuilder pb = new ProcessBuilder("/usr/bin/diff", a.getAbsolutePath(), b.getAbsolutePath());
         /*ProcessBuilder pb = new ProcessBuilder( "/usr/local/bin/bash", "-c", "/bin/sleep 5 && /usr/bin/diff "
@@ -23,6 +53,9 @@ public abstract class DiffWrapper {
                     +a.getAbsolutePath()+" "+b.getAbsolutePath()});//*/
             Process p = pb.start();
             int returnCode = p.waitFor();
+            if(returnCode == 0) {
+                return;
+            }
             //System.out.println("waitFor(): "+p.waitFor());
             //Process p = Runtime.getRuntime().exec(new String[]{"/usr/bin/diff", a.getAbsolutePath(), b.getAbsolutePath()});
 
