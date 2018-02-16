@@ -2,15 +2,16 @@ package com.medavox.distribackup.filesystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 
 /**Allows us to use an existing diff engine (GNU diff, or otherwise on other systems)
  * rather than write our own, or use someone else's (old/poorly-maintained/buggy/rarely-used) java implementation.
  *
- * This method probably shouldn't directly store the output of the diff command into a String,
+ * This method shouldn't directly store the output of the diff command into a String,
  * because that would mean reading file-size amounts of data (gigabytes, potentially) into memory.*/
 public abstract class DiffWrapper {
-    public static void diff(File a, File b) {
+    public static void diff(PrintStream o, File a, File b) {
         ProcessBuilder pb = new ProcessBuilder("/usr/bin/diff", a.getAbsolutePath(), b.getAbsolutePath());
         /*ProcessBuilder pb = new ProcessBuilder( "/usr/local/bin/bash", "-c", "/bin/sleep 5 && /usr/bin/diff "
                 +a.getAbsolutePath()+" "+b.getAbsolutePath());*/
@@ -31,7 +32,7 @@ public abstract class DiffWrapper {
             while(charRead != -1) {
                 if(i >= buffer.length) {
                     //buffer is full. print it out, reset the buffer and keep going
-                    System.out.println(buffer);
+                    o.print(buffer);
                     i = 0;
                 }
                 buffer[i] = (char)charRead;
@@ -39,7 +40,7 @@ public abstract class DiffWrapper {
                 i++;
             }
             String remainingUnprintedOutput = new String(Arrays.copyOfRange(buffer, 0, i));
-            System.out.println(remainingUnprintedOutput);
+            o.println(remainingUnprintedOutput);
             System.out.println("buffer size:"+(i+1));
             //pb.start();
         }catch(Exception ioe) {
@@ -47,8 +48,10 @@ public abstract class DiffWrapper {
         }
     }
 
+
+
     public static void main(String[] args) {
         //System.out.println("flagons of ale!");
-        diff(new File("/Users/adamh/justy.txt"), new File("/Users/adamh/netsy.txt"));
+        diff(System.out, new File("/Users/adamh/justy.txt"), new File("/Users/adamh/netsy.txt"));
     }
 }
