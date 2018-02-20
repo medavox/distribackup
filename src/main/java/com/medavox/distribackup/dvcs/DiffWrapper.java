@@ -1,4 +1,4 @@
-package com.medavox.distribackup.filesystem;
+package com.medavox.distribackup.dvcs;
 
 import java.io.*;
 import java.util.Arrays;
@@ -10,7 +10,9 @@ import java.util.Arrays;
  * because that would mean reading file-size amounts of data (gigabytes, potentially) into memory.*/
 public abstract class DiffWrapper {
 
-    public interface DiffResult{
+    public static final int IN_MEMORY_BUFFER_SIZE = 1048576;//1MiB
+
+    public interface DiffResult {
         void onDiffResult(int exitCode);
         void onError(Throwable t);
     }
@@ -22,7 +24,7 @@ public abstract class DiffWrapper {
             int exitCode = p.waitFor();
             if(exitCode == 1) {
                 //int charRead = p.getInputStream().read();
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[IN_MEMORY_BUFFER_SIZE];
                 InputStream stdout = p.getInputStream();
 
                 int bytesRead = stdout.read(buffer);
@@ -60,7 +62,7 @@ public abstract class DiffWrapper {
             //Process p = Runtime.getRuntime().exec(new String[]{"/usr/bin/diff", a.getAbsolutePath(), b.getAbsolutePath()});
 
             int charRead = p.getInputStream().read();
-            char[] buffer = new char[4096];
+            char[] buffer = new char[IN_MEMORY_BUFFER_SIZE];
             int i = 0;
             while(charRead != -1) {
                 if(i >= buffer.length) {
