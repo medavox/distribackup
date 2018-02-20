@@ -2,14 +2,14 @@ package com.medavox.distribackup.datamodels;
 
 import org.jetbrains.annotations.Nullable;
 
-/**represents a snapshot of the state of the archive. A version.*/
+/**Represents a snapshot of the state of the archive. A version.*/
 public class Edition {
 
     /**The hash of the previous commit.
      * Usually commits have a single parent, but may have more due to a merge*/
     public final Hash[] parentCommits;
 
-/**- Zero or more hashes of File Entries -- the archive's state at this commit*/
+    /**Zero or more hashes of File Entries -- the archive's state at this commit*/
     public final Hash[] allFilesInArchiveAtTimeOfCommitCreation;
 
     public Edition(@Nullable Hash parent, Hash... files) {

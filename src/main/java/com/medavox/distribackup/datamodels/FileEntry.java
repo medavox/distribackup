@@ -1,7 +1,7 @@
 package com.medavox.distribackup.datamodels;
 
 public final class FileEntry {
-    //todo: make these types more specific (eg a Hash type instead of byte[]),
+    //todo: make these types more specific (eg a File/Path type instead of String),
     //and less prone to invalidity
 
     /**'full' path is relative to repository root.*/
