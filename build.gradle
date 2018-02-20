@@ -19,7 +19,8 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.lz4:lz4-java:1.4.1'
+    compile 'org.lz4:lz4-java:1.4.1'//provides xxhash hashing function
+    compile 'com.squareup.okio:okio:1.14.0'//replaces java.io where files >2GiB are dealt with
 }
 
 test {
