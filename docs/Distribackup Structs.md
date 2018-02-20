@@ -4,7 +4,7 @@ Distribackup Storage Objects
 These are all stored as a file named with its hash.
 Except for Deltas, which are stored under the hash of the full file contents they construct.
 
-Edition (formerly edition)
+Edition (formerly commit)
 ------
 - hash of the parent edition(s?)
 - Zero or more hashes of File Entries -- the archive's state at this edition
@@ -18,12 +18,11 @@ File Entry
 Delta
 -----
 - the hash of the previous file version (parent version)
-- the delta from the previous version. Apply this patch to the next newer version to get the whole file
-- a pointer to the file to apply this patch to
+- the diff from the previous version. Apply this patch to the next newer version to get the whole file
+- a pointer to (the hash of the contents of) the file to apply this patch to
 
 Archive State
 -------------
-
 A full copy of the archive state, as of the last edition.
 
 All the files are separate and independent from the working directory (which users interact with), so that:
