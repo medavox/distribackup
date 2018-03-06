@@ -10,6 +10,7 @@ repositories {
     // Use 'jcenter' for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    maven { url 'https://jitpack.io' }
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -21,6 +22,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'org.lz4:lz4-java:1.4.1'//provides xxhash hashing function
     compile 'com.squareup.okio:okio:1.14.0'//replaces java.io where files >2GiB are dealt with
+    compile 'com.github.medavox:utils:v0.9'
 }
 
 test {

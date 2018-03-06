@@ -1,13 +1,10 @@
 package com.medavox.distribackup.dvcs;
 
 import com.medavox.distribackup.hashing.HashingWrapper;
-import okio.BufferedSource;
-import okio.Okio;
+import com.medavox.util.io.Bytes;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class CommandApi {
     public static final int FILE_HASHING_BUFFER_SIZE = 1048576;//1MiB
@@ -29,7 +26,8 @@ public class CommandApi {
         Thread t = new Thread(new Runnable() {
             @Override public void run() {
                 try {
-                    HashingWrapper.hashFile(fileToAdd);
+                    byte[] hash = HashingWrapper.hashFile(fileToAdd);
+                    String hashAsHex = Bytes.bytesToHex(hash);
                 }catch(IOException ioe) {
                     ioe.printStackTrace();
                 }
@@ -46,7 +44,7 @@ public class CommandApi {
     /*Remove <file>:
     * */
 
-    /*If we automcatically publish editions on every file change,
+    /*If we automatically publish editions on every file change,
     then we may want to give users the ability to simplify down the edition history;
     to remove redundant intermediate editions before sending across the network*/
 }

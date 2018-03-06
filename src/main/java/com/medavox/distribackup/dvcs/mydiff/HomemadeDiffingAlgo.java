@@ -1,0 +1,190 @@
+package com.medavox.distribackup.dvcs.mydiff;
+
+import okio.BufferedSource;
+import okio.Okio;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Arrays;
+
+class HomemadeDiffingAlgo {
+
+    private static final int BUFFER_SIZE = 16 * 1024 * 1024;//16MiB
+
+    /*starting from the beginning of both files,
+    * check how far into both files they are identical
+    *
+    * for a byte[] 1MB subset of each file,
+    *
+    *
+    *     AA[AA]AAAA
+    *        ||
+    * <--  B[BB]BBBBB -->
+    *
+    * create a byte array with the same length as the two subsets,
+    * check if the pair of bytes in each position is the same, storing true or false accordingly
+    *
+    * add up the number of true values,
+    * and keep doing this for various offsets between the two files,
+    * until we find the offset with the fewest differences.
+    *
+    * we record the longest contiguous portions that are identical.
+    *
+    * For each offset an compairson, we record its longest continuous stretch (or stretches?) of identical bytes
+    * the goal is to find the offset with the longest continuous identical stretch of
+     * bytes in both files.
+    *
+    * we record that stretch as its starting offset in each file, and its length.
+    * then we mark that off and look for the next offset which produces the next longest continuous run which excludes the bytes from the repvoious runs
+    * (the previous runs are discounted).
+    * Once we can no longer find any runs, or all bytes are accounted for, then we generate the edit script from the
+    * record of longest runs.
+    *
+    * then, starting from the end of both files going backwards,
+    * check how from the end both files are identical*/
+
+    //don't record a full boolean[] of (a[i]==b[i]) for every byte comparison in the files;
+    // that could take too much space in memory.
+    //instead increment a long counter every time a[i] == b[i],
+    //and reset the counter to 0 every time they are different
+    //(before resetting, record the length and start position of that run of identical bytes)
+
+
+    //every time we decide on which sequence of bytes at which offset is to be used,
+    //record the bytes involved as 'solved', or used up, or whatever.
+    //(this also goes for the pre-algorithm checking of the beginning and end of the files, count those out too)
+    //for every run of checking sequences for a given offset,
+    //make sure we're not diffing bytes which have been counted out already.
+    //store this info for both files, as sequences in each file might get ticked off at different times
+
+
+    private boolean[] compareBytes(byte[] a, byte[] b, int offsetOfBFromA) {
+        if(offsetOfBFromA > 0) {
+            //offset is positive; compare b[n] with a[n+offset]
+
+            /*AAAAAAAAAAAA
+                   BBBBBBBBBBBB
+             = 7
+
+             or
+              AAAAAAAAAAAA
+                   BBBB
+             = 4
+
+             or even
+             AAAAA
+                    BBBBB
+             = 0
+
+            * */
+            int crossoverLength = Math.min(a.length - offsetOfBFromA, b.length);
+            if(crossoverLength <= 0) {
+                //scenario 3: there is no crossover
+                return new boolean[]{};
+            }//else
+            boolean[] ret = new boolean[crossoverLength];
+            for(int i = 0; i < crossoverLength; i++) {
+                ret[i] = (b[i] == a[i+offsetOfBFromA]);
+            }
+            return ret;
+
+        } else if (offsetOfBFromA < 0) {
+            /*offset is negative; move B to start before A
+            compare b[n+offset] with a[n]
+
+                   AAAAAAAAAAAA
+            BBBBBBBBBBBBB
+
+
+            or
+                    AAAAA
+            BBBBBBBBBBBBBB
+
+            or
+                    AAAAAAA
+            BBBBBB
+            * */
+            //simply reverse the positions, and the polarity
+            return compareBytes(b, a, Math.abs(offsetOfBFromA));
+        }else {
+            /*offset is 0;
+            * compare both arrays from their starting positions*/
+            int shorterLength = Math.min(a.length, b.length);
+            boolean[] ret = new boolean[shorterLength];
+            for(int i = 0; i < shorterLength; i++) {
+                ret[i] = (a[i] == b[i]);
+            }
+            return ret;
+        }
+    }
+
+    /**The index of the first position in both files (their starts are aligned) where their contents differ.*/
+    private long indexOfFirstDissimilarByteFromStart(File a, File b) throws IOException {
+        byte[] bufferA = new byte[BUFFER_SIZE];
+        byte[] bufferB = new byte[BUFFER_SIZE];
+        long offset = 0;
+        BufferedSource bufferedSourceA = Okio.buffer(Okio.source(a));
+        BufferedSource bufferedSourceB = Okio.buffer(Okio.source(b));
+        while(true) {
+            int bytesReadA = bufferedSourceA.read(bufferA);
+            int bytesReadB = bufferedSourceB.read(bufferB);
+            int shorterFile = Math.min(bytesReadA, bytesReadB);
+            int bufferOffset = 0;
+            while(bufferOffset < bytesReadA && bufferOffset < bytesReadB
+                    && bufferA[bufferOffset] == bufferB[bufferOffset]) {
+                bufferOffset++;
+            }
+            offset += bufferOffset;
+            if(bufferOffset < BUFFER_SIZE) {
+                //if we found a dissimilar byte at a particular offset, we're done
+                break;
+            }
+            if(shorterFile < BUFFER_SIZE) {
+                //if we didn't fill one of the buffers on this cycle, there's no more to read
+                break;
+            }
+        }
+        //FileInputStream doesn't cut it here, it only supports files of size <2GiB
+        bufferedSourceA.close();
+        bufferedSourceB.close();
+        return offset;
+    }
+
+    /**This method is negative-indexed: 0 is the last byte in both files; -1 the second-to-last, etc*/
+    private long indexOfFirstDissimilarByteFromEnd(File fileA, File fileB) throws IOException {
+        byte[] bufferA = new byte[BUFFER_SIZE];
+        byte[] bufferB = new byte[BUFFER_SIZE];
+        long offset = 0;
+
+
+        RandomAccessFile a = new RandomAccessFile(fileA, "r");
+        RandomAccessFile b = new RandomAccessFile(fileB, "r");
+        for(long i = 1; i > a.length() || i > b.length(); ) {
+            long positionA = Math.max(0, a.length() - i - BUFFER_SIZE);
+            long positionB = Math.max(0, b.length() - i - BUFFER_SIZE);
+            a.seek(positionA);
+            b.seek(positionB);
+            int bytesReadA = a.read(bufferA);
+            int bytesReadB = a.read(bufferB);
+
+
+            int indexBackwardsA = bytesReadA-1;
+            int indexBackwardsB = bytesReadB-1;
+            while(indexBackwardsA >= 0 && indexBackwardsB >= 0) {
+                if(bufferA[indexBackwardsA] != bufferB[indexBackwardsB]) {
+                    break;
+                }//else
+                indexBackwardsA--;
+                indexBackwardsB--;
+                offset++;
+            }
+            int shorterRead = Math.min(bytesReadA, bytesReadB);
+            i += shorterRead;
+            if(bytesReadA != bytesReadB || shorterRead < BUFFER_SIZE) {
+                break;
+            }
+        }
+        return offset;
+    }
+}
