@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-class HomemadeDiffingAlgo {
+class WorkhorseMethods {
 
     private static final int BUFFER_SIZE = 16 * 1024 * 1024;//16MiB
 

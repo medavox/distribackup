@@ -1,10 +1,12 @@
-package com.medavox.distribackup.dvcs.mydiff;
+package com.medavox.distribackup.dvcs.mydiff.matching_sequence_trackers;
+
+import com.medavox.distribackup.dvcs.mydiff.Subsequence;
 
 import static com.sun.tools.javac.util.Assert.check;
 
 /**Keeps track of which parts of a single file have been accounted for;
  * that is, which subsequences of the file no longer need to be considered.*/
-public class MatchedFileSubsequencesTracker {
+class MatchedFileSubsequencesTracker extends MatchingSequenceTracker {
     private final long FILE_LENGTH;
     private LinkedSequence head;
     //private LinkedSequence tail;
@@ -12,6 +14,7 @@ public class MatchedFileSubsequencesTracker {
         FILE_LENGTH = fileLength;
     }
 
+    @Override
     public Subsequence getLongestUnmatchedSequence() {
         if(head == null) {//if there are no matched sequences, then the whole file is unmatched
             return Subsequence.fromStartAndEnd(0, FILE_LENGTH);
@@ -41,7 +44,8 @@ public class MatchedFileSubsequencesTracker {
         return Subsequence.fromStartAndEnd(startOfLongestUnmatched, endOfLongestUnmatched);
     }
 
-    public void setSequenceAsAccountedFor(long start, long end) throws IllegalArgumentException {
+    @Override
+    public void setSequenceAsAccountedFor(long start, long end) throws IllegalArgumentException, DoesNotFitException {
         check(end < FILE_LENGTH,
                 new IllegalArgumentException("end must be < fileLength. Passed end value: "+end));
         //should we also throw an IllegalArgumentException if the passed sequence overlaps another?

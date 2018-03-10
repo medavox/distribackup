@@ -1,4 +1,6 @@
-package com.medavox.distribackup.dvcs.mydiff;
+package com.medavox.distribackup.dvcs.mydiff.matching_sequence_trackers;
+
+import com.medavox.distribackup.dvcs.mydiff.Subsequence;
 
 class LinkedSequence extends Subsequence {
     private LinkedSequence next = null;

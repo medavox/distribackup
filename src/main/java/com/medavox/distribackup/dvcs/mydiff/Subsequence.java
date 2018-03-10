@@ -4,17 +4,17 @@ package com.medavox.distribackup.dvcs.mydiff;
 import static com.medavox.util.validate.Validator.check;
 
 /**Represents a start/end pair.*/
-class Subsequence {
+public class Subsequence {
     public final long START;
     public final long END;
     public final long LENGTH;
-    enum Type {
+    public enum Type {
         START_AND_LENGTH,
         START_AND_END,
         ;
     }
 
-    Subsequence(long start, long endOrLength, Type type) {
+    public Subsequence(long start, long endOrLength, Type type) {
         check(start >= 0,
                 new IllegalArgumentException("start must be >= 0. Passed start value: "+start));
         START = start;
