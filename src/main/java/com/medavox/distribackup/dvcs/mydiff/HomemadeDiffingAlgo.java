@@ -86,10 +86,10 @@ class HomemadeDiffingAlgo {
         }
     }
 
-    /*starting from the beginning of both files,
+    /*Starting from the beginning of both files,
     * check how far into both files they are identical
     *
-    * for a byte[] 1MB subset of each file,
+    * for a subset of each file,
     *
     *
     *     AA[AA]AAAA
@@ -99,43 +99,46 @@ class HomemadeDiffingAlgo {
     * create a byte array with the same length as the two subsets,
     * check if the pair of bytes in each position is the same, storing true or false accordingly
     *
-    * add up the number of true values,
-    * and keep doing this for various offsets between the two files,
     * until we find the offset with the fewest differences.
     *
-    * we record the longest contiguous portions that are identical.
+    * we record the longest contiguous matching sequences.
     *
-    * For each offset an compairson, we record its longest continuous stretch (or stretches?) of identical bytes
-    * the goal is to find the offset with the longest continuous identical stretch of
-     * bytes in both files.
+    * For every offset, compare the two files.
+    * we record all long continuous stretches of identical bytes.
+    * the goal is to find the offset which matches the most bytes (preferably continuously)
+    * between the two files.
     *
-    * we record that stretch as its starting offset in each file, and its length.
-    * then we mark that off and look for the next offset which produces the next longest continuous run which excludes the bytes from the repvoious runs
-    * (the previous runs are discounted).
-    * Once we can no longer find any runs, or all bytes are accounted for, then we generate the edit script from the
-    * record of longest runs.
+    * we record each match sequence as its starting offset in each file, its length,
+    * and the offset at which it occurs.
+    * then we mark that off and look for the next offset which produces the next longest continuous run
+    * which excludes the bytes from the previous runs  (the previous runs are discounted).
+    *
+    * Once we can no longer find any runs, or all bytes are accounted for,
+    * then we generate the edit script using the record of longest runs,
+    * and include any remaining literal differences
+    * (insertions/deletions: sequences unique to either file).
     *
     * then, starting from the end of both files going backwards,
-    * check how from the end both files are identical*/
+    * check how far from the end both files are identical*/
 
-    //don't record a full boolean[] of (a[i]==b[i]) for every byte comparison in the files;
+    //we don't record a full boolean[] of (a[i]==b[i]) for every byte comparison in the files;
     // that could take too much space in memory.
-    //instead increment a long counter every time a[i] == b[i],
+    //instead we record the start and end indexes of each run of identical bytes,
+    //along with the offset at which it occurs.
+    //to create these, we increment a long counter every time a[i] == b[i],
     //and reset the counter to 0 every time they are different
     //(before resetting, record the length and start position of that run of identical bytes)
 
 
     //every time we decide on which sequence of bytes at which offset is to be used,
-    //record the bytes involved as 'solved', or used up, or whatever.
+    //record those bytes involved as 'solved', or used up, or whatever.
     //(this also goes for the pre-algorithm checking of the beginning and end of the files, count those out too)
     //for every run of checking sequences for a given offset,
     //make sure we're not diffing bytes which have been counted out already.
     //store this info for both files, as sequences in each file might get ticked off at different times
 
 
-    private boolean[] compareBytes(byte[] a, byte[] b, int offsetOfBFromA) {
-        if(offsetOfBFromA > 0) {
-            //offset is positive; compare b[n] with a[n+offset]
+    //offset is positive; compare b[n] with a[n+offset]
 
             /*AAAAAAAAAAAA
                    BBBBBBBBBBBB
@@ -152,19 +155,8 @@ class HomemadeDiffingAlgo {
              = 0
 
             * */
-            int crossoverLength = Math.min(a.length - offsetOfBFromA, b.length);
-            if(crossoverLength <= 0) {
-                //scenario 3: there is no crossover
-                return new boolean[]{};
-            }//else
-            boolean[] ret = new boolean[crossoverLength];
-            for(int i = 0; i < crossoverLength; i++) {
-                ret[i] = (b[i] == a[i+offsetOfBFromA]);
-            }
-            return ret;
 
-        } else if (offsetOfBFromA < 0) {
-            /*offset is negative; move B to start before A
+        /*offset is negative; move B to start before A
             compare b[n+offset] with a[n]
 
                    AAAAAAAAAAAA
@@ -178,20 +170,18 @@ class HomemadeDiffingAlgo {
             or
                     AAAAAAA
             BBBBBB
+
+
+            equivalent to swapping A and B, and doing Math.abs() on the offset.
+
+            eg a[i] == b[i+offset], where offset = -3
+             is the same as
+            a[i+offset] == b[i], where offset = 3
             * */
-            //simply reverse the positions, and the polarity
-            return compareBytes(b, a, Math.abs(offsetOfBFromA));
-        }else {
-            /*offset is 0;
+    //simply reverse the positions, and the polarity
+
+    /*offset is 0;
             * compare both arrays from their starting positions*/
-            int shorterLength = Math.min(a.length, b.length);
-            boolean[] ret = new boolean[shorterLength];
-            for(int i = 0; i < shorterLength; i++) {
-                ret[i] = (a[i] == b[i]);
-            }
-            return ret;
-        }
-    }
 
     /**The index of the first position in both files (their starts are aligned) where their contents differ.*/
     private long indexOfFirstDissimilarByteFromStart(File a, File b) throws IOException {
