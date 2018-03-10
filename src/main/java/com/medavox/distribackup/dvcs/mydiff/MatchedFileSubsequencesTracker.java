@@ -2,20 +2,19 @@ package com.medavox.distribackup.dvcs.mydiff;
 
 import static com.sun.tools.javac.util.Assert.check;
 
-/**Keeps track of which parts of a file have been accounted for;
- * that is, which subsequences of each file have been identified as identical
- * to a part in the other file.*/
-public class MatchedSubsequencesTracker {
+/**Keeps track of which parts of a single file have been accounted for;
+ * that is, which subsequences of the file no longer need to be considered.*/
+public class MatchedFileSubsequencesTracker {
     private final long FILE_LENGTH;
     private LinkedSequence head;
     //private LinkedSequence tail;
-    public MatchedSubsequencesTracker(long fileLength) {
+    public MatchedFileSubsequencesTracker(long fileLength) {
         FILE_LENGTH = fileLength;
     }
 
     public Subsequence getLongestUnmatchedSequence() {
         if(head == null) {//if there are no matched sequences, then the whole file is unmatched
-            return new Subsequence(0, FILE_LENGTH);
+            return Subsequence.fromStartAndEnd(0, FILE_LENGTH);
         }
         LinkedSequence entryBeforeLongestUnmatched = head;
         long lengthOfLongestUnmatched = 0;
@@ -39,7 +38,7 @@ public class MatchedSubsequencesTracker {
         LinkedSequence entryAfterLongestUnmatched = entryBeforeLongestUnmatched.getNext();
         long endOfLongestUnmatched = (entryAfterLongestUnmatched == null ? FILE_LENGTH-1
                 : entryAfterLongestUnmatched.START-1);
-        return new Subsequence(startOfLongestUnmatched, endOfLongestUnmatched);
+        return Subsequence.fromStartAndEnd(startOfLongestUnmatched, endOfLongestUnmatched);
     }
 
     public void setSequenceAsAccountedFor(long start, long end) throws IllegalArgumentException {

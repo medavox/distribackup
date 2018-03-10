@@ -5,7 +5,7 @@ class LinkedSequence extends Subsequence {
     //private LinkedSequence prev = null;
 
     public LinkedSequence(long start, long end) throws IllegalArgumentException {
-        super(start, end);
+        super(start, end, Type.START_AND_END);
     }
 
     public LinkedSequence getNext() {

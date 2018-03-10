@@ -6,11 +6,85 @@ import okio.Okio;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 
 class HomemadeDiffingAlgo {
 
     private static final int BUFFER_SIZE = 16 * 1024 * 1024;//16MiB
+
+    /**Returns the absolute-in-file index of the first byte to differ between the two provided byte[]s,
+     * starting from {@code start}, and offseting the start.
+     * That is,
+     * an offset of 3 will have A start at array index 3;
+     * an offset of -3 will have B start at array index 3*/
+    public static long indexOfNextDifferingByte(File a, File b, Subsequence toCompare, long offsetOfBFromA)
+        throws NoOverlapForOffsetException, IOException {
+        long index = toCompare.START;
+        RandomAccessFile randomA = new RandomAccessFile(a, "r");
+        RandomAccessFile randomB = new RandomAccessFile(b, "r");
+
+        //if offset > 0:
+            //start in A at subsequence.START
+            //start in B at subsequence.START + offset
+            //overlapLength = min(a.length-offset, b.length)
+        //elif offset < 0:
+            //start in A at subsequence.START + offset
+            //start in B at subsequence.START
+            //overlapLength = min(a.length, b.length-offset)
+
+        //find out the ending index, which is the highest absolute file index we can compare to
+        //this is min(subsequence.START+overlapLength, subsequence.END)
+
+        //with the index as values from subsequence.START to highestIndexToCheck,
+        //break if we find any dissiimlar byte
+        //etc
+
+        if(offsetOfBFromA > 0 ) {
+            //offset is positive; compare a[n+offset] with b[n]
+
+            long overlapLength = Math.min(a.length() - offsetOfBFromA, b.length());
+            if(overlapLength <= 0 || offsetOfBFromA > a.length() || offsetOfBFromA > b.length()) {
+                //there is no overlap with this offset
+                throw new NoOverlapForOffsetException(a.length(), b.length(), offsetOfBFromA);
+            }
+
+            long highestIndexToCheck = Math.min(toCompare.START + overlapLength, toCompare.END);
+
+            randomA.seek(index);
+            randomB.seek(index + offsetOfBFromA);
+            //while(randomA.readUnsignedByte() == randomB.readUnsignedByte()) {
+            while(index <= highestIndexToCheck) {
+                if(randomA.readUnsignedByte() == randomB.readUnsignedByte()) {
+                    index++;
+                    randomA.seek(index + toCompare.START);
+                    randomB.seek(index + toCompare.START + offsetOfBFromA);
+                }else {
+                    break;
+                }
+            }
+            return index;
+        } else if (offsetOfBFromA < 0) {
+            //offset is negative; compare a[n] with b[n+offset]
+            //simply reverse the positions, and the polarity
+            return indexOfNextDifferingByte(b, a, toCompare, Math.abs(offsetOfBFromA));
+        }else {
+            /*offset is 0;
+            * compare both Files from their starting positions*/
+            long shorterLength = Math.min(a.length()-toCompare.START, b.length()-toCompare.START);
+            long highestIndexToCheck = Math.min(toCompare.START + shorterLength, toCompare.END);
+            randomA.seek(index + toCompare.START);
+            randomB.seek(index + toCompare.START);
+            while(index <= highestIndexToCheck) {
+                if(randomA.readUnsignedByte() == randomB.readUnsignedByte()) {
+                    index++;
+                    randomA.seek(index+toCompare.START);
+                    randomB.seek(index+toCompare.START);
+                }else {
+                    break;
+                }
+            }
+            return index;
+        }
+    }
 
     /*starting from the beginning of both files,
     * check how far into both files they are identical
@@ -152,7 +226,7 @@ class HomemadeDiffingAlgo {
     }
 
     /**This method is negative-indexed: 0 is the last byte in both files; -1 the second-to-last, etc*/
-    private long indexOfFirstDissimilarByteFromEnd(File fileA, File fileB) throws IOException {
+    private long indexOfLastDissimilarByteFromEnd(File fileA, File fileB) throws IOException {
         byte[] bufferA = new byte[BUFFER_SIZE];
         byte[] bufferB = new byte[BUFFER_SIZE];
         long offset = 0;
