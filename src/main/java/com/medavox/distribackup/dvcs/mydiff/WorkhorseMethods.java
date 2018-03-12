@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import static com.medavox.util.validate.Validator.check;
+
 class WorkhorseMethods {
 
     private static final int BUFFER_SIZE = 16 * 1024 * 1024;//16MiB
@@ -23,12 +25,12 @@ class WorkhorseMethods {
         RandomAccessFile randomB = new RandomAccessFile(b, "r");
 
         //if offset > 0:
-            //start in A at subsequence.START
-            //start in B at subsequence.START + offset
-            //overlapLength = min(a.length-offset, b.length)
-        //elif offset < 0:
             //start in A at subsequence.START + offset
             //start in B at subsequence.START
+            //overlapLength = min(a.length-offset, b.length)
+        //elif offset < 0:
+            //start in A at subsequence.START
+            //start in B at subsequence.START + offset
             //overlapLength = min(a.length, b.length-offset)
 
         //find out the ending index, which is the highest absolute file index we can compare to
@@ -84,6 +86,45 @@ class WorkhorseMethods {
             }
             return index;
         }
+    }
+
+    /**@return the end point in A that we should scan for. The end point in B is this value,
+     * plus the offset.*/
+    public static long getHighestIndexToCheck
+        (long lengthOfA, long lengthOfB, long start, long offsetOfBFromA)
+        throws NoOverlapForOffsetException
+    {
+        check(lengthOfA > 0, new IllegalArgumentException
+                ("the length of A must be > 0. Value passed: "+lengthOfA));
+        check(lengthOfB > 0, new IllegalArgumentException
+                ("the length of B must be > 0. Value passed: "+lengthOfB));
+        check(start > 0, new IllegalArgumentException
+                ("the start argument must be > 0. Value passed: "+start));
+        check(offsetOfBFromA > (0-lengthOfB) && offsetOfBFromA < lengthOfA,
+                new IllegalArgumentException("offset must be < lengthOfA && > (0-lengthOfB)." +
+                        "Value passed: "+offsetOfBFromA));
+        check(start < lengthOfA && start < lengthOfB,
+                new IllegalArgumentException("start value must be < lengthOfA && < lengthOfB." +
+                        "Value passed: "+start));
+        long overlapLength;
+        if(offsetOfBFromA > 0 ) {
+            //offset is positive; compare a[n+offset] with b[n]
+            overlapLength = Math.min(lengthOfA - offsetOfBFromA, lengthOfB);
+            //long highestIndexToCheck = Math.min(start + overlapLength, toCompare.END);
+
+        } else if (offsetOfBFromA < 0) {
+            //offset is negative; compare a[n] with b[n+offset]
+            overlapLength = Math.min(lengthOfB - offsetOfBFromA, lengthOfA);
+        }else {
+            //offset is 0; the overlap length is whichever file is shorter
+            overlapLength = Math.min(lengthOfA, lengthOfB);
+            //long highestIndexToCheck = Math.min(start + overlapLength, toCompare.END);
+        }
+        if(overlapLength <= 0 || offsetOfBFromA > lengthOfA || offsetOfBFromA > lengthOfB) {
+            //there is no overlap with this offset
+            throw new NoOverlapForOffsetException(lengthOfA, lengthOfB, offsetOfBFromA);
+        }
+        return start+overlapLength;
     }
 
     /*Starting from the beginning of both files,
