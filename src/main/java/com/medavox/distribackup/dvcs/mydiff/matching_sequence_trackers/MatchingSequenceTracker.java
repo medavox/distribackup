@@ -7,6 +7,6 @@ public abstract class MatchingSequenceTracker {
     public abstract void setSequenceAsAccountedFor(long start, long end) throws IllegalArgumentException, DoesNotFitException;
 
     public static MatchingSequenceTracker getNew(long fileLength) {
-        return new MatchedFileSubsequencesTracker(fileLength);
+        return new MatchingSequenceTrackerSecondAttempt(fileLength);
     }
 }

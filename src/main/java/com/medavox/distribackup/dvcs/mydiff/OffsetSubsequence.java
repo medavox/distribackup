@@ -12,9 +12,10 @@ public class OffsetSubsequence extends Subsequence {
     public final long OFFSET;
     //public final Subsequence MATCHING_SEQUENCE;
 
-    public OffsetSubsequence(long matchingRunLength,
-                             long matchingRunIndex, long offset) {
-        super(matchingRunIndex, matchingRunLength, Type.START_AND_LENGTH);
+    public OffsetSubsequence(long matchingRunStart, long matchingRunEnd, long offset) {
+        super(matchingRunStart, matchingRunEnd, Type.START_AND_END);
         OFFSET = offset;
     }
+
+
 }

@@ -13,12 +13,51 @@ class WorkhorseMethods {
 
     private static final int BUFFER_SIZE = 16 * 1024 * 1024;//16MiB
 
+    public static long indexOfNextDifferingByte(RandomAccessFile a, RandomAccessFile b, long start,
+                                                long offsetOfBFromA)
+            throws NoOverlapForOffsetException, IOException {
+        return indexOfPredicate(offsetOfBFromA, a, b, start, (a1, b1) -> a1 != b1);
+    }
+
+    public static long indexOfNextIdenticalByte(RandomAccessFile a, RandomAccessFile b, long start,
+                                                long offsetOfBFromA)
+            throws NoOverlapForOffsetException, IOException {
+        return indexOfPredicate(offsetOfBFromA, a, b, start, (a1, b1) -> a1 == b1);
+    }
+    private interface Predicate {
+        boolean eval(int a, int b);
+    }
+
+    private static long indexOfPredicate(long offsetOfBFromA, RandomAccessFile a, RandomAccessFile b,
+                                         long start, Predicate p)
+            throws NoOverlapForOffsetException, IOException {
+        long index = start;
+
+        long highestIndexToCheck = getHighestIndexToCheck(a.length(), b.length(), offsetOfBFromA);
+
+        a.seek(index);
+        b.seek(index + offsetOfBFromA);
+        while(index <= highestIndexToCheck) {
+            if(!p.eval(a.readUnsignedByte(), b.readUnsignedByte())) {
+                index++;
+                a.seek(index );
+                b.seek(index  + offsetOfBFromA);
+            }else {
+                break;
+            }
+        }
+        /*if(index > highestIndexToCheck) {
+            return -1;
+        }*/
+        return index;
+    }
+
     /**Returns the absolute-in-file index of the first byte to differ between the two provided byte[]s,
      * starting from {@code start}, and offseting the start.
      * That is,
      * an offset of 3 will have A start at array index 3;
      * an offset of -3 will have B start at array index 3*/
-    public static long indexOfNextDifferingByte(File a, File b, Subsequence toCompare, long offsetOfBFromA)
+    private static long indexOfNextDifferingByte2(File a, File b, Subsequence toCompare, long offsetOfBFromA)
         throws NoOverlapForOffsetException, IOException {
         long index = toCompare.START;
         RandomAccessFile randomA = new RandomAccessFile(a, "r");
@@ -67,7 +106,7 @@ class WorkhorseMethods {
         } else if (offsetOfBFromA < 0) {
             //offset is negative; compare a[n] with b[n+offset]
             //simply reverse the positions, and the polarity
-            return indexOfNextDifferingByte(b, a, toCompare, Math.abs(offsetOfBFromA));
+            return indexOfNextDifferingByte2(b, a, toCompare, Math.abs(offsetOfBFromA));
         }else {
             /*offset is 0;
             * compare both Files from their starting positions*/
@@ -91,21 +130,17 @@ class WorkhorseMethods {
     /**@return the end point in A that we should scan for. The end point in B is this value,
      * plus the offset.*/
     public static long getHighestIndexToCheck
-        (long lengthOfA, long lengthOfB, long start, long offsetOfBFromA)
+        (long lengthOfA, long lengthOfB, long offsetOfBFromA)
         throws NoOverlapForOffsetException
     {
         check(lengthOfA > 0, new IllegalArgumentException
                 ("the length of A must be > 0. Value passed: "+lengthOfA));
         check(lengthOfB > 0, new IllegalArgumentException
                 ("the length of B must be > 0. Value passed: "+lengthOfB));
-        check(start > 0, new IllegalArgumentException
-                ("the start argument must be > 0. Value passed: "+start));
         check(offsetOfBFromA > (0-lengthOfB) && offsetOfBFromA < lengthOfA,
                 new IllegalArgumentException("offset must be < lengthOfA && > (0-lengthOfB)." +
                         "Value passed: "+offsetOfBFromA));
-        check(start < lengthOfA && start < lengthOfB,
-                new IllegalArgumentException("start value must be < lengthOfA && < lengthOfB." +
-                        "Value passed: "+start));
+
         long overlapLength;
         if(offsetOfBFromA > 0 ) {
             //offset is positive; compare a[n+offset] with b[n]
@@ -124,7 +159,7 @@ class WorkhorseMethods {
             //there is no overlap with this offset
             throw new NoOverlapForOffsetException(lengthOfA, lengthOfB, offsetOfBFromA);
         }
-        return start+overlapLength;
+        return overlapLength;
     }
 
     /*Starting from the beginning of both files,
@@ -177,6 +212,14 @@ class WorkhorseMethods {
     //for every run of checking sequences for a given offset,
     //make sure we're not diffing bytes which have been counted out already.
     //store this info for both files, as sequences in each file might get ticked off at different times
+
+    /*Sequences in A that have been moved in B can never be fully ruled out of further searches;
+    * they might appear more than once in B. They can be ruled out in each ocurence in B though.
+    *
+    * In fact EVERY sequence in A only needs to be matched 0 or more times;
+    * they all might have been deleted.
+    *
+    * So maybe we should only track accounted-for sequences in B??*/
 
 
     //offset is positive; compare b[n] with a[n+offset]
