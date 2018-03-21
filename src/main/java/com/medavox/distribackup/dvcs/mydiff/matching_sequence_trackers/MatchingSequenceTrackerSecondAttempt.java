@@ -13,11 +13,12 @@ class MatchingSequenceTrackerSecondAttempt extends MatchingSequenceTracker {
     }
     @Override
     public Subsequence getLongestUnmatchedSequence() {
+        //todo
         return null;
     }
 
     @Override
-    public void setSequenceAsAccountedFor(long start, long end) throws IllegalArgumentException, DoesNotFitException {
+    public void addSequence(long start, long end) throws IllegalArgumentException, DoesNotFitException {
         Subsequence newOne = Subsequence.fromStartAndEnd(start, end);
         if(matchedSequences.size() == 0) {
             matchedSequences.add(newOne);

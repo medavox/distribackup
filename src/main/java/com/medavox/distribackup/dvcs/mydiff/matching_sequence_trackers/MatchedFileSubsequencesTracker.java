@@ -45,7 +45,7 @@ class MatchedFileSubsequencesTracker extends MatchingSequenceTracker {
     }
 
     @Override
-    public void setSequenceAsAccountedFor(long start, long end) throws IllegalArgumentException, DoesNotFitException {
+    public void addSequence(long start, long end) throws IllegalArgumentException, DoesNotFitException {
         check(end < FILE_LENGTH,
                 new IllegalArgumentException("end must be < fileLength. Passed end value: "+end));
         //should we also throw an IllegalArgumentException if the passed sequence overlaps another?
